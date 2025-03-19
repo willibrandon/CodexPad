@@ -1,0 +1,59 @@
+/* Light Mode Theme */
+.light-mode {
+  --background-color: #f5f5f5;
+  --text-color: #333333;
+  --text-light: #666666;
+  --border-color: #e0e0e0;
+  --primary-color: #0078d4;
+  --primary-color-rgb: 0, 120, 212;
+  --editor-bg: #ffffff;
+}
+
+/* Default Theme Color Scheme */
+.color-scheme-default.light-mode {
+  --background-color: #f5f5f5;
+  --text-color: #333333;
+  --border-color: #e0e0e0;
+  --primary-color: #0078d4;
+  --primary-color-rgb: 0, 120, 212;
+}
+
+/* Solarized Theme Color Scheme */
+.color-scheme-solarized.light-mode {
+  --background-color: #fdf6e3;
+  --text-color: #657b83;
+  --border-color: #eee8d5;
+  --primary-color: #2aa198;
+  --primary-color-rgb: 42, 161, 152;
+  --editor-bg: #eee8d5;
+}
+
+/* Nord Theme Color Scheme */
+.color-scheme-nord.light-mode {
+  --background-color: #eceff4;
+  --text-color: #2e3440;
+  --border-color: #d8dee9;
+  --primary-color: #5e81ac;
+  --primary-color-rgb: 94, 129, 172;
+  --editor-bg: #e5e9f0;
+}
+
+/* GitHub Theme Color Scheme */
+.color-scheme-github.light-mode {
+  --background-color: #ffffff;
+  --text-color: #24292e;
+  --border-color: #e1e4e8;
+  --primary-color: #0366d6;
+  --primary-color-rgb: 3, 102, 214;
+  --editor-bg: #f6f8fa;
+}
+
+/* Dracula Theme Color Scheme */
+.color-scheme-dracula.light-mode {
+  --background-color: #f8f8f2;
+  --text-color: #282a36;
+  --border-color: #ced4da;
+  --primary-color: #bd93f9;
+  --primary-color-rgb: 189, 147, 249;
+  --editor-bg: #ffffff;
+} 

@@ -1,9 +1,10 @@
 // Type definitions for Electron IPC APIs exposed through preload.js
 
-interface IElectronAPI {
-  invoke(channel: string, ...args: any[]): Promise<any>;
-  receive(channel: string, func: (...args: any[]) => void): void;
-  removeAllListeners(channel: string): void;
+interface ElectronAPI {
+  invoke: (channel: string, ...args: any[]) => Promise<any>;
+  receive: (channel: string, func: (...args: any[]) => void) => void;
+  removeAllListeners: (channel: string) => void;
+  getFontsPath: () => Promise<string>;
 }
 
 // Sync-related types
@@ -29,7 +30,7 @@ interface SyncLogEntry {
 
 declare global {
   interface Window {
-    electron: IElectronAPI;
+    electron: ElectronAPI;
   }
 }
 

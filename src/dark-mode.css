@@ -1,0 +1,91 @@
+/* Dark Mode Theme */
+.dark-mode {
+  --background-color: #1e1e1e;
+  --text-color: #e0e0e0;
+  --text-light: #a0a0a0;
+  --border-color: #444444;
+  --primary-color: #209fec;
+  --primary-color-rgb: 32, 159, 236;
+  --editor-bg: #252526;
+}
+
+/* Default Theme Color Scheme */
+.color-scheme-default.dark-mode {
+  --background-color: #1e1e1e;
+  --text-color: #e0e0e0;
+  --border-color: #444444;
+  --primary-color: #209fec;
+  --primary-color-rgb: 32, 159, 236;
+}
+
+/* Solarized Theme Color Scheme */
+.color-scheme-solarized.dark-mode {
+  --background-color: #002b36;
+  --text-color: #839496;
+  --border-color: #073642;
+  --primary-color: #2aa198;
+  --primary-color-rgb: 42, 161, 152;
+  --editor-bg: #073642;
+}
+
+/* Nord Theme Color Scheme */
+.color-scheme-nord.dark-mode {
+  --background-color: #2e3440;
+  --text-color: #d8dee9;
+  --border-color: #3b4252;
+  --primary-color: #88c0d0;
+  --primary-color-rgb: 136, 192, 208;
+  --editor-bg: #3b4252;
+}
+
+/* GitHub Theme Color Scheme */
+.color-scheme-github.dark-mode {
+  --background-color: #0d1117;
+  --text-color: #c9d1d9;
+  --border-color: #30363d;
+  --primary-color: #58a6ff;
+  --primary-color-rgb: 88, 166, 255;
+  --editor-bg: #161b22;
+}
+
+/* Dracula Theme Color Scheme */
+.color-scheme-dracula.dark-mode {
+  --background-color: #282a36;
+  --text-color: #f8f8f2;
+  --border-color: #44475a;
+  --primary-color: #bd93f9;
+  --primary-color-rgb: 189, 147, 249;
+  --editor-bg: #2d2f3b;
+}
+
+/* Font Sizes */
+.font-size-small {
+  --base-font-size: 14px;
+  --code-font-size: 12px;
+}
+
+.font-size-medium {
+  --base-font-size: 16px;
+  --code-font-size: 14px;
+}
+
+.font-size-large {
+  --base-font-size: 18px;
+  --code-font-size: 16px;
+}
+
+/* Code Fonts */
+.code-font-fira-code .markdown-editor pre,
+.code-font-fira-code code {
+  font-family: 'Fira Code', Menlo, Monaco, 'Courier New', monospace;
+}
+
+.code-font-jetbrains-mono .markdown-editor pre,
+.code-font-jetbrains-mono code {
+  font-family: 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace;
+}
+
+.code-font-cascadia-code .markdown-editor pre,
+.code-font-cascadia-code code {
+  font-family: 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace;
+} 

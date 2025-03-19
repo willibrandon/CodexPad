@@ -45,6 +45,8 @@ contextBridge.exposeInMainWorld(
       if (validChannels.includes(channel)) {
         ipcRenderer.removeAllListeners(channel);
       }
-    }
+    },
+    // Add fonts path getter
+    getFontsPath: () => ipcRenderer.invoke('get-fonts-path'),
   }
 );

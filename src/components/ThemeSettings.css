@@ -1,0 +1,191 @@
+.theme-settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.theme-settings-container {
+  background-color: var(--editor-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.theme-settings-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.theme-settings-content {
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.theme-mode-buttons,
+.color-scheme-buttons,
+.font-size-buttons,
+.code-font-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.theme-btn,
+.color-scheme-btn,
+.font-size-btn,
+.code-font-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.theme-btn:hover,
+.color-scheme-btn:hover,
+.font-size-btn:hover,
+.code-font-btn:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.theme-btn.active,
+.color-scheme-btn.active,
+.font-size-btn.active,
+.code-font-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Color scheme specific styling */
+.color-scheme-btn.default {
+  border-left: 4px solid #0078d4;
+}
+
+.color-scheme-btn.solarized {
+  border-left: 4px solid #2aa198;
+}
+
+.color-scheme-btn.nord {
+  border-left: 4px solid #88c0d0;
+}
+
+.color-scheme-btn.github {
+  border-left: 4px solid #0366d6;
+}
+
+.color-scheme-btn.dracula {
+  border-left: 4px solid #bd93f9;
+}
+
+.code-preview {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.code-preview pre {
+  margin: 0;
+  padding: 12px;
+  background-color: var(--editor-bg);
+  font-family: var(--code-font-family);
+  font-size: var(--code-font-size);
+  overflow-x: auto;
+}
+
+.theme-settings-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+}
+
+.reset-btn,
+.close-settings-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.reset-btn {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.close-settings-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .theme-settings-container {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .theme-mode-buttons,
+  .color-scheme-buttons,
+  .font-size-buttons,
+  .code-font-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.font-download-note {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  font-style: italic;
+} 

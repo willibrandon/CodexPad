@@ -1,6 +1,8 @@
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
+const fs = require('fs');
+const https = require('https');
 
 // Global references to prevent garbage collection
 let mainWindow;
@@ -145,6 +147,69 @@ function updateSyncStatus() {
   }
 }
 
+// Function to download file from URL to destination
+function downloadFile(url, dest) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(dest);
+    
+    https.get(url, response => {
+      response.pipe(file);
+      
+      file.on('finish', () => {
+        file.close();
+        resolve();
+      });
+    }).on('error', err => {
+      fs.unlink(dest);
+      reject(err);
+    });
+  });
+}
+
+// Check and download fonts when the app starts
+async function setupFonts() {
+  const userDataPath = app.getPath('userData');
+  const fontsDir = path.join(userDataPath, 'fonts');
+  
+  // Create fonts directory if it doesn't exist
+  if (!fs.existsSync(fontsDir)) {
+    fs.mkdirSync(fontsDir, { recursive: true });
+  }
+  
+  const fonts = [
+    {
+      name: 'FiraCode-Regular.woff2',
+      url: 'https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/woff2/FiraCode-Regular.woff2'
+    },
+    {
+      name: 'JetBrainsMono-Regular.woff2',
+      url: 'https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2'
+    },
+    {
+      name: 'CascadiaCode-Regular.woff2',
+      url: 'https://cdn.jsdelivr.net/gh/microsoft/cascadia-code@main/fonts/CascadiaCode-Regular.woff2'
+    }
+  ];
+  
+  // Check and download each font if needed
+  for (const font of fonts) {
+    const fontPath = path.join(fontsDir, font.name);
+    
+    if (!fs.existsSync(fontPath)) {
+      try {
+        console.log(`Downloading font: ${font.name}`);
+        await downloadFile(font.url, fontPath);
+        console.log(`Downloaded font: ${font.name}`);
+      } catch (error) {
+        console.error(`Error downloading font ${font.name}:`, error);
+      }
+    }
+  }
+  
+  // Pass the fonts directory path to the renderer process
+  global.fontsPath = fontsDir;
+}
+
 app.whenReady().then(() => {
   // Import services here to ensure app is ready
   snippetService = require('../src/services/snippetService');
@@ -157,6 +222,14 @@ app.whenReady().then(() => {
     // Set up periodic sync status updates
     setInterval(updateSyncStatus, 5000);
   }
+  
+  setupFonts().catch(err => console.error('Error setting up fonts:', err));
+  
+  // Add IPC handler for font paths
+  ipcMain.handle('get-fonts-path', () => {
+    const userDataPath = app.getPath('userData');
+    return path.join(userDataPath, 'fonts');
+  });
   
   createWindow();
 });

@@ -5,7 +5,10 @@ import SnippetList from './components/SnippetList';
 import SnippetEditor from './components/SnippetEditor';
 import TabsBar from './components/TabsBar';
 import SyncStatus from './components/SyncStatus';
+import ThemeToggle from './components/ThemeToggle';
+import ThemeStatus from './components/ThemeStatus';
 import { TabsProvider, useTabs } from './components/TabsContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { tagSuggestionService } from './services/ai/tagSuggestionService';
 import { summarizationService } from './services/ai/summarizationService';
 import { SearchService } from './services/search/searchService';
@@ -164,9 +167,12 @@ const AppContent: React.FC = () => {
       <header className="app-header">
         <h1 className="app-title">CodexPad</h1>
         <SearchBar onSearch={handleSearch} />
-        <button className="new-snippet-btn" onClick={handleCreateNewSnippet}>
-          New Snippet
-        </button>
+        <div className="header-actions">
+          <ThemeToggle />
+          <button className="new-snippet-btn" onClick={handleCreateNewSnippet}>
+            New Snippet
+          </button>
+        </div>
       </header>
       
       <div className="app-container">
@@ -186,6 +192,7 @@ const AppContent: React.FC = () => {
           />
           
           <SyncStatus />
+          <ThemeStatus />
         </div>
       </div>
     </div>
@@ -195,9 +202,11 @@ const AppContent: React.FC = () => {
 // Main App component wrapped with TabsProvider
 function App() {
   return (
-    <TabsProvider>
-      <AppContent />
-    </TabsProvider>
+    <ThemeProvider>
+      <TabsProvider>
+        <AppContent />
+      </TabsProvider>
+    </ThemeProvider>
   );
 }
 
