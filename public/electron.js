@@ -260,3 +260,8 @@ ipcMain.handle('sync:toggle', async (event, enable) => {
   
   return { enabled: syncEnabled };
 });
+
+ipcMain.handle('sync:getLogEntries', async () => {
+  if (!syncEnabled || !syncService) return [];
+  return syncService.getLogEntries();
+});

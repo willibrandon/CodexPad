@@ -16,7 +16,8 @@ contextBridge.exposeInMainWorld(
         'sync:push',
         'sync:pull',
         'sync:status',
-        'sync:toggle'
+        'sync:toggle',
+        'sync:getLogEntries'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
@@ -26,7 +27,8 @@ contextBridge.exposeInMainWorld(
       const validChannels = [
         'create-new-snippet', 
         'sync:update', 
-        'sync:connection-status'
+        'sync:connection-status',
+        'sync:log-entry'
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender` 
@@ -37,7 +39,8 @@ contextBridge.exposeInMainWorld(
       const validChannels = [
         'create-new-snippet', 
         'sync:update', 
-        'sync:connection-status'
+        'sync:connection-status',
+        'sync:log-entry'
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.removeAllListeners(channel);

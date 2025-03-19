@@ -19,6 +19,14 @@ interface SyncUpdateEvent {
   updatedAt: string;
 }
 
+interface SyncLogEntry {
+  id: string;
+  timestamp: string;
+  type: 'info' | 'success' | 'error' | 'warning';
+  message: string;
+  details?: string;
+}
+
 declare global {
   interface Window {
     electron: IElectronAPI;

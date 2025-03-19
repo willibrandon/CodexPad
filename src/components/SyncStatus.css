@@ -53,6 +53,23 @@
   margin-right: 10px;
 }
 
+.sync-log-button {
+  background: none;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+  color: #3498db;
+  font-size: 0.75rem;
+  padding: 3px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 10px;
+}
+
+.sync-log-button:hover {
+  background-color: #3498db;
+  color: white;
+}
+
 .sync-toggle {
   margin-left: auto;
   background: none;

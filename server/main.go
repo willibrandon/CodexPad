@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -22,6 +23,7 @@ var (
 		},
 	}
 	syncManager *SyncManager
+	syncLogger  *log.Logger
 )
 
 // handleSync handles WebSocket connections
@@ -29,29 +31,45 @@ func handleSync(c *gin.Context) {
 	// Upgrade HTTP connection to WebSocket
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Printf("Failed to upgrade connection: %v", err)
+		syncLogger.Printf("[ERROR] Failed to upgrade connection: %v", err)
 		return
 	}
 
 	// Generate client ID
 	clientID := uuid.New().String()
-	log.Printf("New sync connection established")
+	syncLogger.Printf("[INFO] New sync connection established (ID: %s)", clientID)
 
 	// Handle client in sync manager
 	syncManager.HandleClient(clientID, conn)
 }
 
 func main() {
+	// Create and configure server logger
+	logFile, err := os.OpenFile("sync_server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+	defer logFile.Close()
+	
+	// Create a multi-writer that writes to both console and file
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	syncLogger = log.New(multiWriter, "", log.LstdFlags)
+	syncLogger.SetPrefix("[SYNC] ")
+	
+	syncLogger.Println("Starting CodexPad sync server...")
+
 	// Initialize database
 	dbPath := getDBPath()
+	syncLogger.Printf("Using database at: %s", dbPath)
 	db, err := NewDBManager(dbPath)
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		syncLogger.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer db.Close()
 
 	// Initialize sync manager
-	syncManager = NewSyncManager(db)
+	syncManager = NewSyncManager(db, syncLogger)
+	syncLogger.Println("SyncManager initialized")
 
 	// Set up router
 	router := gin.Default()
@@ -83,9 +101,9 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Printf("Starting server on port %s", port)
+	syncLogger.Printf("Starting server on port %s", port)
 	if err := router.Run(":" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		syncLogger.Fatalf("Failed to start server: %v", err)
 	}
 }
 
