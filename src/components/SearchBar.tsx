@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
 import './SearchBar.css';
 
 interface SearchBarProps {
@@ -10,6 +11,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const [showHelp, setShowHelp] = useState(false);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const helpPanelRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const { setSearchFocused } = useKeyboardShortcuts();
 
   // Close help panel when clicking outside
   useEffect(() => {
@@ -39,20 +42,34 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     setShowHelp(!showHelp);
   };
 
+  // Update search focused state
+  const handleFocus = () => {
+    setSearchFocused(true);
+  };
+
+  const handleBlur = () => {
+    setSearchFocused(false);
+  };
+
   return (
     <div className="search-container">
       <input
+        ref={searchInputRef}
         type="text"
         className="search-input"
         placeholder="Search snippets... (press ? for help)"
         value={searchTerm}
         onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         onKeyDown={(e) => {
           if (e.key === '?' && !showHelp) {
             e.preventDefault();
             setShowHelp(true);
           } else if (e.key === 'Escape' && showHelp) {
             setShowHelp(false);
+          } else if (e.key === 'Escape' && !showHelp) {
+            searchInputRef.current?.blur();
           }
         }}
       />

@@ -7,8 +7,11 @@ import TabsBar from './components/TabsBar';
 import SyncStatus from './components/SyncStatus';
 import ThemeToggle from './components/ThemeToggle';
 import ThemeStatus from './components/ThemeStatus';
+import CommandPalette from './components/CommandPalette';
+import ShortcutsHelp from './components/ShortcutsHelp';
 import { TabsProvider, useTabs } from './components/TabsContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { KeyboardShortcutsProvider, useKeyboardShortcuts } from './contexts/KeyboardShortcutsContext';
 import { tagSuggestionService } from './services/ai/tagSuggestionService';
 import { summarizationService } from './services/ai/summarizationService';
 import { SearchService } from './services/search/searchService';
@@ -36,6 +39,12 @@ const AppContent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
   const { openTab, activeTabId, openTabs, updateTabContent, closeTab, tabExists } = useTabs();
+  const { 
+    commandPaletteOpen, 
+    setCommandPaletteOpen, 
+    shortcutsHelpOpen, 
+    setShortcutsHelpOpen 
+  } = useKeyboardShortcuts();
 
   // Get the currently active snippet
   const activeSnippet = openTabs.find(tab => tab.id === activeTabId) || null;
@@ -171,6 +180,14 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleCloseCommandPalette = () => {
+    setCommandPaletteOpen(false);
+  };
+
+  const handleCloseShortcutsHelp = () => {
+    setShortcutsHelpOpen(false);
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -205,16 +222,28 @@ const AppContent: React.FC = () => {
           <ThemeStatus />
         </div>
       </div>
+
+      <CommandPalette 
+        isOpen={commandPaletteOpen}
+        onClose={handleCloseCommandPalette}
+      />
+
+      <ShortcutsHelp
+        isOpen={shortcutsHelpOpen}
+        onClose={handleCloseShortcutsHelp}
+      />
     </div>
   );
 };
 
-// Main App component wrapped with TabsProvider
+// Main App component wrapped with providers
 function App() {
   return (
     <ThemeProvider>
       <TabsProvider>
-        <AppContent />
+        <KeyboardShortcutsProvider>
+          <AppContent />
+        </KeyboardShortcutsProvider>
       </TabsProvider>
     </ThemeProvider>
   );
