@@ -1,100 +1,138 @@
 .sync-status {
   display: flex;
   align-items: center;
-  padding: 0 10px;
-  font-size: 0.8rem;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
-  height: 30px;
-  background-color: var(--editor-bg);
 }
 
 .sync-indicator {
   display: flex;
   align-items: center;
-  margin-right: 10px;
+  margin-right: 12px;
 }
 
 .sync-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-right: 5px;
+  margin-right: 6px;
 }
 
 .sync-dot.connected {
-  background-color: #2ecc71; /* Keep green for clear status indication */
-  box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+  background-color: var(--success-color);
+  box-shadow: 0 0 5px var(--success-color);
 }
 
 .sync-dot.connecting {
-  background-color: #f39c12; /* Keep orange for clear status indication */
+  background-color: var(--warning-color);
   animation: pulse 1.5s infinite;
 }
 
 .sync-dot.disabled {
-  background-color: var(--text-light);
+  background-color: var(--text-muted);
 }
 
 .sync-text {
-  color: var(--text-color);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .sync-pending {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--warning-color);
+  color: var(--bg-primary);
   font-size: 0.7rem;
-  border-radius: 10px;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 2px 6px;
+  margin-right: 12px;
   min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  margin-right: 10px;
+  text-align: center;
 }
 
-.sync-log-button {
-  background: none;
-  border: 1px solid var(--primary-color);
-  border-radius: 4px;
-  color: var(--primary-color);
-  font-size: 0.75rem;
-  padding: 3px 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: 10px;
-}
-
-.sync-log-button:hover {
-  background-color: var(--primary-color);
-  color: white;
-}
-
+.sync-log-button,
+.sync-backup-button,
 .sync-toggle {
-  margin-left: auto;
-  background: none;
-  border: 1px solid var(--primary-color);
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  margin-left: 8px;
+  background-color: var(--bg-button);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   border-radius: 4px;
-  color: var(--primary-color);
-  font-size: 0.75rem;
-  padding: 3px 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
+.sync-log-button:hover,
+.sync-backup-button:hover,
 .sync-toggle:hover {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--bg-button-hover);
+}
+
+.sync-log-button:active,
+.sync-backup-button:active,
+.sync-toggle:active {
+  transform: translateY(1px);
+}
+
+.sync-log-button:disabled,
+.sync-backup-button:disabled,
+.sync-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sync-backup-button {
+  background-color: var(--accent-color);
+  color: var(--bg-primary);
+}
+
+.sync-backup-button:hover {
+  background-color: var(--accent-color-hover);
+}
+
+.backup-status-message {
+  position: fixed;
+  bottom: 50px;
+  right: 20px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.backup-status-message.success {
+  background-color: var(--success-color);
+  color: var(--bg-primary);
+}
+
+.backup-status-message.error {
+  background-color: var(--error-color);
+  color: var(--bg-primary);
 }
 
 @keyframes pulse {
   0% {
-    opacity: 0.4;
+    opacity: 0.5;
   }
   50% {
     opacity: 1;
   }
   100% {
-    opacity: 0.4;
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 } 

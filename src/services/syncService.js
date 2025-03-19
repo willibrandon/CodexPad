@@ -301,6 +301,35 @@ class SyncService {
     }
   }
 
+  // Check connection status
+  isConnectedToServer() {
+    return this.isConnected;
+  }
+  
+  // Get server URL (extract HTTP URL from WebSocket URL)
+  getServerUrl() {
+    // Convert WebSocket URL to HTTP URL
+    if (this.serverUrl) {
+      return this.serverUrl.replace('ws://', 'http://').replace('wss://', 'https://').replace('/sync', '');
+    }
+    return null;
+  }
+
+  // Force disconnect (for testing or cleanup)
+  disconnect() {
+    if (this.ws) {
+      this.log('info', 'Manually disconnected from sync server');
+      this.ws.terminate();
+      this.ws = null;
+    }
+    this.isConnected = false;
+  }
+
+  // Log a sync event (renamed from log for clarity)
+  logEvent(type, message, details = '') {
+    return this.log(type, message, details);
+  }
+
   // Log a sync event
   log(type, message, details = '') {
     const logEntry = {
@@ -333,24 +362,9 @@ class SyncService {
     }
   }
 
-  // Check connection status
-  isConnectedToServer() {
-    return this.isConnected;
-  }
-
   // Get all log entries
   getLogEntries() {
     return this.logEntries;
-  }
-
-  // Force disconnect (for testing or cleanup)
-  disconnect() {
-    if (this.ws) {
-      this.log('info', 'Manually disconnected from sync server');
-      this.ws.terminate();
-      this.ws = null;
-    }
-    this.isConnected = false;
   }
 }
 

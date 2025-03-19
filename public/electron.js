@@ -338,3 +338,55 @@ ipcMain.handle('sync:getLogEntries', async () => {
   if (!syncEnabled || !syncService) return [];
   return syncService.getLogEntries();
 });
+
+// Add ipcMain handler for manual backup
+ipcMain.handle('sync:backup', async () => {
+  if (!syncEnabled) {
+    return { success: false, error: 'Sync is disabled' };
+  }
+  
+  if (!syncService.isConnectedToServer()) {
+    return { success: false, error: 'Not connected to server' };
+  }
+
+  try {
+    // Get server URL from sync service config
+    const serverUrl = syncService.getServerUrl();
+    if (!serverUrl) {
+      return { success: false, error: 'Server URL not configured' };
+    }
+
+    // Make a POST request to the backup endpoint
+    const response = await fetch(`${serverUrl}/backup`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return { 
+        success: false, 
+        error: `Server returned error (${response.status}): ${errorText}` 
+      };
+    }
+
+    const result = await response.json();
+    
+    // Add to sync log
+    syncService.logEvent('info', 'Manual backup created', result.message);
+    
+    return { 
+      success: true, 
+      message: result.message || 'Backup created successfully' 
+    };
+  } catch (error) {
+    console.error('Failed to trigger backup:', error);
+    
+    // Add to sync log
+    syncService.logEvent('error', 'Manual backup failed', error.message);
+    
+    return { 
+      success: false, 
+      error: error.message || 'Unknown error during backup' 
+    };
+  }
+});

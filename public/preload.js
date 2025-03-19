@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld(
         'sync:status',
         'sync:toggle',
         'sync:getLogEntries',
+        'sync:backup',
         'get-fonts-path'
       ];
       if (validChannels.includes(channel)) {

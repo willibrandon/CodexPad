@@ -4,8 +4,13 @@ import SyncLog from './SyncLog';
 import './SyncStatus.css';
 
 const SyncStatus: React.FC = () => {
-  const { status, toggleSync } = useSyncStatus();
+  const { status, toggleSync, triggerBackup } = useSyncStatus();
   const [showSyncLog, setShowSyncLog] = useState(false);
+  const [backupStatus, setBackupStatus] = useState<{
+    inProgress: boolean;
+    message?: string;
+    isError?: boolean;
+  }>({ inProgress: false });
 
   const handleToggleSync = () => {
     toggleSync();
@@ -17,6 +22,38 @@ const SyncStatus: React.FC = () => {
 
   const handleCloseSyncLog = () => {
     setShowSyncLog(false);
+  };
+
+  const handleBackup = async () => {
+    setBackupStatus({ inProgress: true });
+    try {
+      const result = await triggerBackup();
+      
+      if (result.success) {
+        setBackupStatus({ 
+          inProgress: false, 
+          message: result.message || 'Backup completed successfully',
+          isError: false 
+        });
+      } else {
+        setBackupStatus({ 
+          inProgress: false, 
+          message: result.error || 'Backup failed',
+          isError: true 
+        });
+      }
+      
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        setBackupStatus(prev => ({ ...prev, message: undefined }));
+      }, 3000);
+    } catch (error) {
+      setBackupStatus({ 
+        inProgress: false, 
+        message: 'Unexpected error during backup',
+        isError: true 
+      });
+    }
   };
 
   return (
@@ -58,6 +95,15 @@ const SyncStatus: React.FC = () => {
         </button>
         
         <button 
+          className="sync-backup-button" 
+          onClick={handleBackup}
+          disabled={backupStatus.inProgress || !status.connected}
+          title={status.connected ? "Create a manual backup" : "Connect to server to enable backups"}
+        >
+          {backupStatus.inProgress ? 'Backing up...' : 'Backup'}
+        </button>
+        
+        <button 
           className="sync-toggle" 
           onClick={handleToggleSync}
           title={status.enabled ? 'Turn off sync' : 'Turn on sync'}
@@ -65,6 +111,12 @@ const SyncStatus: React.FC = () => {
           {status.enabled ? 'Disable Sync' : 'Enable Sync'}
         </button>
       </div>
+      
+      {backupStatus.message && (
+        <div className={`backup-status-message ${backupStatus.isError ? 'error' : 'success'}`}>
+          {backupStatus.message}
+        </div>
+      )}
       
       <SyncLog visible={showSyncLog} onClose={handleCloseSyncLog} />
     </>

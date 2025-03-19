@@ -60,6 +60,20 @@ export function useSyncStatus() {
     return status.enabled;
   }, [status.enabled]);
 
+  // Trigger a manual backup
+  const triggerBackup = useCallback(async () => {
+    if (window.electron) {
+      try {
+        const result = await window.electron.invoke('sync:backup');
+        return { success: true, message: result.message };
+      } catch (error: any) {
+        console.error('Failed to trigger backup:', error);
+        return { success: false, error: error.message };
+      }
+    }
+    return { success: false, error: 'Electron API not available' };
+  }, []);
+
   // Force push a snippet to the server
   const pushSnippet = useCallback(async (snippet: any) => {
     if (window.electron) {
@@ -90,6 +104,7 @@ export function useSyncStatus() {
     status,
     toggleSync,
     pushSnippet,
-    pullSnippet
+    pullSnippet,
+    triggerBackup
   };
 } 
