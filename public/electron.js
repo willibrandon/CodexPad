@@ -9,6 +9,7 @@ const { marked } = require('marked');
 let mainWindow;
 let tray;
 let syncEnabled = true; // Default to enabled
+let syncStatusInterval;
 
 function createWindow() {
   // Create the browser window
@@ -137,7 +138,16 @@ let syncService;
 
 // Send sync status updates to renderer
 function updateSyncStatus() {
-  if (mainWindow) {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    // Clear interval if window is gone
+    if (syncStatusInterval) {
+      clearInterval(syncStatusInterval);
+      syncStatusInterval = null;
+    }
+    return;
+  }
+
+  try {
     const status = {
       connected: syncEnabled && syncService.isConnectedToServer(),
       pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0,
@@ -145,6 +155,13 @@ function updateSyncStatus() {
     };
     
     mainWindow.webContents.send('sync:connection-status', status);
+  } catch (error) {
+    console.error('Error updating sync status:', error);
+    // Clear interval on error to prevent spam
+    if (syncStatusInterval) {
+      clearInterval(syncStatusInterval);
+      syncStatusInterval = null;
+    }
   }
 }
 
@@ -221,7 +238,7 @@ app.whenReady().then(() => {
     syncService.initialize();
     
     // Set up periodic sync status updates
-    setInterval(updateSyncStatus, 5000);
+    syncStatusInterval = setInterval(updateSyncStatus, 5000);
   }
   
   setupFonts().catch(err => console.error('Error setting up fonts:', err));
@@ -237,6 +254,12 @@ app.whenReady().then(() => {
 
 // Handle app events
 app.on('window-all-closed', () => {
+  // Clear sync status interval
+  if (syncStatusInterval) {
+    clearInterval(syncStatusInterval);
+    syncStatusInterval = null;
+  }
+  
   if (process.platform !== 'darwin') {
     app.quit();
   }

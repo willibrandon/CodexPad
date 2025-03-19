@@ -17,6 +17,8 @@ class SyncService {
     this.pendingChanges = [];
     this.messageHandlers = {};
     this.logEntries = [];
+    this.maxLogEntries = 1000; // Limit log entries to prevent memory bloat
+    this.reconnectTimeout = null;
   }
 
   // Initialize the sync service
@@ -38,14 +40,37 @@ class SyncService {
     this.registerMessageHandlers();
     
     // Load any stored log entries
-    this.logEntries = db.get('syncLog') || [];
+    const storedLogs = db.get('syncLog') || [];
+    this.logEntries = storedLogs.slice(-this.maxLogEntries); // Only keep last N entries
+  }
+
+  // Clean up WebSocket connection
+  cleanup() {
+    if (this.ws) {
+      // Remove all listeners before closing
+      this.ws.removeAllListeners('open');
+      this.ws.removeAllListeners('message');
+      this.ws.removeAllListeners('close');
+      this.ws.removeAllListeners('error');
+      
+      // Close the connection
+      this.ws.terminate();
+      this.ws = null;
+    }
+
+    // Clear any pending reconnect timeout
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+
+    this.isConnected = false;
   }
 
   // Connect to the sync server
   connect() {
-    if (this.ws) {
-      this.ws.terminate();
-    }
+    // Clean up any existing connection first
+    this.cleanup();
 
     try {
       this.log('info', 'Connecting to sync server', `Server URL: ${this.serverUrl}`);
@@ -106,7 +131,14 @@ class SyncService {
     this.log('info', `Attempting to reconnect in ${Math.round(delay / 1000)}s`, `Attempt ${this.reconnectAttempts} of ${this.maxReconnectAttempts}`);
     console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
     
-    setTimeout(() => {
+    // Clear any existing timeout
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+    }
+    
+    // Set new timeout
+    this.reconnectTimeout = setTimeout(() => {
+      this.reconnectTimeout = null;
       this.connect();
     }, delay);
   }
@@ -315,22 +347,13 @@ class SyncService {
     return null;
   }
 
-  // Force disconnect (for testing or cleanup)
+  // Disconnect and clean up
   disconnect() {
-    if (this.ws) {
-      this.log('info', 'Manually disconnected from sync server');
-      this.ws.terminate();
-      this.ws = null;
-    }
-    this.isConnected = false;
+    this.cleanup();
+    this.log('info', 'Disconnected from sync server');
   }
 
-  // Log a sync event (renamed from log for clarity)
-  logEvent(type, message, details = '') {
-    return this.log(type, message, details);
-  }
-
-  // Log a sync event
+  // Log an event and manage log entry limits
   log(type, message, details = '') {
     const logEntry = {
       id: uuid.v4(),
@@ -340,13 +363,16 @@ class SyncService {
       details
     };
 
-    // Add to in-memory log
-    this.logEntries = [logEntry, ...this.logEntries].slice(0, 1000); // Keep last 1000 entries
-    
-    // Store in database
+    // Add to in-memory log, maintaining size limit
+    this.logEntries.push(logEntry);
+    if (this.logEntries.length > this.maxLogEntries) {
+      this.logEntries = this.logEntries.slice(-this.maxLogEntries);
+    }
+
+    // Store in database, also maintaining size limit
     db.set('syncLog', this.logEntries);
-    
-    // Send to renderer process
+
+    // Send to renderer if available
     this.sendLogEntryToRenderer(logEntry);
   }
 
@@ -362,9 +388,9 @@ class SyncService {
     }
   }
 
-  // Get all log entries
+  // Get log entries with limit
   getLogEntries() {
-    return this.logEntries;
+    return this.logEntries.slice(-100); // Return only last 100 entries for display
   }
 }
 
