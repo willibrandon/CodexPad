@@ -1,0 +1,247 @@
+.import-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.import-dialog {
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  width: 500px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: scaleIn 0.2s ease-out;
+  border: 1px solid var(--border-color);
+}
+
+.import-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.import-dialog-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.import-dialog-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  margin: 0;
+}
+
+.import-dialog-close:hover {
+  color: var(--text-primary);
+}
+
+.import-dialog-content {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.import-description {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.import-formats {
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.import-formats li {
+  margin-bottom: 4px;
+}
+
+.import-dropzone {
+  border: 2px dashed var(--border-color);
+  border-radius: 6px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.import-dropzone.active {
+  border-color: var(--accent-color);
+  background-color: var(--bg-hover);
+}
+
+.import-dropzone.has-files {
+  border-style: solid;
+  border-color: var(--border-color);
+  padding: 15px;
+}
+
+.file-input {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.dropzone-icon {
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+}
+
+.dropzone-text {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.browse-link {
+  color: var(--accent-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.files-selected {
+  display: flex;
+  align-items: center;
+}
+
+.files-icon {
+  color: var(--accent-color);
+  margin-right: 15px;
+}
+
+.files-info {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.files-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.change-files-btn {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  margin-left: 10px;
+}
+
+.change-files-btn:hover {
+  text-decoration: underline;
+}
+
+.import-error {
+  color: var(--error-color);
+  margin: 10px 0;
+  padding: 10px;
+  background-color: var(--error-bg-color, rgba(220, 53, 69, 0.1));
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.import-success {
+  color: var(--success-color);
+  margin: 10px 0;
+  padding: 10px;
+  background-color: var(--success-bg-color, rgba(40, 167, 69, 0.1));
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.import-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 20px;
+  border-top: 1px solid var(--border-color);
+  gap: 10px;
+}
+
+.import-cancel-btn, .import-submit-btn {
+  padding: 8px 15px;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.import-cancel-btn {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.import-cancel-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.import-submit-btn {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.import-submit-btn:hover:not(:disabled) {
+  background-color: var(--accent-color-hover);
+}
+
+.import-submit-btn.disabled,
+.import-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+} 

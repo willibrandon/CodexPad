@@ -9,6 +9,7 @@ import ThemeToggle from './components/ThemeToggle';
 import ThemeStatus from './components/ThemeStatus';
 import CommandPalette from './components/CommandPalette';
 import ShortcutsHelp from './components/ShortcutsHelp';
+import ImportDialog from './components/ImportDialog';
 import { TabsProvider, useTabs } from './components/TabsContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { KeyboardShortcutsProvider, useKeyboardShortcuts } from './contexts/KeyboardShortcutsContext';
@@ -38,6 +39,7 @@ const AppContent: React.FC = () => {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const { openTab, activeTabId, openTabs, updateTabContent, closeTab, tabExists } = useTabs();
   const { 
     commandPaletteOpen, 
@@ -180,6 +182,52 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleOpenImportDialog = () => {
+    setImportDialogOpen(true);
+  };
+
+  const handleCloseImportDialog = () => {
+    setImportDialogOpen(false);
+  };
+
+  const handleImportSnippets = async (importedSnippets: Partial<Snippet>[]) => {
+    try {
+      if (window.electron) {
+        const newSnippets: Snippet[] = [];
+        
+        // Create each imported snippet
+        for (const importedSnippet of importedSnippets) {
+          const title = importedSnippet.title || 'Imported Snippet';
+          const content = importedSnippet.content || '';
+          const tags = importedSnippet.tags || [];
+          
+          const id = await window.electron.invoke('snippets:create', title, content, tags);
+          const newSnippet = {
+            id,
+            title,
+            content,
+            tags,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            favorite: false
+          };
+          
+          newSnippets.push(newSnippet);
+        }
+        
+        // Update local state
+        setSnippets(prev => [...newSnippets, ...prev]);
+        
+        // Open the first imported snippet in a tab if there is one
+        if (newSnippets.length > 0) {
+          openTab(newSnippets[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to import snippets:', error);
+    }
+  };
+
   const handleCloseCommandPalette = () => {
     setCommandPaletteOpen(false);
   };
@@ -195,6 +243,9 @@ const AppContent: React.FC = () => {
         <SearchBar onSearch={handleSearch} />
         <div className="header-actions">
           <ThemeToggle />
+          <button className="import-btn" onClick={handleOpenImportDialog} title="Import from other apps">
+            Import
+          </button>
           <button className="new-snippet-btn" onClick={handleCreateNewSnippet}>
             New Snippet
           </button>
@@ -231,6 +282,12 @@ const AppContent: React.FC = () => {
       <ShortcutsHelp
         isOpen={shortcutsHelpOpen}
         onClose={handleCloseShortcutsHelp}
+      />
+
+      <ImportDialog
+        isOpen={importDialogOpen}
+        onClose={handleCloseImportDialog}
+        onImport={handleImportSnippets}
       />
     </div>
   );
