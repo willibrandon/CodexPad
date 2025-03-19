@@ -24,39 +24,55 @@
   background-color: white;
 }
 
+/* Minimal toolbar */
 .toolbar {
   display: flex;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--background-color);
-  flex-wrap: wrap;
+  padding: 0;
+  height: 36px;
+}
+
+.toolbar.minimal {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
 }
 
 .toolbar-spacer {
   flex-grow: 1;
 }
 
-.toolbar-separator {
-  width: 1px;
-  height: 24px;
-  margin: 8px 4px;
-  background-color: var(--border-color);
-}
-
 .toolbar-btn {
-  padding: 8px 16px;
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 0.9em;
-  border-right: 1px solid var(--border-color);
+  font-size: 0.85em;
+  height: 36px;
+  width: 36px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
+  color: #555;
+  transition: all 0.2s ease;
+}
+
+.toolbar-btn .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .toolbar-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
+  color: #000;
 }
 
 .toolbar-btn.active {
@@ -64,10 +80,67 @@
   color: white;
 }
 
-.fullscreen-btn {
-  border-left: 1px solid var(--border-color);
-  border-right: none;
-  font-size: 1.2em;
+/* Dropdown styles */
+.format-dropdown,
+.code-snippets-dropdown {
+  position: relative;
+  height: 36px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 36px;
+  left: 0;
+  background-color: white;
+  min-width: 200px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  z-index: 10;
+  border-radius: 4px;
+  padding: 8px 0;
+  margin-top: 2px;
+}
+
+.dropdown-section {
+  padding: 0 8px;
+}
+
+.dropdown-title {
+  display: block;
+  font-size: 0.75em;
+  color: #888;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+
+.dropdown-content button {
+  color: #333;
+  padding: 6px 16px;
+  text-decoration: none;
+  display: block;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9em;
+  border-radius: 2px;
+}
+
+.dropdown-content button:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 6px 0;
+}
+
+.format-dropdown:hover .dropdown-content,
+.code-snippets-dropdown:hover .dropdown-content {
+  display: block;
 }
 
 .editor-container {
@@ -165,52 +238,6 @@
   font-weight: 600;
 }
 
-.code-snippets-dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.code-btn {
-  color: #444;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.dropdown-content button {
-  color: black;
-  padding: 8px 12px;
-  text-decoration: none;
-  display: block;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-}
-
-.dropdown-content button:hover {
-  background-color: #ddd;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background-color: #e0e0e0;
-  margin: 4px 0;
-}
-
-.code-snippets-dropdown:hover .dropdown-content {
-  display: block;
-}
-
 /* Add styles for syntax highlighting of .NET languages */
 pre[class*="language-csharp"],
 pre[class*="language-fsharp"],
@@ -231,25 +258,6 @@ pre[class*="language-vbnet"] {
 
 .markdown-preview code {
   font-family: 'Cascadia Code', 'Menlo', 'Monaco', 'Courier New', monospace;
-}
-
-/* Make toolbar look better on smaller screens */
-@media (max-width: 768px) {
-  .toolbar {
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-  
-  .toolbar-btn {
-    padding: 8px 10px;
-    min-width: 30px;
-    font-size: 0.8em;
-  }
-  
-  .toolbar-separator {
-    margin: 6px 2px;
-    height: 20px;
-  }
 }
 
 /* Keyboard help panel */
@@ -341,6 +349,22 @@ pre[class*="language-vbnet"] {
   margin: 0;
 }
 
-.help-btn {
-  font-weight: bold;
+/* Make toolbar look better on smaller screens */
+@media (max-width: 768px) {
+  .toolbar-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .toolbar-group:not(:first-child):not(:last-child) {
+    display: flex;
+    overflow-x: auto;
+    max-width: 60%;
+    -ms-overflow-style: none;  /* Hide scrollbar in IE and Edge */
+    scrollbar-width: none;  /* Hide scrollbar in Firefox */
+  }
+  
+  .toolbar-group::-webkit-scrollbar {
+    display: none; /* Hide scrollbar in Chrome/Safari */
+  }
 } 

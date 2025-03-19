@@ -252,145 +252,124 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
   return (
     <div className={`markdown-editor ${isFullscreen ? 'fullscreen' : ''}`}>
-      <div className="toolbar">
-        <button
-          className={`toolbar-btn ${!isPreview ? 'active' : ''}`}
-          onClick={() => setIsPreview(false)}
-          title="Edit (Ctrl+Shift+E)"
-        >
-          Edit
-        </button>
-        <button
-          className={`toolbar-btn ${isPreview ? 'active' : ''}`}
-          onClick={() => setIsPreview(true)}
-          title="Preview (Ctrl+Shift+P)"
-        >
-          Preview
-        </button>
+      <div className="toolbar minimal">
+        <div className="toolbar-group">
+          <button
+            className={`toolbar-btn ${!isPreview ? 'active' : ''}`}
+            onClick={() => setIsPreview(false)}
+            title="Edit (Ctrl+Shift+E)"
+          >
+            <span className="icon">✎</span>
+          </button>
+          <button
+            className={`toolbar-btn ${isPreview ? 'active' : ''}`}
+            onClick={() => setIsPreview(true)}
+            title="Preview (Ctrl+Shift+P)"
+          >
+            <span className="icon">👁</span>
+          </button>
+        </div>
         
         {!isPreview && (
-          <>
-            <div className="toolbar-separator"></div>
-            
+          <div className="toolbar-group">
             <button 
               className="toolbar-btn" 
               onClick={() => formatText('bold')}
               title="Bold (Ctrl+B)"
             >
-              B
+              <span className="icon">B</span>
             </button>
             <button 
               className="toolbar-btn" 
               onClick={() => formatText('italic')}
               title="Italic (Ctrl+I)"
             >
-              I
+              <span className="icon">I</span>
             </button>
             <button 
               className="toolbar-btn" 
               onClick={() => formatText('heading')}
               title="Heading (Ctrl+Alt+1-6 for heading levels)"
             >
-              H
+              <span className="icon">H</span>
             </button>
             
-            <div className="toolbar-separator"></div>
+            <div className="format-dropdown">
+              <button className="toolbar-btn" title="Format">
+                <span className="icon">⋮</span>
+              </button>
+              <div className="dropdown-content">
+                <div className="dropdown-section">
+                  <span className="dropdown-title">List</span>
+                  <button onClick={() => formatText('bulletList')}>• Bullet List</button>
+                  <button onClick={() => formatText('numberedList')}>1. Numbered List</button>
+                  <button onClick={() => formatText('quote')}>Quote</button>
+                </div>
+                <div className="dropdown-divider"></div>
+                <div className="dropdown-section">
+                  <span className="dropdown-title">Insert</span>
+                  <button onClick={() => formatText('link')}>Link</button>
+                  <button onClick={() => formatText('image')}>Image</button>
+                  <button onClick={() => formatText('table')}>Table</button>
+                  <button onClick={() => formatText('horizontalRule')}>Horizontal Rule</button>
+                </div>
+              </div>
+            </div>
             
-            <button 
-              className="toolbar-btn" 
-              onClick={() => formatText('bulletList')}
-              title="Bullet List"
-            >
-              •
-            </button>
-            <button 
-              className="toolbar-btn" 
-              onClick={() => formatText('numberedList')}
-              title="Numbered List"
-            >
-              1.
-            </button>
-            <button 
-              className="toolbar-btn" 
-              onClick={() => formatText('quote')}
-              title="Blockquote"
-            >
-              "
-            </button>
-            
-            <div className="toolbar-separator"></div>
-            
-            <button 
-              className="toolbar-btn" 
-              onClick={() => formatText('link')}
-              title="Link (Ctrl+K)"
-            >
-              🔗
-            </button>
-            <button 
-              className="toolbar-btn" 
-              onClick={() => formatText('image')}
-              title="Image"
-            >
-              🖼
-            </button>
-            <button 
-              className="toolbar-btn" 
-              onClick={() => formatText('table')}
-              title="Table"
-            >
-              📊
-            </button>
-            <button 
-              className="toolbar-btn" 
-              onClick={() => formatText('horizontalRule')}
-              title="Horizontal Rule"
-            >
-              —
-            </button>
-            
-            <div className="toolbar-separator"></div>
-          
             <div className="code-snippets-dropdown">
-              <button className="toolbar-btn code-btn" title="Insert Code">
-                &lt;/&gt;
+              <button className="toolbar-btn" title="Insert Code">
+                <span className="icon">&lt;/&gt;</span>
               </button>
               <div className="dropdown-content">
                 <button onClick={() => formatText('code')}>Inline Code</button>
                 <div className="dropdown-divider"></div>
-                <button onClick={() => insertCodeSnippet('csharp')}>C#</button>
-                <button onClick={() => insertCodeSnippet('fsharp')}>F#</button>
-                <button onClick={() => insertCodeSnippet('vbnet')}>VB.NET</button>
-                <button onClick={() => insertCodeSnippet('powershell')}>PowerShell</button>
+                <div className="dropdown-section">
+                  <span className="dropdown-title">.NET</span>
+                  <button onClick={() => insertCodeSnippet('csharp')}>C#</button>
+                  <button onClick={() => insertCodeSnippet('fsharp')}>F#</button>
+                  <button onClick={() => insertCodeSnippet('vbnet')}>VB.NET</button>
+                  <button onClick={() => insertCodeSnippet('powershell')}>PowerShell</button>
+                </div>
                 <div className="dropdown-divider"></div>
-                <button onClick={() => insertCodeSnippet('javascript')}>JavaScript</button>
-                <button onClick={() => insertCodeSnippet('typescript')}>TypeScript</button>
-                <button onClick={() => insertCodeSnippet('html')}>HTML</button>
-                <button onClick={() => insertCodeSnippet('css')}>CSS</button>
-                <button onClick={() => insertCodeSnippet('json')}>JSON</button>
-                <button onClick={() => insertCodeSnippet('sql')}>SQL</button>
+                <div className="dropdown-section">
+                  <span className="dropdown-title">Web</span>
+                  <button onClick={() => insertCodeSnippet('javascript')}>JavaScript</button>
+                  <button onClick={() => insertCodeSnippet('typescript')}>TypeScript</button>
+                  <button onClick={() => insertCodeSnippet('html')}>HTML</button>
+                  <button onClick={() => insertCodeSnippet('css')}>CSS</button>
+                  <button onClick={() => insertCodeSnippet('json')}>JSON</button>
+                </div>
+                <div className="dropdown-divider"></div>
+                <div className="dropdown-section">
+                  <span className="dropdown-title">Other</span>
+                  <button onClick={() => insertCodeSnippet('sql')}>SQL</button>
+                  <button onClick={() => insertCodeSnippet('bash')}>Bash</button>
+                  <button onClick={() => insertCodeSnippet('yaml')}>YAML</button>
+                </div>
               </div>
             </div>
-          </>
+          </div>
         )}
         
         <div className="toolbar-spacer"></div>
         
-        <button 
-          className="toolbar-btn help-btn"
-          onClick={toggleKeyboardHelp}
-          title="Keyboard Shortcuts (Ctrl+Shift+/)"
-        >
-          ?
-        </button>
-        
-        <button 
-          className={`toolbar-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`} 
-          onClick={toggleFullscreen}
-          title="Toggle Fullscreen (Ctrl+Shift+F)"
-        >
-          {isFullscreen ? '↙' : '↗'}
-        </button>
+        <div className="toolbar-group">
+          <button 
+            className="toolbar-btn"
+            onClick={toggleKeyboardHelp}
+            title="Keyboard Shortcuts (Ctrl+Shift+/)"
+          >
+            <span className="icon">?</span>
+          </button>
+          
+          <button 
+            className={`toolbar-btn ${isFullscreen ? 'active' : ''}`}
+            onClick={toggleFullscreen}
+            title="Toggle Fullscreen (Ctrl+Shift+F)"
+          >
+            <span className="icon">{isFullscreen ? '↙' : '↗'}</span>
+          </button>
+        </div>
       </div>
       
       {showKeyboardHelp && (
