@@ -7,6 +7,7 @@ import TabsBar from './components/TabsBar';
 import { TabsProvider, useTabs } from './components/TabsContext';
 import { tagSuggestionService } from './services/ai/tagSuggestionService';
 import { summarizationService } from './services/ai/summarizationService';
+import { SearchService } from './services/search/searchService';
 
 // Define TypeScript interfaces for our data
 export interface Snippet {
@@ -21,6 +22,8 @@ export interface Snippet {
 
 // Import our custom electron TypeScript definitions
 import './electron.d.ts';
+
+const searchService = new SearchService();
 
 // Inner App component that uses the tabs context
 const AppContent: React.FC = () => {
@@ -68,16 +71,12 @@ const AppContent: React.FC = () => {
 
   // Update filtered snippets when snippets or search term changes
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredSnippets(snippets);
-    } else {
-      // Client-side filtering (can be replaced with DB search)
-      const filtered = snippets.filter(snippet => 
-        snippet.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        snippet.content.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    const updateFilteredSnippets = async () => {
+      const filtered = await searchService.searchSnippets(searchTerm, snippets);
       setFilteredSnippets(filtered);
-    }
+    };
+    
+    updateFilteredSnippets();
   }, [snippets, searchTerm]);
 
   const loadSnippets = async () => {
