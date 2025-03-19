@@ -2,8 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -99,8 +104,14 @@ func TestWebSocketConnection(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 	
+	// Create a test logger
+	testLogger := log.New(ioutil.Discard, "", 0)
+	
+	// Initialize the global syncLogger variable for test
+	syncLogger = testLogger
+	
 	// Initialize sync manager
-	syncManager = NewSyncManager(db)
+	syncManager = NewSyncManager(db, testLogger)
 	
 	// Setup test server
 	router := gin.Default()
@@ -205,4 +216,109 @@ func TestInvalidMessages(t *testing.T) {
 			assert.Contains(t, err.Error(), tt.errorString)
 		})
 	}
-} 
+}
+
+// TestManualBackupEndpoint tests the /backup endpoint
+func TestManualBackupEndpoint(t *testing.T) {
+	// Create temporary test directory
+	tmpDir, err := ioutil.TempDir("", "codexpad-backup-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create test database
+	dbPath := filepath.Join(tmpDir, "test.db")
+	if err := ioutil.WriteFile(dbPath, []byte("test data"), 0644); err != nil {
+		t.Fatalf("Failed to create test database: %v", err)
+	}
+
+	// Create test backup service
+	backupDir := filepath.Join(tmpDir, "backups")
+	config := BackupConfig{
+		BackupDir:     backupDir,
+		Interval:      time.Hour,
+		MaxBackups:    5,
+		RetentionDays: 7,
+	}
+	testLogger := log.New(ioutil.Discard, "", 0)
+	backupService := NewBackupService(config, dbPath, testLogger)
+	if err := backupService.Start(); err != nil {
+		t.Fatalf("Failed to start backup service: %v", err)
+	}
+	defer backupService.Stop()
+
+	// Setup test router
+	router := gin.Default()
+	router.POST("/backup", func(c *gin.Context) {
+		if err := backupService.CreateBackup(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": fmt.Sprintf("Backup failed: %v", err),
+			})
+			return
+		}
+		
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "success",
+			"message": "Backup created successfully",
+		})
+	})
+
+	// Create a test request
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/backup", nil)
+	router.ServeHTTP(w, req)
+
+	// Assert
+	assert.Equal(t, 200, w.Code)
+	
+	var response map[string]interface{}
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	
+	assert.Nil(t, err)
+	assert.Equal(t, "success", response["status"])
+	assert.Equal(t, "Backup created successfully", response["message"])
+
+	// Verify backup was created
+	files, err := os.ReadDir(backupDir)
+	if err != nil {
+		t.Fatalf("Failed to read backup directory: %v", err)
+	}
+	assert.Equal(t, 1, len(files), "Expected 1 backup file to be created")
+}
+
+func TestMain(m *testing.M) {
+	// Set up test environment
+	// We don't need to create an unused logger variable here
+	
+	// Run tests
+	code := m.Run()
+	
+	// Clean up
+	os.Exit(code)
+}
+
+func TestSyncManager(t *testing.T) {
+	// Create a test database
+	tmpDir, err := ioutil.TempDir("", "codexpad-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	testLogger := log.New(ioutil.Discard, "", 0)
+	db, err := NewDBManager(tmpDir + "/test.db")
+	if err != nil {
+		t.Fatalf("Failed to create test database: %v", err)
+	}
+	defer db.Close()
+
+	// Initialize sync manager with logger
+	syncManager := NewSyncManager(db, testLogger)
+	if syncManager == nil {
+		t.Fatal("Failed to create SyncManager")
+	}
+}
+
+// Add more test cases as needed 

@@ -21,6 +21,7 @@ A modern, feature-rich code snippet manager and note-taking application built wi
 - 🔑 Extensive keyboard shortcuts for efficient navigation
 - 👨‍💻 Syntax highlighting for various programming languages
 - 🔄 Sync functionality to keep snippets updated across devices
+- 💾 Automated database backups with retention policies
 
 ### System Integration
 - 🖥️ System tray integration
@@ -118,8 +119,27 @@ The packaged application will be available in the `dist` directory.
 - **Backend Server:** Go with Gin framework
 - **Storage:** SQLite database via better-sqlite3
 - **Sync Protocol:** WebSocket with change tracking
+- **Backup System:** Automated SQLite backups with retention management
 - **Code Editing:** Custom editor implementation
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Data Management
+
+### Synchronization
+The application uses a Go-based sync server to keep snippets synchronized across devices:
+- Real-time sync via WebSocket connections
+- Conflict resolution with version tracking
+- Change log for tracking modifications
+- Client-side sync status monitoring
+
+### Automated Backups
+The server includes an automated backup system:
+- Scheduled backups every 6 hours
+- Retention of 30 most recent backups
+- 30-day backup history
+- Automatic cleanup of old backups
+- Manual backup triggers via API endpoint
+- Backups stored in `~/.codexpad/backups` directory

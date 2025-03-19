@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -67,6 +68,25 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize backup service
+	backupConfig := BackupConfig{
+		BackupDir:     filepath.Join(filepath.Dir(dbPath), "backups"),
+		Interval:      6 * time.Hour,  // Backup every 6 hours
+		MaxBackups:    30,             // Keep last 30 backups
+		RetentionDays: 30,            // Keep backups for 30 days
+	}
+
+	// Create a backup-specific logger
+	backupLogger := log.New(multiWriter, "[BACKUP] ", log.LstdFlags)
+	
+	backupService := NewBackupService(backupConfig, dbPath, backupLogger)
+	if err := backupService.Start(); err != nil {
+		syncLogger.Printf("Warning: Failed to start backup service: %v", err)
+	} else {
+		syncLogger.Printf("Backup service started. Backup directory: %s", backupConfig.BackupDir)
+		defer backupService.Stop()
+	}
+
 	// Initialize sync manager
 	syncManager = NewSyncManager(db, syncLogger)
 	syncLogger.Println("SyncManager initialized")
@@ -79,6 +99,25 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"message": "CodexPad sync server is running",
+		})
+	})
+
+	// Backup endpoint - manually trigger a backup
+	router.POST("/backup", func(c *gin.Context) {
+		syncLogger.Println("Manual backup requested")
+		
+		if err := backupService.CreateBackup(); err != nil {
+			syncLogger.Printf("Manual backup failed: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status":  "error",
+				"message": fmt.Sprintf("Backup failed: %v", err),
+			})
+			return
+		}
+		
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "success",
+			"message": "Backup created successfully",
 		})
 	})
 
