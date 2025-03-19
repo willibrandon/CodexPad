@@ -94,6 +94,14 @@ func TestSyncMessageValidation(t *testing.T) {
 
 // TestWebSocketConnection tests the WebSocket connection
 func TestWebSocketConnection(t *testing.T) {
+	// Setup DB and sync manager for test
+	db, err := NewDBManager(":memory:")
+	require.NoError(t, err)
+	defer db.Close()
+	
+	// Initialize sync manager
+	syncManager = NewSyncManager(db)
+	
 	// Setup test server
 	router := gin.Default()
 	router.GET("/sync", handleSync)
