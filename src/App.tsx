@@ -5,6 +5,7 @@ import SnippetList from './components/SnippetList';
 import SnippetEditor from './components/SnippetEditor';
 import TabsBar from './components/TabsBar';
 import { TabsProvider, useTabs } from './components/TabsContext';
+import { tagSuggestionService } from './services/ai/tagSuggestionService';
 
 // Define TypeScript interfaces for our data
 export interface Snippet {
@@ -30,9 +31,24 @@ const AppContent: React.FC = () => {
   // Get the currently active snippet
   const activeSnippet = openTabs.find(tab => tab.id === activeTabId) || null;
 
-  // Load all snippets on component mount
+  // Load all snippets and initialize AI model on component mount
   useEffect(() => {
-    loadSnippets();
+    const initializeApp = async () => {
+      try {
+        // Load snippets
+        if (window.electron) {
+          const loadedSnippets = await window.electron.invoke('snippets:getAll');
+          setSnippets(loadedSnippets);
+          
+          // Initialize AI model with loaded snippets
+          await tagSuggestionService.initialize(loadedSnippets);
+        }
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+      }
+    };
+    
+    initializeApp();
     
     // Listen for "create-new-snippet" event from main process
     if (window.electron) {

@@ -16,6 +16,7 @@
   "license": "MIT",
   "homepage": "http://./",
   "dependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
     "@types/better-sqlite3": "^7.6.12",
     "better-sqlite3": "^11.9.1",
     "electron-is-dev": "^2.0.0",

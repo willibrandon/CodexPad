@@ -159,6 +159,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       <TagManager
         tags={editedTags}
         favorite={isFavorite}
+        content={editedContent}
         onTagsChange={handleTagsChange}
         onFavoriteToggle={handleFavoriteToggle}
       />

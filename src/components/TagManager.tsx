@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './TagManager.css';
+import { tagSuggestionService } from '../services/ai/tagSuggestionService';
 
 interface TagManagerProps {
   tags: string[];
   favorite: boolean;
+  content?: string;  // Add content prop for AI suggestions
   onTagsChange: (tags: string[]) => void;
   onFavoriteToggle: () => void;
 }
@@ -11,11 +13,14 @@ interface TagManagerProps {
 const TagManager: React.FC<TagManagerProps> = ({
   tags = [],
   favorite = false,
+  content = '',  // Default to empty string
   onTagsChange,
   onFavoriteToggle,
 }) => {
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     // Fetch all available tags when component mounts
@@ -28,6 +33,24 @@ const TagManager: React.FC<TagManagerProps> = ({
     fetchTags();
   }, []);
 
+  // Get AI suggestions when content changes
+  useEffect(() => {
+    const getSuggestions = async () => {
+      if (content) {
+        setIsLoadingSuggestions(true);
+        try {
+          const suggestions = await tagSuggestionService.suggestTags(content, tags);
+          setSuggestedTags(suggestions);
+        } catch (error) {
+          console.error('Failed to get tag suggestions:', error);
+        } finally {
+          setIsLoadingSuggestions(false);
+        }
+      }
+    };
+    getSuggestions();
+  }, [content, tags]);
+
   const handleAddTag = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTag && !tags.includes(newTag)) {
@@ -39,6 +62,14 @@ const TagManager: React.FC<TagManagerProps> = ({
       if (!availableTags.includes(newTag)) {
         setAvailableTags([...availableTags, newTag].sort());
       }
+    }
+  };
+
+  const handleAddSuggestedTag = (tag: string) => {
+    if (!tags.includes(tag)) {
+      const updatedTags = [...tags, tag];
+      onTagsChange(updatedTags);
+      setSuggestedTags(suggestedTags.filter(t => t !== tag));
     }
   };
 
@@ -72,6 +103,24 @@ const TagManager: React.FC<TagManagerProps> = ({
           </span>
         ))}
       </div>
+      
+      {suggestedTags.length > 0 && (
+        <div className="suggested-tags">
+          <span className="suggested-tags-label">
+            {isLoadingSuggestions ? 'Getting suggestions...' : 'Suggested tags:'}
+          </span>
+          {suggestedTags.map(tag => (
+            <button
+              key={tag}
+              className="suggested-tag"
+              onClick={() => handleAddSuggestedTag(tag)}
+              title="Click to add this tag"
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
       
       <form onSubmit={handleAddTag} className="add-tag-form">
         <input
