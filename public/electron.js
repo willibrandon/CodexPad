@@ -5,6 +5,7 @@ const isDev = require('electron-is-dev');
 // Global references to prevent garbage collection
 let mainWindow;
 let tray;
+let syncEnabled = true; // Default to enabled
 
 function createWindow() {
   // Create the browser window
@@ -78,6 +79,21 @@ function createTray() {
     },
     { type: 'separator' },
     { 
+      label: 'Sync Enabled',
+      type: 'checkbox',
+      checked: syncEnabled,
+      click: () => {
+        syncEnabled = !syncEnabled;
+        if (syncEnabled) {
+          syncService.initialize();
+        } else {
+          syncService.disconnect();
+        }
+        updateSyncStatus();
+      }
+    },
+    { type: 'separator' },
+    { 
       label: 'Exit', 
       click: () => { 
         app.quit();
@@ -114,10 +130,33 @@ function setupGlobalShortcut() {
 
 // Initialize services when the app is ready
 let snippetService;
+let syncService;
+
+// Send sync status updates to renderer
+function updateSyncStatus() {
+  if (mainWindow) {
+    const status = {
+      connected: syncEnabled && syncService.isConnectedToServer(),
+      pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0,
+      lastSyncedAt: syncEnabled ? null : null // TODO: Track last sync timestamp
+    };
+    
+    mainWindow.webContents.send('sync:connection-status', status);
+  }
+}
 
 app.whenReady().then(() => {
   // Import services here to ensure app is ready
   snippetService = require('../src/services/snippetService');
+  syncService = require('../src/services/syncService');
+  
+  // Initialize sync service if enabled
+  if (syncEnabled) {
+    syncService.initialize();
+    
+    // Set up periodic sync status updates
+    setInterval(updateSyncStatus, 5000);
+  }
   
   createWindow();
 });
@@ -138,6 +177,11 @@ app.on('activate', () => {
 app.on('will-quit', () => {
   // Unregister all shortcuts
   globalShortcut.unregisterAll();
+  
+  // Clean up sync service
+  if (syncService) {
+    syncService.disconnect();
+  }
 });
 
 // IPC handlers for database operations
@@ -152,6 +196,12 @@ ipcMain.handle('snippets:create', async (event, title, content, tags) => {
 
 ipcMain.handle('snippets:update', async (event, snippet) => {
   snippetService.updateSnippet(snippet.id, snippet.title, snippet.content, snippet.tags);
+  
+  // Push to sync server if sync is enabled
+  if (syncEnabled) {
+    syncService.pushSnippet(snippet);
+  }
+  
   return true;
 });
 
@@ -162,4 +212,51 @@ ipcMain.handle('snippets:delete', async (event, id) => {
 
 ipcMain.handle('snippets:search', async (event, term) => {
   return snippetService.searchSnippets(term);
+});
+
+// IPC handlers for sync operations
+ipcMain.handle('sync:push', async (event, snippet) => {
+  if (!syncEnabled) return { success: false, error: 'Sync is disabled' };
+  
+  try {
+    syncService.pushSnippet(snippet);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to push snippet to sync server:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('sync:pull', async (event, snippetId) => {
+  if (!syncEnabled) return { success: false, error: 'Sync is disabled' };
+  
+  try {
+    syncService.pullSnippet(snippetId);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to pull snippet from sync server:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('sync:status', async () => {
+  return {
+    enabled: syncEnabled,
+    connected: syncEnabled && syncService.isConnectedToServer(),
+    pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0
+  };
+});
+
+ipcMain.handle('sync:toggle', async (event, enable) => {
+  syncEnabled = enable !== undefined ? enable : !syncEnabled;
+  
+  if (syncEnabled) {
+    syncService.initialize();
+  } else {
+    syncService.disconnect();
+  }
+  
+  updateSyncStatus();
+  
+  return { enabled: syncEnabled };
 });

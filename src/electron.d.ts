@@ -6,6 +6,19 @@ interface IElectronAPI {
   removeAllListeners(channel: string): void;
 }
 
+// Sync-related types
+interface SyncStatusResponse {
+  connected: boolean;
+  pendingChanges: number;
+  lastSyncedAt?: string;
+}
+
+interface SyncUpdateEvent {
+  snippetId: number;
+  version: number;
+  updatedAt: string;
+}
+
 declare global {
   interface Window {
     electron: IElectronAPI;

@@ -4,6 +4,7 @@ import SearchBar from './components/SearchBar';
 import SnippetList from './components/SnippetList';
 import SnippetEditor from './components/SnippetEditor';
 import TabsBar from './components/TabsBar';
+import SyncStatus from './components/SyncStatus';
 import { TabsProvider, useTabs } from './components/TabsContext';
 import { tagSuggestionService } from './services/ai/tagSuggestionService';
 import { summarizationService } from './services/ai/summarizationService';
@@ -183,6 +184,8 @@ const AppContent: React.FC = () => {
             onUpdateSnippet={handleUpdateSnippet}
             onDeleteSnippet={handleDeleteSnippet}
           />
+          
+          <SyncStatus />
         </div>
       </div>
     </div>
