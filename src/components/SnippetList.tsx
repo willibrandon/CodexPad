@@ -6,12 +6,14 @@ interface SnippetListProps {
   snippets: Snippet[];
   selectedSnippet: Snippet | null;
   onSelectSnippet: (snippet: Snippet) => void;
+  onDeleteSnippet: (id: number) => void;
 }
 
 const SnippetList: React.FC<SnippetListProps> = ({
   snippets,
   selectedSnippet,
   onSelectSnippet,
+  onDeleteSnippet,
 }) => {
   const [summaries, setSummaries] = useState<{ [key: number]: string }>({});
 
@@ -43,6 +45,13 @@ const SnippetList: React.FC<SnippetListProps> = ({
     generateSummaries();
   }, [snippets]);
 
+  const handleDelete = (e: React.MouseEvent, snippet: Snippet) => {
+    e.stopPropagation(); // Prevent snippet selection when deleting
+    if (window.confirm(`Are you sure you want to delete "${snippet.title || 'Untitled'}"?`)) {
+      onDeleteSnippet(snippet.id);
+    }
+  };
+
   return (
     <div className="snippet-list">
       {snippets.map((snippet) => (
@@ -56,9 +65,18 @@ const SnippetList: React.FC<SnippetListProps> = ({
               {snippet.favorite && <span className="favorite-star">★</span>}
               {snippet.title || 'Untitled'}
             </span>
-            <span className="snippet-date">
-              {new Date(snippet.updatedAt).toLocaleDateString()}
-            </span>
+            <div className="snippet-actions">
+              <span className="snippet-date">
+                {new Date(snippet.updatedAt).toLocaleDateString()}
+              </span>
+              <button 
+                className="snippet-delete-btn"
+                onClick={(e) => handleDelete(e, snippet)}
+                title="Delete snippet"
+              >
+                ×
+              </button>
+            </div>
           </div>
           {snippet.tags.length > 0 && (
             <div className="snippet-tags">

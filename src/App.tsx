@@ -35,7 +35,7 @@ const AppContent: React.FC = () => {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
-  const { openTab, activeTabId, openTabs, updateTabContent } = useTabs();
+  const { openTab, activeTabId, openTabs, updateTabContent, closeTab, tabExists } = useTabs();
 
   // Get the currently active snippet
   const activeSnippet = openTabs.find(tab => tab.id === activeTabId) || null;
@@ -160,6 +160,11 @@ const AppContent: React.FC = () => {
         
         // Update local state
         setSnippets(prev => prev.filter(s => s.id !== id));
+        
+        // Close the tab if it's open
+        if (tabExists(id)) {
+          closeTab(id);
+        }
       }
     } catch (error) {
       console.error('Failed to delete snippet:', error);
@@ -184,6 +189,7 @@ const AppContent: React.FC = () => {
           snippets={filteredSnippets} 
           selectedSnippet={activeSnippet} 
           onSelectSnippet={handleSelectSnippet}
+          onDeleteSnippet={handleDeleteSnippet}
         />
         
         <div className="editor-container">

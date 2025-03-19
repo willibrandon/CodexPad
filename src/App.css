@@ -306,3 +306,39 @@ pre[class*="language-vbnet"] {
 .delete-btn:active {
   transform: translateY(1px);
 }
+
+.snippet-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.snippet-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.2rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.snippet-item:hover .snippet-delete-btn {
+  opacity: 0.7;
+}
+
+.snippet-delete-btn:hover {
+  opacity: 1 !important;
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.snippet-delete-btn:active {
+  transform: scale(0.95);
+}
