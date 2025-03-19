@@ -128,27 +128,54 @@
   border-left: 3px solid var(--primary-color);
 }
 
-.snippet-title {
-  font-weight: bold;
-  margin: 0 0 5px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.snippet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
-.snippet-preview {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.snippet-title {
+  font-weight: 600;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.favorite-star {
+  color: #f1c40f;
+  font-size: 1.1em;
 }
 
 .snippet-date {
-  font-size: 0.8rem;
+  font-size: 0.8em;
   color: var(--text-light);
-  margin-top: 5px;
+}
+
+.snippet-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.snippet-tag {
+  font-size: 0.8em;
+  padding: 2px 6px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 10px;
+  opacity: 0.8;
+}
+
+.snippet-preview {
+  font-size: 0.9em;
+  color: var(--text-light);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .empty-state {

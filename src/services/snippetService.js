@@ -10,7 +10,7 @@ function getSnippetById(id) {
   return snippets.find(snippet => snippet.id === id);
 }
 
-function createSnippet(title, content, tags = []) {
+function createSnippet(title, content, tags = [], favorite = false) {
   const snippets = db.get('snippets') || [];
   const now = new Date().toISOString();
   
@@ -25,14 +25,15 @@ function createSnippet(title, content, tags = []) {
     content,
     createdAt: now,
     updatedAt: now,
-    tags
+    tags,
+    favorite
   };
   
   db.set('snippets', [newSnippet, ...snippets]);
   return id;
 }
 
-function updateSnippet(id, title, content, tags = []) {
+function updateSnippet(id, title, content, tags = [], favorite = false) {
   const snippets = db.get('snippets') || [];
   const now = new Date().toISOString();
   
@@ -43,7 +44,8 @@ function updateSnippet(id, title, content, tags = []) {
         title,
         content,
         updatedAt: now,
-        tags
+        tags,
+        favorite
       };
     }
     return snippet;
@@ -77,11 +79,43 @@ function searchSnippets(term) {
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 }
 
+function toggleFavorite(id) {
+  const snippets = db.get('snippets') || [];
+  const now = new Date().toISOString();
+  
+  const updatedSnippets = snippets.map(snippet => {
+    if (snippet.id === id) {
+      return {
+        ...snippet,
+        favorite: !snippet.favorite,
+        updatedAt: now
+      };
+    }
+    return snippet;
+  });
+  
+  db.set('snippets', updatedSnippets);
+  return true;
+}
+
+function getAllTags() {
+  const snippets = db.get('snippets') || [];
+  const tagSet = new Set();
+  
+  snippets.forEach(snippet => {
+    snippet.tags.forEach(tag => tagSet.add(tag));
+  });
+  
+  return Array.from(tagSet).sort();
+}
+
 module.exports = {
   getAllSnippets,
   getSnippetById,
   createSnippet,
   updateSnippet,
   deleteSnippet,
-  searchSnippets
+  searchSnippets,
+  toggleFavorite,
+  getAllTags
 };

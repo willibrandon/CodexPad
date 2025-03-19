@@ -7,49 +7,45 @@ interface SnippetListProps {
   onSelectSnippet: (snippet: Snippet) => void;
 }
 
-const SnippetList: React.FC<SnippetListProps> = ({ 
-  snippets, 
-  selectedSnippet, 
-  onSelectSnippet 
+const SnippetList: React.FC<SnippetListProps> = ({
+  snippets,
+  selectedSnippet,
+  onSelectSnippet,
 }) => {
-  // Format date to a readable format
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  // Get a preview of the content (first line or first few characters)
-  const getContentPreview = (content: string) => {
-    const firstLine = content.split('\n')[0];
-    if (firstLine.length === 0) {
-      return 'Empty snippet';
-    }
-    return firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine;
-  };
-
   return (
     <div className="snippet-list">
-      {snippets.length === 0 ? (
-        <div className="empty-state">
-          <h3>No snippets found</h3>
-          <p>Create a new snippet to get started</p>
-        </div>
-      ) : (
-        snippets.map(snippet => (
-          <div 
-            key={snippet.id}
-            className={`snippet-item ${selectedSnippet && selectedSnippet.id === snippet.id ? 'active' : ''}`}
-            onClick={() => onSelectSnippet(snippet)}
-          >
-            <h3 className="snippet-title">{snippet.title}</h3>
-            <p className="snippet-preview">{getContentPreview(snippet.content)}</p>
-            <div className="snippet-date">{formatDate(snippet.updatedAt)}</div>
+      {snippets.map((snippet) => (
+        <div
+          key={snippet.id}
+          className={`snippet-item ${selectedSnippet?.id === snippet.id ? 'selected' : ''}`}
+          onClick={() => onSelectSnippet(snippet)}
+        >
+          <div className="snippet-header">
+            <span className="snippet-title">
+              {snippet.favorite && <span className="favorite-star">★</span>}
+              {snippet.title || 'Untitled'}
+            </span>
+            <span className="snippet-date">
+              {new Date(snippet.updatedAt).toLocaleDateString()}
+            </span>
           </div>
-        ))
+          {snippet.tags.length > 0 && (
+            <div className="snippet-tags">
+              {snippet.tags.map(tag => (
+                <span key={tag} className="snippet-tag">{tag}</span>
+              ))}
+            </div>
+          )}
+          <div className="snippet-preview">
+            {snippet.content.slice(0, 100)}
+            {snippet.content.length > 100 && '...'}
+          </div>
+        </div>
+      ))}
+      {snippets.length === 0 && (
+        <div className="empty-state">
+          <p>No snippets found</p>
+        </div>
       )}
     </div>
   );

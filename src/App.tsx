@@ -12,6 +12,7 @@ export interface Snippet {
   createdAt: string;
   updatedAt: string;
   tags: string[];
+  favorite: boolean;
 }
 
 // Import our custom electron TypeScript definitions
@@ -107,7 +108,8 @@ function App() {
           content: newContent,
           tags: newTags,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          favorite: false
         };
         
         // Update local state

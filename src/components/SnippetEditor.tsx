@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Snippet } from '../App';
+import TagManager from './TagManager';
 
 interface SnippetEditorProps {
   snippet: Snippet | null;
@@ -14,6 +15,8 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
 }) => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
+  const [editedTags, setEditedTags] = useState<string[]>([]);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   
   // Update local state when snippet changes
@@ -21,9 +24,13 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
     if (snippet) {
       setEditedTitle(snippet.title);
       setEditedContent(snippet.content);
+      setEditedTags(snippet.tags || []);
+      setIsFavorite(snippet.favorite || false);
     } else {
       setEditedTitle('');
       setEditedContent('');
+      setEditedTags([]);
+      setIsFavorite(false);
     }
   }, [snippet]);
 
@@ -68,6 +75,33 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
     }
   };
 
+  const handleTagsChange = (newTags: string[]) => {
+    setEditedTags(newTags);
+    
+    if (snippet) {
+      const updatedSnippet = {
+        ...snippet,
+        tags: newTags,
+        updatedAt: new Date().toISOString()
+      };
+      debouncedSave(updatedSnippet);
+    }
+  };
+
+  const handleFavoriteToggle = () => {
+    const newFavorite = !isFavorite;
+    setIsFavorite(newFavorite);
+    
+    if (snippet) {
+      const updatedSnippet = {
+        ...snippet,
+        favorite: newFavorite,
+        updatedAt: new Date().toISOString()
+      };
+      debouncedSave(updatedSnippet);
+    }
+  };
+
   const handleDelete = () => {
     if (snippet && window.confirm('Are you sure you want to delete this snippet?')) {
       onDeleteSnippet(snippet.id);
@@ -99,6 +133,12 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
           Delete
         </button>
       </div>
+      <TagManager
+        tags={editedTags}
+        favorite={isFavorite}
+        onTagsChange={handleTagsChange}
+        onFavoriteToggle={handleFavoriteToggle}
+      />
       <div className="editor-content">
         <textarea
           className="editor-textarea"
