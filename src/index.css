@@ -1,17 +1,26 @@
-body {
-  margin: 0;
-  font-family: var(--body-font-family);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--text-color);
-  font-size: var(--base-font-size);
-  background-color: var(--background-color);
-  overflow: hidden;
+/* Font imports using local files */
+@font-face {
+  font-family: 'Fira Code';
+  src: url('fonts/FiraCode-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-code {
-  font-family: var(--code-font-family);
-  font-size: var(--code-font-size);
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cascadia Code';
+  src: url('fonts/CascadiaCode-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 :root {
@@ -31,14 +40,39 @@ code {
   --code-font-family: Menlo, Monaco, 'Courier New', monospace;
 }
 
-/* Keyframes for animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/* Font size classes */
+:root.font-size-small {
+  --base-font-size: 14px;
+  --code-font-size: 12px;
+}
+
+:root.font-size-medium {
+  --base-font-size: 16px;
+  --code-font-size: 14px;
+}
+
+:root.font-size-large {
+  --base-font-size: 18px;
+  --code-font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--body-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-color);
+  font-size: var(--base-font-size);
+  background-color: var(--background-color);
+  overflow: hidden;
+}
+
+code, pre {
+  font-size: var(--code-font-size);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -49,30 +83,8 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
-/* Font imports - CDN fallbacks */
-@font-face {
-  font-family: 'Fira Code';
-  src: local('Fira Code'),
-       url('https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/woff2/FiraCode-Regular.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: local('JetBrains Mono'),
-       url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Cascadia Code';
-  src: local('Cascadia Code'),
-       url('https://cdn.jsdelivr.net/gh/microsoft/cascadia-code@main/fonts/CascadiaCode-Regular.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+/* Keyframes for animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

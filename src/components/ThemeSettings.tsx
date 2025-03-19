@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import './ThemeSettings.css';
 
@@ -9,6 +9,17 @@ interface ThemeSettingsProps {
 
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({ isOpen, onClose }) => {
   const { settings, updateSettings, resetToDefaults, isDarkMode } = useTheme();
+  const previewRef = useRef<HTMLElement>(null);
+
+  // Get the current font family name
+  const getCurrentFontName = () => {
+    switch (settings.codeFont) {
+      case 'fira-code': return 'Fira Code';
+      case 'jetbrains-mono': return 'JetBrains Mono';
+      case 'cascadia-code': return 'Cascadia Code';
+      default: return 'Menlo, Monaco, Courier New, monospace';
+    }
+  };
 
   const handleModeChange = (mode: 'light' | 'dark' | 'system') => {
     updateSettings({ mode });
@@ -24,6 +35,16 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ isOpen, onClose }) => {
 
   const handleCodeFontChange = (codeFont: string) => {
     updateSettings({ codeFont: codeFont as any });
+    // Force the preview to update by changing a style
+    if (previewRef.current) {
+      const currentStyle = previewRef.current.style.opacity;
+      previewRef.current.style.opacity = '0.99';
+      setTimeout(() => {
+        if (previewRef.current) {
+          previewRef.current.style.opacity = currentStyle;
+        }
+      }, 50);
+    }
   };
 
   // Only render if the settings panel is open
@@ -150,21 +171,25 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ isOpen, onClose }) => {
                 Cascadia Code
               </button>
             </div>
-            <div className="font-download-note">
-              Note: You need to download the font files to public/fonts/ for the fonts to work.
-            </div>
           </section>
 
           <section className="settings-section">
             <h4>Preview</h4>
             <div className="code-preview">
               <pre>
-                <code>
-{`// This is a code example
-function exampleCode() {
-  const greeting = "Hello, world!";
-  console.log(greeting);
-  return true;
+                <code 
+                  ref={previewRef} 
+                  className="preview-code" 
+                  style={{
+                    fontFamily: getCurrentFontName(),
+                    fontSize: 'var(--code-font-size)',
+                    lineHeight: 1.5
+                  }}
+                >
+{`function example() {
+  // Preview of the selected font
+  const message = "Hello!";
+  return message.repeat(2);
 }`}
                 </code>
               </pre>

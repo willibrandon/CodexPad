@@ -16,7 +16,6 @@ import { KeyboardShortcutsProvider, useKeyboardShortcuts } from './contexts/Keyb
 import { tagSuggestionService } from './services/ai/tagSuggestionService';
 import { summarizationService } from './services/ai/summarizationService';
 import { SearchService } from './services/search/searchService';
-import { loadLocalFonts } from './utils/fontLoader';
 
 // Define TypeScript interfaces for our data
 export interface Snippet {
@@ -55,9 +54,6 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Load local fonts
-        await loadLocalFonts();
-        
         // Load snippets
         if (window.electron) {
           const loadedSnippets = await window.electron.invoke('snippets:getAll');
