@@ -107,11 +107,14 @@
   padding: 5px;
   border: 1px solid transparent;
   border-radius: 3px;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
 }
 
 .editor-title:focus {
   border-color: var(--border-color);
   outline: none;
+  background-color: var(--editor-bg);
 }
 
 .editor-content {
@@ -282,4 +285,24 @@ pre[class*="language-vbnet"] {
   0% { opacity: 1; }
   70% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+.delete-btn {
+  background-color: var(--editor-bg);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.delete-btn:active {
+  transform: translateY(1px);
 }
