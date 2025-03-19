@@ -19,6 +19,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
   const [editedTags, setEditedTags] = useState<string[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | null>(null);
   
   // Update local state when snippet changes
   useEffect(() => {
@@ -27,13 +28,25 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       setEditedContent(snippet.content);
       setEditedTags(snippet.tags || []);
       setIsFavorite(snippet.favorite || false);
+      setSaveStatus('saved');
     } else {
       setEditedTitle('');
       setEditedContent('');
       setEditedTags([]);
       setIsFavorite(false);
+      setSaveStatus(null);
     }
   }, [snippet]);
+
+  // Clear save status after showing "Saved"
+  useEffect(() => {
+    if (saveStatus === 'saved') {
+      const timeout = setTimeout(() => {
+        setSaveStatus(null);
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [saveStatus]);
 
   // Debounced save function to prevent too many updates
   const debouncedSave = (updatedSnippet: Snippet) => {
@@ -41,8 +54,11 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       clearTimeout(saveTimeout);
     }
     
+    setSaveStatus('saving');
+    
     const timeoutId = setTimeout(() => {
       onUpdateSnippet(updatedSnippet);
+      setSaveStatus('saved');
     }, 500); // 500ms debounce
     
     setSaveTimeout(timeoutId);
@@ -122,13 +138,20 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
   return (
     <div className="snippet-editor">
       <div className="editor-header">
-        <input
-          type="text"
-          className="editor-title"
-          value={editedTitle}
-          onChange={handleTitleChange}
-          placeholder="Untitled"
-        />
+        <div className="editor-header-left">
+          <input
+            type="text"
+            className="editor-title"
+            value={editedTitle}
+            onChange={handleTitleChange}
+            placeholder="Untitled"
+          />
+          {saveStatus && (
+            <span className={`save-status ${saveStatus}`}>
+              {saveStatus === 'saving' ? 'Saving...' : 'Saved'}
+            </span>
+          )}
+        </div>
         <button className="delete-btn" onClick={handleDelete}>
           Delete
         </button>

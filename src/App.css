@@ -80,6 +80,12 @@
   background-color: #f9f9f9;
 }
 
+.editor-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .editor-title {
   font-size: 1rem;
   margin: 0;
@@ -238,4 +244,27 @@ pre[class*="language-vbnet"] {
   .snippet-list {
     width: 250px;
   }
+}
+
+.save-status {
+  font-size: 0.8em;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background-color: var(--background-color);
+  transition: opacity 0.3s ease;
+}
+
+.save-status.saving {
+  color: var(--text-light);
+}
+
+.save-status.saved {
+  color: #2ecc71;
+  animation: fadeOut 2s ease-in-out;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
 }
