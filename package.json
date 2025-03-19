@@ -22,6 +22,7 @@
     "better-sqlite3": "^11.9.1",
     "electron-is-dev": "^2.0.0",
     "electron-store": "^8.2.0",
+    "marked": "^11.2.0",
     "prismjs": "^1.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

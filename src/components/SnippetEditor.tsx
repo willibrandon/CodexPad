@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Snippet } from '../App';
 import TagManager from './TagManager';
 import MarkdownEditor from './MarkdownEditor';
+import { useExport, ExportFormat } from '../hooks/useExport';
+import './SnippetEditor.css';
 
 interface SnippetEditorProps {
   snippet: Snippet | null;
@@ -20,6 +22,41 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
   const [isFavorite, setIsFavorite] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | null>(null);
+  const [exportDropdownVisible, setExportDropdownVisible] = useState(false);
+  const [exportStatus, setExportStatus] = useState<{
+    status: 'idle' | 'exporting' | 'success' | 'error';
+    message?: string;
+    format?: ExportFormat;
+  }>({
+    status: 'idle'
+  });
+  
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
+  const { exportSnippet } = useExport();
+  
+  // Listen for clicks outside the export dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setExportDropdownVisible(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Clear export status message after 3 seconds
+  useEffect(() => {
+    if (exportStatus.status === 'success' || exportStatus.status === 'error') {
+      const timer = setTimeout(() => {
+        setExportStatus({ status: 'idle' });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [exportStatus]);
   
   // Update local state when snippet changes
   useEffect(() => {
@@ -123,6 +160,45 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       onDeleteSnippet(snippet.id);
     }
   };
+  
+  const handleExportDropdownToggle = () => {
+    setExportDropdownVisible(prev => !prev);
+  };
+  
+  const handleExport = async (format: ExportFormat) => {
+    if (!snippet) return;
+    
+    setExportStatus({
+      status: 'exporting',
+      format
+    });
+    
+    setExportDropdownVisible(false);
+    
+    try {
+      const result = await exportSnippet(snippet, format);
+      
+      if (result.success) {
+        setExportStatus({
+          status: 'success',
+          message: `Exported as ${format.toUpperCase()} successfully`,
+          format
+        });
+      } else {
+        setExportStatus({
+          status: 'error',
+          message: result.error || `Failed to export as ${format}`,
+          format
+        });
+      }
+    } catch (error: any) {
+      setExportStatus({
+        status: 'error',
+        message: error.message || `Export as ${format} failed`,
+        format
+      });
+    }
+  };
 
   if (!snippet) {
     return (
@@ -152,10 +228,44 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
             </span>
           )}
         </div>
-        <button className="delete-btn" onClick={handleDelete}>
-          Delete
-        </button>
+        <div className="editor-header-right">
+          <div className="export-dropdown-container" ref={exportDropdownRef}>
+            <button 
+              className="export-btn" 
+              onClick={handleExportDropdownToggle}
+              title="Export snippet"
+            >
+              Export
+            </button>
+            {exportDropdownVisible && (
+              <div className="export-dropdown">
+                <button onClick={() => handleExport('markdown')}>
+                  Export as Markdown
+                </button>
+                <button onClick={() => handleExport('html')}>
+                  Export as HTML
+                </button>
+                <button onClick={() => handleExport('pdf')}>
+                  Export as PDF
+                </button>
+              </div>
+            )}
+          </div>
+          <button className="delete-btn" onClick={handleDelete}>
+            Delete
+          </button>
+        </div>
       </div>
+      
+      {exportStatus.status !== 'idle' && (
+        <div className={`export-status ${exportStatus.status}`}>
+          {exportStatus.status === 'exporting' 
+            ? `Exporting as ${exportStatus.format?.toUpperCase()}...` 
+            : exportStatus.message
+          }
+        </div>
+      )}
+      
       <TagManager
         tags={editedTags}
         favorite={isFavorite}

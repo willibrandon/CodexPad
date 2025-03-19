@@ -19,7 +19,10 @@ contextBridge.exposeInMainWorld(
         'sync:toggle',
         'sync:getLogEntries',
         'sync:backup',
-        'get-fonts-path'
+        'get-fonts-path',
+        'export:markdown',
+        'export:html',
+        'export:pdf'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);

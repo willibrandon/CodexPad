@@ -1,8 +1,9 @@
-const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const fs = require('fs');
 const https = require('https');
+const { marked } = require('marked');
 
 // Global references to prevent garbage collection
 let mainWindow;
@@ -388,5 +389,284 @@ ipcMain.handle('sync:backup', async () => {
       success: false, 
       error: error.message || 'Unknown error during backup' 
     };
+  }
+});
+
+// Add export handlers after the other ipcMain handlers
+// Export to Markdown
+ipcMain.handle('export:markdown', async (event, snippet) => {
+  try {
+    // Generate markdown content
+    let markdown = `# ${snippet.title}\n\n`;
+    
+    if (snippet.tags && snippet.tags.length > 0) {
+      markdown += `Tags: ${snippet.tags.join(', ')}\n\n`;
+    }
+    
+    markdown += snippet.content;
+    
+    // Get safe filename
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+    const safeTitle = snippet.title.replace(/[<>:"/\\|?*]/g, '_').trim() || 'untitled';
+    const suggestedFilename = `${safeTitle}_${dateStr}.md`;
+    
+    // Show save dialog
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: 'Export as Markdown',
+      defaultPath: path.join(app.getPath('documents'), suggestedFilename),
+      filters: [
+        { name: 'Markdown Files', extensions: ['md'] }
+      ]
+    });
+    
+    if (canceled || !filePath) {
+      return { success: false, message: 'Export cancelled' };
+    }
+    
+    // Write to file
+    fs.writeFileSync(filePath, markdown, 'utf8');
+    
+    return { success: true, message: 'Exported successfully', filePath };
+  } catch (error) {
+    console.error('Failed to export as Markdown:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Export to HTML
+ipcMain.handle('export:html', async (event, snippet) => {
+  try {
+    // Generate markdown content first
+    let markdown = `# ${snippet.title}\n\n`;
+    
+    if (snippet.tags && snippet.tags.length > 0) {
+      markdown += `Tags: ${snippet.tags.join(', ')}\n\n`;
+    }
+    
+    markdown += snippet.content;
+    
+    // Convert to HTML
+    const htmlContent = marked(markdown);
+    
+    // Create full HTML document
+    const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${snippet.title}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.9em;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      padding-left: 20px;
+      margin-left: 0;
+      color: #666;
+    }
+    img {
+      max-width: 100%;
+    }
+    .tags {
+      color: #666;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  ${htmlContent}
+</body>
+</html>`;
+    
+    // Get safe filename
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+    const safeTitle = snippet.title.replace(/[<>:"/\\|?*]/g, '_').trim() || 'untitled';
+    const suggestedFilename = `${safeTitle}_${dateStr}.html`;
+    
+    // Show save dialog
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: 'Export as HTML',
+      defaultPath: path.join(app.getPath('documents'), suggestedFilename),
+      filters: [
+        { name: 'HTML Files', extensions: ['html'] }
+      ]
+    });
+    
+    if (canceled || !filePath) {
+      return { success: false, message: 'Export cancelled' };
+    }
+    
+    // Write to file
+    fs.writeFileSync(filePath, fullHtml, 'utf8');
+    
+    return { success: true, message: 'Exported successfully', filePath };
+  } catch (error) {
+    console.error('Failed to export as HTML:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Export to PDF
+ipcMain.handle('export:pdf', async (event, snippet) => {
+  try {
+    // Get safe filename
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+    const safeTitle = snippet.title.replace(/[<>:"/\\|?*]/g, '_').trim() || 'untitled';
+    const suggestedFilename = `${safeTitle}_${dateStr}.pdf`;
+    
+    // Show save dialog
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: 'Export as PDF',
+      defaultPath: path.join(app.getPath('documents'), suggestedFilename),
+      filters: [
+        { name: 'PDF Files', extensions: ['pdf'] }
+      ]
+    });
+    
+    if (canceled || !filePath) {
+      return { success: false, message: 'Export cancelled' };
+    }
+    
+    // Create a hidden browser window for PDF generation
+    const pdfWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    });
+
+    // Generate markdown content
+    let markdown = `# ${snippet.title}\n\n`;
+    
+    if (snippet.tags && snippet.tags.length > 0) {
+      markdown += `Tags: ${snippet.tags.join(', ')}\n\n`;
+    }
+    
+    markdown += snippet.content;
+    
+    // Convert to HTML
+    const htmlContent = marked(markdown);
+    
+    // Create full HTML document with print-friendly styles
+    const fullHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${snippet.title}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 100%;
+      margin: 0;
+      padding: 20px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.9em;
+    }
+    blockquote {
+      border-left: 4px solid #ddd;
+      padding-left: 20px;
+      margin-left: 0;
+      color: #666;
+    }
+    img {
+      max-width: 100%;
+    }
+    .tags {
+      color: #666;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    @media print {
+      body {
+        padding: 0;
+      }
+      pre {
+        page-break-inside: avoid;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  ${htmlContent}
+</body>
+</html>`;
+
+    // Create a temporary HTML file
+    const tempHtmlPath = path.join(app.getPath('temp'), `${safeTitle}_temp.html`);
+    fs.writeFileSync(tempHtmlPath, fullHtml, 'utf8');
+    
+    // Load the HTML file
+    await pdfWindow.loadFile(tempHtmlPath);
+    
+    // Wait for content to load
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Generate PDF
+    const pdfData = await pdfWindow.webContents.printToPDF({
+      printBackground: true,
+      margins: {
+        top: 0.4,
+        bottom: 0.4,
+        left: 0.4,
+        right: 0.4
+      },
+      pageSize: 'A4'
+    });
+    
+    // Write PDF to file
+    fs.writeFileSync(filePath, pdfData);
+    
+    // Clean up
+    pdfWindow.destroy();
+    
+    // Remove temp HTML file
+    try {
+      fs.unlinkSync(tempHtmlPath);
+    } catch (err) {
+      console.warn('Failed to delete temporary HTML file:', err);
+    }
+    
+    return { success: true, message: 'Exported successfully', filePath };
+  } catch (error) {
+    console.error('Failed to export as PDF:', error);
+    return { success: false, error: error.message };
   }
 });
