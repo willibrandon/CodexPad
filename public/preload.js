@@ -17,7 +17,8 @@ contextBridge.exposeInMainWorld(
         'sync:pull',
         'sync:status',
         'sync:toggle',
-        'sync:getLogEntries'
+        'sync:getLogEntries',
+        'get-fonts-path'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
