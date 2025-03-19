@@ -27,6 +27,12 @@ A modern, feature-rich code snippet manager and note-taking application built wi
 - 🔔 Global hotkey (Ctrl+Shift+Space) to show/hide the app
 - 🚀 Quick startup and responsive performance
 
+### Synchronization
+- 🔄 Real-time sync across devices via WebSocket
+- 📝 Conflict resolution with version tracking
+- 📊 Sync status monitoring and detailed sync logs
+- 🔒 Reliable data consistency with SQLite backend
+
 ## Keyboard Shortcuts
 
 ### Navigation
@@ -109,7 +115,9 @@ The packaged application will be available in the `dist` directory.
 - **Frontend:** React, TypeScript
 - **UI Framework:** Custom CSS with CSS variables for theming
 - **Desktop Application:** Electron
+- **Backend Server:** Go with Gin framework
 - **Storage:** SQLite database via better-sqlite3
+- **Sync Protocol:** WebSocket with change tracking
 - **Code Editing:** Custom editor implementation
 
 ## License
