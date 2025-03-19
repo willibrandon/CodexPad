@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Snippet } from '../App';
 import TagManager from './TagManager';
+import MarkdownEditor from './MarkdownEditor';
 
 interface SnippetEditorProps {
   snippet: Snippet | null;
@@ -61,8 +62,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
     }
   };
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
+  const handleContentChange = (newContent: string) => {
     setEditedContent(newContent);
     
     if (snippet) {
@@ -140,12 +140,10 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
         onFavoriteToggle={handleFavoriteToggle}
       />
       <div className="editor-content">
-        <textarea
-          className="editor-textarea"
-          value={editedContent}
+        <MarkdownEditor
+          content={editedContent}
           onChange={handleContentChange}
-          placeholder="Write your notes here..."
-          autoFocus
+          placeholder="Write your notes here using Markdown. Code blocks with syntax highlighting are supported."
         />
       </div>
     </div>

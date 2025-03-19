@@ -12,6 +12,22 @@ const SnippetList: React.FC<SnippetListProps> = ({
   selectedSnippet,
   onSelectSnippet,
 }) => {
+  // Function to get a clean text preview from markdown content
+  const getContentPreview = (content: string) => {
+    // Remove markdown syntax for preview
+    const cleanText = content
+      .replace(/```[\s\S]*?```/g, '[Code Block]') // Replace code blocks
+      .replace(/`([^`]+)`/g, '$1')               // Remove inline code markers
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')   // Replace links with just the text
+      .replace(/#+\s(.+)/g, '$1')                // Remove heading markers
+      .replace(/(?:\*\*|__)(.*?)(?:\*\*|__)/g, '$1') // Remove bold
+      .replace(/(?:\*|_)(.*?)(?:\*|_)/g, '$1')   // Remove italic
+      .replace(/!\[([^\]]+)\]\([^)]+\)/g, '[Image: $1]'); // Replace images
+    
+    // Limit preview length
+    return cleanText.length > 100 ? cleanText.slice(0, 100) + '...' : cleanText;
+  };
+
   return (
     <div className="snippet-list">
       {snippets.map((snippet) => (
@@ -37,8 +53,7 @@ const SnippetList: React.FC<SnippetListProps> = ({
             </div>
           )}
           <div className="snippet-preview">
-            {snippet.content.slice(0, 100)}
-            {snippet.content.length > 100 && '...'}
+            {getContentPreview(snippet.content)}
           </div>
         </div>
       ))}

@@ -67,6 +67,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .editor-header {
@@ -93,13 +94,15 @@
 
 .editor-content {
   flex: 1;
-  padding: 15px;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 100px); /* Adjust height to account for title and tags */
 }
 
 .editor-textarea {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 40px);
   border: none;
   resize: none;
   font-family: inherit;
@@ -195,4 +198,21 @@
 
 .empty-state p {
   margin-bottom: 20px;
+}
+
+/* Add some common syntax highlighting styles */
+code[class*="language-"],
+pre[class*="language-"] {
+  text-shadow: none !important;
+  border-radius: 4px;
+}
+
+/* Custom styles for .NET languages */
+code[class*="language-csharp"],
+pre[class*="language-csharp"],
+code[class*="language-fsharp"],
+pre[class*="language-fsharp"],
+code[class*="language-vbnet"],
+pre[class*="language-vbnet"] {
+  border-left: 3px solid #8a2be2 !important; /* Distinct border for .NET languages */
 }
