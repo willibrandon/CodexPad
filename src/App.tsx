@@ -3,6 +3,8 @@ import './App.css';
 import SearchBar from './components/SearchBar';
 import SnippetList from './components/SnippetList';
 import SnippetEditor from './components/SnippetEditor';
+import TabsBar from './components/TabsBar';
+import { TabsProvider, useTabs } from './components/TabsContext';
 
 // Define TypeScript interfaces for our data
 export interface Snippet {
@@ -18,11 +20,15 @@ export interface Snippet {
 // Import our custom electron TypeScript definitions
 import './electron.d.ts';
 
-function App() {
+// Inner App component that uses the tabs context
+const AppContent: React.FC = () => {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
-  const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
+  const { openTab, activeTabId, openTabs, updateTabContent } = useTabs();
+
+  // Get the currently active snippet
+  const activeSnippet = openTabs.find(tab => tab.id === activeTabId) || null;
 
   // Load all snippets on component mount
   useEffect(() => {
@@ -59,11 +65,6 @@ function App() {
       if (window.electron) {
         const loadedSnippets = await window.electron.invoke('snippets:getAll');
         setSnippets(loadedSnippets);
-        
-        // Select the first snippet if available and none is selected
-        if (loadedSnippets.length > 0 && !selectedSnippet) {
-          setSelectedSnippet(loadedSnippets[0]);
-        }
       }
     } catch (error) {
       console.error('Failed to load snippets:', error);
@@ -75,7 +76,7 @@ function App() {
   };
 
   const handleSelectSnippet = (snippet: Snippet) => {
-    setSelectedSnippet(snippet);
+    openTab(snippet);
   };
 
   const handleUpdateSnippet = async (updatedSnippet: Snippet) => {
@@ -87,7 +88,9 @@ function App() {
         setSnippets(prev => 
           prev.map(s => s.id === updatedSnippet.id ? updatedSnippet : s)
         );
-        setSelectedSnippet(updatedSnippet);
+        
+        // Update the tab state if it's open
+        updateTabContent(updatedSnippet.id, updatedSnippet);
       }
     } catch (error) {
       console.error('Failed to update snippet:', error);
@@ -114,7 +117,9 @@ function App() {
         
         // Update local state
         setSnippets(prev => [newSnippet, ...prev]);
-        setSelectedSnippet(newSnippet);
+        
+        // Open the new snippet in a tab
+        openTab(newSnippet);
       }
     } catch (error) {
       console.error('Failed to create new snippet:', error);
@@ -127,13 +132,7 @@ function App() {
         await window.electron.invoke('snippets:delete', id);
         
         // Update local state
-        const updatedSnippets = snippets.filter(s => s.id !== id);
-        setSnippets(updatedSnippets);
-        
-        // If the deleted snippet was selected, select another one
-        if (selectedSnippet && selectedSnippet.id === id) {
-          setSelectedSnippet(updatedSnippets.length > 0 ? updatedSnippets[0] : null);
-        }
+        setSnippets(prev => prev.filter(s => s.id !== id));
       }
     } catch (error) {
       console.error('Failed to delete snippet:', error);
@@ -153,17 +152,30 @@ function App() {
       <div className="app-container">
         <SnippetList 
           snippets={filteredSnippets} 
-          selectedSnippet={selectedSnippet} 
+          selectedSnippet={activeSnippet} 
           onSelectSnippet={handleSelectSnippet}
         />
         
-        <SnippetEditor 
-          snippet={selectedSnippet} 
-          onUpdateSnippet={handleUpdateSnippet}
-          onDeleteSnippet={handleDeleteSnippet}
-        />
+        <div className="editor-container">
+          <TabsBar />
+          
+          <SnippetEditor 
+            snippet={activeSnippet} 
+            onUpdateSnippet={handleUpdateSnippet}
+            onDeleteSnippet={handleDeleteSnippet}
+          />
+        </div>
       </div>
     </div>
+  );
+};
+
+// Main App component wrapped with TabsProvider
+function App() {
+  return (
+    <TabsProvider>
+      <AppContent />
+    </TabsProvider>
   );
 }
 
