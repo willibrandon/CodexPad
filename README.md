@@ -1,14 +1,62 @@
 # CodexPad
 
-A lightweight, tabbed scratch pad application for quick note-taking and code snippet storage built with React and Electron.
+A modern, feature-rich code snippet manager and note-taking application built with React and Electron.
 
 ## Features
 
-- 📝 Create and edit notes or code snippets
-- 🔍 Search through your snippets
-- 💾 Auto-saving functionality
+### Core Functionality
+- 📝 Create, edit, and organize code snippets and notes
+- 🔍 Advanced search with filters and operators (tag:, language:, created:, etc.)
+- 📂 Tag-based organization system with AI-powered tag suggestions
+- 💾 Automatic saving functionality
+- 📱 Responsive design that works across different screen sizes
+
+### Modern UI/UX
+- 🌙 Dark and light mode with multiple color schemes
+- 🔤 Customizable fonts and sizing options
+- ⌨️ Multi-tab interface for working with multiple snippets
+
+### Productivity Features
+- ⚡ Command palette (Ctrl+P) for quick access to commands
+- 🔑 Extensive keyboard shortcuts for efficient navigation
+- 👨‍💻 Syntax highlighting for various programming languages
+- 🔄 Sync functionality to keep snippets updated across devices
+
+### System Integration
 - 🖥️ System tray integration
-- ⌨️ Global hotkey (Ctrl+Shift+Space) to show/hide the app
+- 🔔 Global hotkey (Ctrl+Shift+Space) to show/hide the app
+- 🚀 Quick startup and responsive performance
+
+## Keyboard Shortcuts
+
+### Navigation
+- `Ctrl+Tab` - Navigate to next tab
+- `Ctrl+Shift+Tab` - Navigate to previous tab
+- `Ctrl+1-9` - Go to specific tab by number
+- `Ctrl+W` - Close current tab
+
+### Editing
+- `Ctrl+N` - Create new snippet
+- `Ctrl+S` - Save current snippet
+
+### Search
+- `Ctrl+F` - Focus the search bar
+- `?` (in search) - Show search help popup
+
+### Other
+- `Ctrl+P` - Open command palette
+- `F1` - Show keyboard shortcuts help
+
+## Search Operators
+
+CodexPad supports advanced search with the following operators:
+
+- `tag:react` - Find snippets with specific tag
+- `language:typescript` - Find snippets with specific language
+- `created:>2024-01-01` - Created after date
+- `updated:<2024-02-01` - Updated before date
+- `is:favorite` - Show only favorites
+- `-term` - Exclude results with term
 
 ## Getting Started
 
@@ -21,7 +69,7 @@ A lightweight, tabbed scratch pad application for quick note-taking and code sni
 
 1. Clone this repository
 ```
-git clone https://github.com/yourusername/codexpad.git
+git clone https://github.com/willibrandon/codexpad.git
 cd codexpad
 ```
 
@@ -58,10 +106,12 @@ The packaged application will be available in the `dist` directory.
 
 ## Technology Stack
 
-- **Frontend:** React
+- **Frontend:** React, TypeScript
+- **UI Framework:** Custom CSS with CSS variables for theming
 - **Desktop Application:** Electron
-- **Storage:** electron-store (JSON-based local storage)
+- **Storage:** SQLite database via better-sqlite3
+- **Code Editing:** Custom editor implementation
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
