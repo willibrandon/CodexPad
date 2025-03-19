@@ -1,7 +1,7 @@
 .tag-manager {
   padding: 10px;
   border-bottom: 1px solid var(--border-color);
-  background-color: #f9f9f9;
+  background-color: var(--editor-bg);
 }
 
 .favorite-toggle {
@@ -13,7 +13,7 @@
   border: none;
   font-size: 1.2em;
   cursor: pointer;
-  color: #ccc;
+  color: var(--text-light);
   transition: color 0.2s;
 }
 
@@ -65,6 +65,14 @@
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9em;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
+}
+
+.add-tag-form input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
 }
 
 .add-tag-form button {

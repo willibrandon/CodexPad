@@ -7,6 +7,8 @@
   overflow: hidden;
   position: relative;
   transition: all 0.3s ease;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
 }
 
 /* Fullscreen mode */
@@ -21,7 +23,7 @@
   z-index: 9999;
   border-radius: 0;
   border: none;
-  background-color: white;
+  background-color: var(--editor-bg);
 }
 
 /* Minimal toolbar */
@@ -58,7 +60,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #555;
+  color: var(--text-color);
   transition: all 0.2s ease;
 }
 
@@ -71,8 +73,8 @@
 }
 
 .toolbar-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: #000;
+  background-color: var(--background-color);
+  color: var(--primary-color);
 }
 
 .toolbar-btn.active {
@@ -92,13 +94,14 @@
   position: absolute;
   top: 36px;
   left: 0;
-  background-color: white;
+  background-color: var(--editor-bg);
   min-width: 200px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.15);
   z-index: 10;
   border-radius: 4px;
   padding: 8px 0;
   margin-top: 2px;
+  border: 1px solid var(--border-color);
 }
 
 .dropdown-section {
@@ -108,14 +111,14 @@
 .dropdown-title {
   display: block;
   font-size: 0.75em;
-  color: #888;
+  color: var(--text-light);
   text-transform: uppercase;
   padding: 4px 8px;
   font-weight: 600;
 }
 
 .dropdown-content button {
-  color: #333;
+  color: var(--text-color);
   padding: 6px 16px;
   text-decoration: none;
   display: block;
@@ -129,12 +132,13 @@
 }
 
 .dropdown-content button:hover {
-  background-color: #f5f5f5;
+  background-color: var(--background-color);
+  color: var(--primary-color);
 }
 
 .dropdown-divider {
   height: 1px;
-  background-color: #eee;
+  background-color: var(--border-color);
   margin: 6px 0;
 }
 
@@ -154,10 +158,11 @@
   padding: 16px;
   border: none;
   resize: none;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-family: var(--code-font);
   font-size: 0.9em;
   line-height: 1.5;
-  background: #fafafa;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
 }
 
 .markdown-textarea:focus {
@@ -168,6 +173,8 @@
   padding: 16px;
   height: 100%;
   overflow: auto;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
 }
 
 .markdown-preview {

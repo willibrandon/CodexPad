@@ -48,12 +48,13 @@
 }
 
 .tab-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--background-hover);
 }
 
 .tab-item.active {
-  background-color: white;
+  background-color: var(--editor-bg);
   border-bottom: 2px solid var(--primary-color);
+  color: var(--text-color);
 }
 
 .tab-title {
@@ -94,7 +95,7 @@
 }
 
 .tab-close:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--background-hover);
 }
 
 /* Responsive styles */
