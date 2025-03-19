@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Snippet } from '../App';
+import { summarizationService } from '../services/ai/summarizationService';
 
 interface SnippetListProps {
   snippets: Snippet[];
@@ -12,28 +13,42 @@ const SnippetList: React.FC<SnippetListProps> = ({
   selectedSnippet,
   onSelectSnippet,
 }) => {
-  // Function to get a clean text preview from markdown content
-  const getContentPreview = (content: string) => {
-    // Remove markdown syntax for preview
-    const cleanText = content
-      .replace(/```[\s\S]*?```/g, '[Code Block]') // Replace code blocks
-      .replace(/`([^`]+)`/g, '$1')               // Remove inline code markers
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')   // Replace links with just the text
-      .replace(/#+\s(.+)/g, '$1')                // Remove heading markers
-      .replace(/(?:\*\*|__)(.*?)(?:\*\*|__)/g, '$1') // Remove bold
-      .replace(/(?:\*|_)(.*?)(?:\*|_)/g, '$1')   // Remove italic
-      .replace(/!\[([^\]]+)\]\([^)]+\)/g, '[Image: $1]'); // Replace images
-    
-    // Limit preview length
-    return cleanText.length > 100 ? cleanText.slice(0, 100) + '...' : cleanText;
-  };
+  const [summaries, setSummaries] = useState<{ [key: number]: string }>({});
+
+  // Get summaries for all snippets
+  useEffect(() => {
+    const generateSummaries = async () => {
+      const newSummaries: { [key: number]: string } = {};
+      
+      for (const snippet of snippets) {
+        try {
+          // Handle empty snippets
+          if (!snippet.content || snippet.content.trim() === '') {
+            newSummaries[snippet.id] = 'No content';
+            continue;
+          }
+          
+          const summary = await summarizationService.summarize(snippet.content);
+          newSummaries[snippet.id] = summary;
+        } catch (error) {
+          console.error(`Failed to generate summary for snippet ${snippet.id}:`, error);
+          // Fall back to first few characters if summarization fails
+          newSummaries[snippet.id] = snippet.content ? snippet.content.slice(0, 100) + '...' : 'No content';
+        }
+      }
+      
+      setSummaries(newSummaries);
+    };
+
+    generateSummaries();
+  }, [snippets]);
 
   return (
     <div className="snippet-list">
       {snippets.map((snippet) => (
         <div
           key={snippet.id}
-          className={`snippet-item ${selectedSnippet?.id === snippet.id ? 'selected' : ''}`}
+          className={`snippet-item ${selectedSnippet?.id === snippet.id ? 'active' : ''}`}
           onClick={() => onSelectSnippet(snippet)}
         >
           <div className="snippet-header">
@@ -53,7 +68,7 @@ const SnippetList: React.FC<SnippetListProps> = ({
             </div>
           )}
           <div className="snippet-preview">
-            {getContentPreview(snippet.content)}
+            {summaries[snippet.id] || (snippet.content ? 'Loading preview...' : 'No content')}
           </div>
         </div>
       ))}
