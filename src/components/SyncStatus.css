@@ -5,7 +5,7 @@
   font-size: 0.8rem;
   border-top: 1px solid var(--border-color);
   height: 30px;
-  background-color: #f9f9f9;
+  background-color: var(--editor-bg);
 }
 
 .sync-indicator {
@@ -22,21 +22,21 @@
 }
 
 .sync-dot.connected {
-  background-color: #2ecc71; /* Green */
-  box-shadow: 0 0 5px rgba(46, 204, 113, 0.8);
+  background-color: #2ecc71; /* Keep green for clear status indication */
+  box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
 }
 
 .sync-dot.connecting {
-  background-color: #f39c12; /* Orange */
+  background-color: #f39c12; /* Keep orange for clear status indication */
   animation: pulse 1.5s infinite;
 }
 
 .sync-dot.disabled {
-  background-color: #95a5a6; /* Grey */
+  background-color: var(--text-light);
 }
 
 .sync-text {
-  color: var(--text-light);
+  color: var(--text-color);
 }
 
 .sync-pending {
@@ -55,9 +55,9 @@
 
 .sync-log-button {
   background: none;
-  border: 1px solid #3498db;
+  border: 1px solid var(--primary-color);
   border-radius: 4px;
-  color: #3498db;
+  color: var(--primary-color);
   font-size: 0.75rem;
   padding: 3px 6px;
   cursor: pointer;
@@ -66,7 +66,7 @@
 }
 
 .sync-log-button:hover {
-  background-color: #3498db;
+  background-color: var(--primary-color);
   color: white;
 }
 
