@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Prism from 'prismjs';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Import Prism core styles
 import 'prismjs/themes/prism-tomorrow.css';
@@ -48,6 +49,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { settings, updateSettings } = useTheme();
   
   // Apply syntax highlighting when preview mode is activated
   useEffect(() => {
@@ -250,6 +252,17 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     setShowKeyboardHelp(!showKeyboardHelp);
   };
 
+  // Handle code font change
+  const handleCodeFontChange = (codeFont: string) => {
+    updateSettings({ codeFont: codeFont as any });
+    // Force refresh the preview if needed
+    if (isPreview && previewRef.current) {
+      setTimeout(() => {
+        Prism.highlightAllUnder(previewRef.current!);
+      }, 10);
+    }
+  };
+
   return (
     <div className={`markdown-editor ${isFullscreen ? 'fullscreen' : ''}`}>
       <div className="toolbar minimal">
@@ -369,6 +382,41 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           >
             <span className="icon">{isFullscreen ? '↙' : '↗'}</span>
           </button>
+          
+          <div className="code-font-dropdown">
+            <button className="toolbar-btn" title="Change Code Font">
+              <span className="icon">A</span>
+            </button>
+            <div className="dropdown-content">
+              <div className="dropdown-section">
+                <span className="dropdown-title">Code Font</span>
+                <button 
+                  onClick={() => handleCodeFontChange('default')}
+                  className={settings.codeFont === 'default' ? 'active' : ''}
+                >
+                  Default
+                </button>
+                <button 
+                  onClick={() => handleCodeFontChange('fira-code')}
+                  className={settings.codeFont === 'fira-code' ? 'active' : ''}
+                >
+                  Fira Code
+                </button>
+                <button 
+                  onClick={() => handleCodeFontChange('jetbrains-mono')}
+                  className={settings.codeFont === 'jetbrains-mono' ? 'active' : ''}
+                >
+                  JetBrains Mono
+                </button>
+                <button 
+                  onClick={() => handleCodeFontChange('cascadia-code')}
+                  className={settings.codeFont === 'cascadia-code' ? 'active' : ''}
+                >
+                  Cascadia Code
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -430,7 +478,49 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         {isPreview ? (
           <div className="preview-container" ref={previewRef}>
             <div className="markdown-preview">
-              <ReactMarkdown>
+              <ReactMarkdown
+                key={`markdown-${settings.codeFont}`}
+                components={{
+                  code: ({ node, inline, className, children, ...props }: any) => {
+                    let fontFamily;
+                    switch(settings.codeFont) {
+                      case 'fira-code':
+                        fontFamily = "'Fira Code', monospace";
+                        break;
+                      case 'jetbrains-mono':
+                        fontFamily = "'JetBrains Mono', monospace";
+                        break;
+                      case 'cascadia-code':
+                        fontFamily = "'Cascadia Code', monospace";
+                        break;
+                      default:
+                        fontFamily = "monospace";
+                    }
+                    
+                    const match = /language-(\w+)/.exec(className || '');
+                    
+                    return !inline && match ? (
+                      <pre style={{ fontFamily }}>
+                        <code
+                          className={className}
+                          style={{ fontFamily }}
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      </pre>
+                    ) : (
+                      <code 
+                        className={className} 
+                        style={{ fontFamily }}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    );
+                  }
+                }}
+              >
                 {content || '_No content_'}
               </ReactMarkdown>
             </div>
