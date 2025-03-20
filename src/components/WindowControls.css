@@ -3,6 +3,8 @@
   height: 32px;
   margin-left: auto;
   -webkit-app-region: no-drag;
+  position: relative;
+  z-index: 1000;
 }
 
 .window-control {
@@ -16,6 +18,7 @@
   justify-content: center;
   cursor: pointer;
   transition: background-color 0.2s;
+  -webkit-app-region: no-drag;
 }
 
 .window-control:hover {
