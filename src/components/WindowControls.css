@@ -74,6 +74,15 @@
   fill: currentColor;
 }
 
+/* Light theme specific overrides */
+:root.light-mode .app-control {
+  color: #424242;
+}
+
+:root.light-mode .app-control:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 /* macOS specific styles */
 .window-controls-spacer {
   display: flex;
