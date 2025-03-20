@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo, lazy, Suspense } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Prism from 'prismjs';
 import { useTheme } from '../contexts/ThemeContext';
@@ -39,7 +39,14 @@ interface MarkdownEditorProps {
   placeholder?: string;
 }
 
-const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
+// Lazy load Prism languages
+const loadPrismLanguage = (language: string) => {
+  import(`prismjs/components/prism-${language}`).catch(() => {
+    console.warn(`Failed to load language: ${language}`);
+  });
+};
+
+const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   content,
   onChange,
   placeholder = 'Write your notes here...'
@@ -51,13 +58,75 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { settings, updateSettings } = useTheme();
   
-  // Apply syntax highlighting when preview mode is activated
+  // Memoize markdown preview component
+  const MarkdownPreview = useMemo(() => {
+    return (
+      <ReactMarkdown
+        key={`markdown-${settings.codeFont}`}
+        components={{
+          code: ({ node, inline, className, children, ...props }: any) => {
+            let fontFamily;
+            switch(settings.codeFont) {
+              case 'fira-code':
+                fontFamily = "'Fira Code', monospace";
+                break;
+              case 'jetbrains-mono':
+                fontFamily = "'JetBrains Mono', monospace";
+                break;
+              case 'cascadia-code':
+                fontFamily = "'Cascadia Code', monospace";
+                break;
+              default:
+                fontFamily = "monospace";
+            }
+            
+            const match = /language-(\w+)/.exec(className || '');
+            if (match && !inline) {
+              const language = match[1];
+              loadPrismLanguage(language);
+            }
+            
+            return !inline && match ? (
+              <pre style={{ fontFamily }}>
+                <code
+                  className={className}
+                  style={{ fontFamily }}
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </code>
+              </pre>
+            ) : (
+              <code 
+                className={className} 
+                style={{ fontFamily }}
+                {...props}
+              >
+                {children}
+              </code>
+            );
+          }
+        }}
+        remarkPlugins={[]}
+      >
+        {content || '_No content_'}
+      </ReactMarkdown>
+    );
+  }, [content, settings.codeFont]);
+
+  // Debounce syntax highlighting with RAF
   useEffect(() => {
     if (isPreview && previewRef.current) {
-      const highlightTimer = setTimeout(() => {
-        Prism.highlightAllUnder(previewRef.current!);
-      }, 100);
-      return () => clearTimeout(highlightTimer);
+      let rafId: number;
+      const highlight = () => {
+        rafId = requestAnimationFrame(() => {
+          Prism.highlightAllUnder(previewRef.current!);
+        });
+      };
+      highlight();
+      return () => {
+        if (rafId) cancelAnimationFrame(rafId);
+      };
     }
   }, [isPreview, content]);
 
@@ -481,52 +550,9 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         {isPreview ? (
           <div className="preview-container" ref={previewRef}>
             <div className="markdown-preview">
-              <ReactMarkdown
-                key={`markdown-${settings.codeFont}`}
-                components={{
-                  code: ({ node, inline, className, children, ...props }: any) => {
-                    let fontFamily;
-                    switch(settings.codeFont) {
-                      case 'fira-code':
-                        fontFamily = "'Fira Code', monospace";
-                        break;
-                      case 'jetbrains-mono':
-                        fontFamily = "'JetBrains Mono', monospace";
-                        break;
-                      case 'cascadia-code':
-                        fontFamily = "'Cascadia Code', monospace";
-                        break;
-                      default:
-                        fontFamily = "monospace";
-                    }
-                    
-                    const match = /language-(\w+)/.exec(className || '');
-                    
-                    return !inline && match ? (
-                      <pre style={{ fontFamily }}>
-                        <code
-                          className={className}
-                          style={{ fontFamily }}
-                          {...props}
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </code>
-                      </pre>
-                    ) : (
-                      <code 
-                        className={className} 
-                        style={{ fontFamily }}
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    );
-                  }
-                }}
-                remarkPlugins={[]}
-              >
-                {content || '_No content_'}
-              </ReactMarkdown>
+              <Suspense fallback={<div>Loading preview...</div>}>
+                {MarkdownPreview}
+              </Suspense>
             </div>
           </div>
         ) : (
@@ -542,6 +568,6 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default MarkdownEditor; 

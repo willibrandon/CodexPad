@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Snippet } from '../App';
 import TagManager from './TagManager';
 import MarkdownEditor from './MarkdownEditor';
@@ -11,7 +11,7 @@ interface SnippetEditorProps {
   onDeleteSnippet: (id: number) => void;
 }
 
-const SnippetEditor: React.FC<SnippetEditorProps> = ({ 
+const SnippetEditor: React.FC<SnippetEditorProps> = memo(({ 
   snippet, 
   onUpdateSnippet, 
   onDeleteSnippet 
@@ -101,7 +101,8 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
     setSaveTimeout(timeoutId);
   };
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Memoize callbacks
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
     setEditedTitle(newTitle);
     
@@ -113,9 +114,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       };
       debouncedSave(updatedSnippet);
     }
-  };
+  }, [snippet, debouncedSave]);
 
-  const handleContentChange = (newContent: string) => {
+  const handleContentChange = useCallback((newContent: string) => {
     setEditedContent(newContent);
     
     if (snippet) {
@@ -126,9 +127,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       };
       debouncedSave(updatedSnippet);
     }
-  };
+  }, [snippet, debouncedSave]);
 
-  const handleTagsChange = (newTags: string[]) => {
+  const handleTagsChange = useCallback((newTags: string[]) => {
     setEditedTags(newTags);
     
     if (snippet) {
@@ -139,9 +140,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       };
       debouncedSave(updatedSnippet);
     }
-  };
+  }, [snippet, debouncedSave]);
 
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = useCallback(() => {
     const newFavorite = !isFavorite;
     setIsFavorite(newFavorite);
     
@@ -153,7 +154,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       };
       debouncedSave(updatedSnippet);
     }
-  };
+  }, [snippet, isFavorite, debouncedSave]);
 
   const handleDelete = () => {
     if (snippet && window.confirm('Are you sure you want to delete this snippet?')) {
@@ -282,6 +283,6 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default SnippetEditor;

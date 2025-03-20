@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import './TagManager.css';
 import { tagSuggestionService } from '../services/ai/tagSuggestionService';
 
@@ -10,7 +10,7 @@ interface TagManagerProps {
   onFavoriteToggle: () => void;
 }
 
-const TagManager: React.FC<TagManagerProps> = ({
+const TagManager: React.FC<TagManagerProps> = memo(({
   tags = [],
   favorite = false,
   content = '',  // Default to empty string
@@ -22,62 +22,111 @@ const TagManager: React.FC<TagManagerProps> = ({
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
-  useEffect(() => {
-    // Fetch all available tags when component mounts
-    const fetchTags = async () => {
-      if (window.electron) {
-        const allTags = await window.electron.invoke('snippets:getAllTags');
-        setAvailableTags(allTags || []);
-      }
-    };
-    fetchTags();
-  }, []);
-
-  // Get AI suggestions when content changes
-  useEffect(() => {
-    const debouncedSuggestions = setTimeout(async () => {
-      if (content) {
-        setIsLoadingSuggestions(true);
-        try {
-          const suggestions = await tagSuggestionService.suggestTags(content, tags);
-          setSuggestedTags(suggestions);
-        } catch (error) {
-          console.error('Failed to get tag suggestions:', error);
-        } finally {
-          setIsLoadingSuggestions(false);
-        }
-      }
-    }, 2000); // 2 second debounce
-
-    return () => clearTimeout(debouncedSuggestions);
-  }, [content, tags]);
-
-  const handleAddTag = (e: React.FormEvent) => {
+  // Memoize tag operations
+  const handleAddTag = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (newTag && !tags.includes(newTag)) {
       const updatedTags = [...tags, newTag];
       onTagsChange(updatedTags);
       setNewTag('');
       
-      // Add to available tags if it's new
       if (!availableTags.includes(newTag)) {
-        setAvailableTags([...availableTags, newTag].sort());
+        setAvailableTags(prev => [...prev, newTag].sort());
       }
     }
-  };
+  }, [newTag, tags, onTagsChange, availableTags]);
 
-  const handleAddSuggestedTag = (tag: string) => {
+  const handleAddSuggestedTag = useCallback((tag: string) => {
     if (!tags.includes(tag)) {
-      const updatedTags = [...tags, tag];
-      onTagsChange(updatedTags);
-      setSuggestedTags(suggestedTags.filter(t => t !== tag));
+      onTagsChange([...tags, tag]);
+      setSuggestedTags(prev => prev.filter(t => t !== tag));
     }
-  };
+  }, [tags, onTagsChange]);
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    const updatedTags = tags.filter(tag => tag !== tagToRemove);
-    onTagsChange(updatedTags);
-  };
+  const handleRemoveTag = useCallback((tagToRemove: string) => {
+    onTagsChange(tags.filter(tag => tag !== tagToRemove));
+  }, [tags, onTagsChange]);
+
+  // Fetch available tags only once on mount
+  useEffect(() => {
+    let mounted = true;
+    const fetchTags = async () => {
+      if (window.electron) {
+        const allTags = await window.electron.invoke('snippets:getAllTags');
+        if (mounted) {
+          setAvailableTags(allTags || []);
+        }
+      }
+    };
+    fetchTags();
+    return () => { mounted = false; };
+  }, []);
+
+  // Debounced tag suggestions with cleanup
+  useEffect(() => {
+    let mounted = true;
+    const getSuggestions = async () => {
+      if (!content || !mounted) return;
+      
+      setIsLoadingSuggestions(true);
+      try {
+        const suggestions = await tagSuggestionService.suggestTags(content, tags);
+        if (mounted) {
+          setSuggestedTags(suggestions);
+        }
+      } catch (error) {
+        console.error('Failed to get tag suggestions:', error);
+      } finally {
+        if (mounted) {
+          setIsLoadingSuggestions(false);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(getSuggestions, 2000);
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [content, tags]);
+
+  // Memoize rendered tags
+  const renderedTags = useMemo(() => (
+    <div className="tags-container">
+      {(tags || []).map(tag => (
+        <span key={tag} className="tag">
+          {tag}
+          <button
+            className="remove-tag"
+            onClick={() => handleRemoveTag(tag)}
+          >
+            ×
+          </button>
+        </span>
+      ))}
+    </div>
+  ), [tags, handleRemoveTag]);
+
+  // Memoize suggested tags
+  const renderedSuggestedTags = useMemo(() => (
+    suggestedTags.length > 0 && (
+      <div className="suggested-tags">
+        <span className="suggested-tags-label">
+          {isLoadingSuggestions ? 'Getting suggestions...' : 'Suggested tags:'}
+        </span>
+        {suggestedTags.map(tag => (
+          <button
+            key={tag}
+            className="suggested-tag"
+            onClick={() => handleAddSuggestedTag(tag)}
+            title="Click to add this tag"
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+    )
+  ), [suggestedTags, isLoadingSuggestions, handleAddSuggestedTag]);
 
   return (
     <div className="tag-manager">
@@ -91,37 +140,8 @@ const TagManager: React.FC<TagManagerProps> = ({
         </button>
       </div>
       
-      <div className="tags-container">
-        {(tags || []).map(tag => (
-          <span key={tag} className="tag">
-            {tag}
-            <button
-              className="remove-tag"
-              onClick={() => handleRemoveTag(tag)}
-            >
-              ×
-            </button>
-          </span>
-        ))}
-      </div>
-      
-      {suggestedTags.length > 0 && (
-        <div className="suggested-tags">
-          <span className="suggested-tags-label">
-            {isLoadingSuggestions ? 'Getting suggestions...' : 'Suggested tags:'}
-          </span>
-          {suggestedTags.map(tag => (
-            <button
-              key={tag}
-              className="suggested-tag"
-              onClick={() => handleAddSuggestedTag(tag)}
-              title="Click to add this tag"
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      )}
+      {renderedTags}
+      {renderedSuggestedTags}
       
       <form onSubmit={handleAddTag} className="add-tag-form">
         <input
@@ -140,6 +160,6 @@ const TagManager: React.FC<TagManagerProps> = ({
       </form>
     </div>
   );
-};
+});
 
 export default TagManager; 
