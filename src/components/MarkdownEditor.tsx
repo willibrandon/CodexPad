@@ -54,7 +54,10 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   // Apply syntax highlighting when preview mode is activated
   useEffect(() => {
     if (isPreview && previewRef.current) {
-      Prism.highlightAllUnder(previewRef.current);
+      const highlightTimer = setTimeout(() => {
+        Prism.highlightAllUnder(previewRef.current!);
+      }, 100);
+      return () => clearTimeout(highlightTimer);
     }
   }, [isPreview, content]);
 
@@ -506,7 +509,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                           style={{ fontFamily }}
                           {...props}
                         >
-                          {children}
+                          {String(children).replace(/\n$/, '')}
                         </code>
                       </pre>
                     ) : (
@@ -520,6 +523,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                     );
                   }
                 }}
+                remarkPlugins={[]}
               >
                 {content || '_No content_'}
               </ReactMarkdown>

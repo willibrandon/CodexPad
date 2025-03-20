@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './TagManager.css';
 import { tagSuggestionService } from '../services/ai/tagSuggestionService';
 
@@ -35,7 +35,7 @@ const TagManager: React.FC<TagManagerProps> = ({
 
   // Get AI suggestions when content changes
   useEffect(() => {
-    const getSuggestions = async () => {
+    const debouncedSuggestions = setTimeout(async () => {
       if (content) {
         setIsLoadingSuggestions(true);
         try {
@@ -47,8 +47,9 @@ const TagManager: React.FC<TagManagerProps> = ({
           setIsLoadingSuggestions(false);
         }
       }
-    };
-    getSuggestions();
+    }, 2000); // 2 second debounce
+
+    return () => clearTimeout(debouncedSuggestions);
   }, [content, tags]);
 
   const handleAddTag = (e: React.FormEvent) => {

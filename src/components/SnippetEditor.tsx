@@ -96,7 +96,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({
     const timeoutId = setTimeout(() => {
       onUpdateSnippet(updatedSnippet);
       setSaveStatus('saved');
-    }, 500); // 500ms debounce
+    }, 1500); // 1.5 second debounce
     
     setSaveTimeout(timeoutId);
   };
