@@ -129,10 +129,6 @@ const AppMenu: React.FC = () => {
                     Command Palette
                     <span className="shortcut">Ctrl+Shift+P</span>
                   </div>
-                  <div className="menu-separator" />
-                  <div className="menu-dropdown-item" onClick={() => handleMenuAction('toggle-theme')}>
-                    Toggle Theme
-                  </div>
                 </div>
               )}
             </div>
