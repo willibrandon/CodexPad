@@ -44,4 +44,10 @@ coverage/
 # Temporary directories
 temp-app/
 tmp/
-temp/ 
+temp/
+
+# Executables
+*.exe
+*.out
+server/codexpad-server
+server/codexpad-server.exe 
