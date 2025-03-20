@@ -7,6 +7,8 @@
   --primary-color: #209fec;
   --primary-color-rgb: 32, 159, 236;
   --editor-bg: #252526;
+  --scrollbar-thumb-color: #555555;
+  --scrollbar-thumb-hover-color: #666666;
 }
 
 /* Default Theme Color Scheme */
