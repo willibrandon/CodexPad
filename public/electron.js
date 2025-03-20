@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, protocol } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const fs = require('fs');
@@ -55,7 +55,7 @@ ipcMain.handle('menu-action', async (event, action) => {
       mainWindow.webContents.send('menu-action', 'keyboard-shortcuts');
       break;
     case 'documentation':
-      mainWindow.webContents.send('menu-action', 'documentation');
+      openDocumentation();
       break;
     case 'about':
       mainWindow.webContents.send('menu-action', 'about');
@@ -1024,5 +1024,233 @@ ipcMain.handle('export:pdf', async (event, snippet) => {
   } catch (error) {
     console.error('Failed to export as PDF:', error);
     return { success: false, error: error.message };
+  }
+});
+
+// Function to open documentation in a new window
+function openDocumentation() {
+  // Create documentation window
+  let docWindow = new BrowserWindow({
+    width: 900,
+    height: 700,
+    title: 'CodexPad Documentation',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      preload: path.join(__dirname, 'preload.js'),
+    }
+  });
+
+  // Function to load a documentation file
+  const loadDocFile = async (filename) => {
+    try {
+      const docsPath = path.join(app.getAppPath(), isDev ? 'docs' : '../docs');
+      const filePath = path.join(docsPath, filename);
+      
+      if (!fs.existsSync(filePath)) {
+        return docWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent('<h1>File Not Found</h1><p>The requested documentation file could not be found.</p>')}`);
+      }
+      
+      const markdownContent = fs.readFileSync(filePath, 'utf8');
+      
+      // Get the current theme directly from the main window
+      const themeData = await mainWindow.webContents.executeJavaScript(`
+        ({
+          htmlClasses: document.documentElement.className,
+          htmlDataTheme: document.documentElement.dataset.theme || '',
+          allStyles: Array.from(document.head.querySelectorAll('style'))
+            .map(style => style.textContent)
+            .join('\\n')
+        })
+      `);
+      
+      // Generate HTML content
+      const renderer = new marked.Renderer();
+      
+      // Fix anchor links
+      renderer.heading = function(text, level) {
+        const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+        return '<h' + level + ' id="' + escapedText + '">' + text + '</h' + level + '>';
+      };
+      
+      // Convert markdown to HTML
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html class="${themeData.htmlClasses}" ${themeData.htmlDataTheme ? `data-theme="${themeData.htmlDataTheme}"` : ''}>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>CodexPad Documentation</title>
+          <style>
+            ${themeData.allStyles}
+            
+            /* Additional styles specific to documentation */
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+              line-height: 1.6;
+              padding: 20px;
+              max-width: 800px;
+              margin: 0 auto;
+              height: calc(100vh - 40px);
+              overflow-y: auto;
+            }
+            
+            pre, code {
+              border-radius: 3px;
+              padding: 0.2em 0.4em;
+              font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            }
+            
+            pre {
+              padding: 16px;
+              overflow: auto;
+            }
+            
+            pre code {
+              padding: 0;
+            }
+            
+            blockquote {
+              border-left: 4px solid var(--border-color, #ddd);
+              padding-left: 16px;
+              margin: 0 0 16px 0;
+            }
+            
+            img {
+              max-width: 100%;
+            }
+            
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              margin: 16px 0;
+            }
+            
+            th, td {
+              padding: 8px;
+              text-align: left;
+            }
+            
+            /* Scrollbar styling */
+            ::-webkit-scrollbar {
+              width: 10px;
+              height: 10px;
+            }
+            
+            ::-webkit-scrollbar-track {
+              background: var(--editor-bg, #f1f1f1);
+            }
+            
+            ::-webkit-scrollbar-thumb {
+              background: var(--text-light, #888);
+              border-radius: 5px;
+              border: 2px solid var(--editor-bg, #f1f1f1);
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+              background: var(--text-color, #555);
+            }
+          </style>
+        </head>
+        <body>
+          ${marked(markdownContent, { renderer })}
+          <script>
+            // Use an IIFE to avoid variable leaks to global scope
+            (function() {
+              // Handle link clicks - use a delegated event listener
+              document.addEventListener('click', (event) => {
+                const linkElement = event.target.closest('a');
+                if (!linkElement) return;
+                
+                const href = linkElement.getAttribute('href');
+                if (!href) return;
+                
+                // Handle anchor links
+                if (href.startsWith('#')) {
+                  event.preventDefault();
+                  const targetElement = document.getElementById(href.substring(1));
+                  if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  return;
+                }
+                
+                // Handle markdown file links
+                if (href.endsWith('.md')) {
+                  event.preventDefault();
+                  window.location.href = 'codexpad://load-doc?file=' + encodeURIComponent(href);
+                }
+              });
+            })();
+          </script>
+        </body>
+        </html>
+      `;
+      
+      // Load the HTML content
+      return docWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+    } catch (error) {
+      console.error('Error loading documentation:', error);
+      return docWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent('<h1>Error</h1><p>Failed to load documentation: ' + error.message + '</p>')}`);
+    }
+  };
+
+  // Register protocol for docs navigation
+  if (!app.isDefaultProtocolClient('codexpad')) {
+    app.setAsDefaultProtocolClient('codexpad');
+  }
+
+  // Handle protocol requests for doc links
+  app.on('open-url', (event, url) => {
+    event.preventDefault();
+    
+    if (url.startsWith('codexpad://load-doc')) {
+      const fileParam = new URL(url).searchParams.get('file');
+      if (fileParam && docWindow && !docWindow.isDestroyed()) {
+        loadDocFile(fileParam);
+      }
+    }
+  });
+
+  // Register a custom protocol handler for internal navigation
+  protocol.registerHttpProtocol('codexpad', (request, callback) => {
+    const url = new URL(request.url);
+    
+    if (url.pathname === '/load-doc' && url.searchParams.has('file')) {
+      const fileParam = url.searchParams.get('file');
+      loadDocFile(fileParam);
+    }
+  });
+
+  // Listen for navigation events
+  docWindow.webContents.on('will-navigate', (event, url) => {
+    if (url.startsWith('codexpad://')) {
+      event.preventDefault();
+      const fileParam = new URL(url).searchParams.get('file');
+      if (fileParam) {
+        loadDocFile(fileParam);
+      }
+    }
+  });
+
+  // Initial load of index.md
+  loadDocFile('index.md');
+
+  // Emitted when the window is closed
+  docWindow.on('closed', () => {
+    docWindow = null;
+  });
+}
+
+// Remove the load-doc-file IPC handler since we're using protocol-based navigation
+ipcMain.handle('load-doc-file', async (event, filename) => {
+  const docsPath = path.join(app.getAppPath(), isDev ? 'docs' : '../docs');
+  const filePath = path.join(docsPath, filename);
+  
+  if (fs.existsSync(filePath)) {
+    return filename; // Just return the filename for logging
+  } else {
+    return null;
   }
 });

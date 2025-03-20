@@ -29,7 +29,8 @@ contextBridge.exposeInMainWorld(
         'platform:get',
         'menu-action',
         'toggle-theme',
-        'open-settings'
+        'open-settings',
+        'load-doc-file'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
