@@ -1,0 +1,33 @@
+.window-controls {
+  display: flex;
+  height: 32px;
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+}
+
+.window-control {
+  width: 46px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #cccccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.window-control:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.window-control.close:hover {
+  background-color: #e81123;
+}
+
+.window-control svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+} 

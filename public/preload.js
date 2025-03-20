@@ -22,10 +22,22 @@ contextBridge.exposeInMainWorld(
         'get-fonts-path',
         'export:markdown',
         'export:html',
-        'export:pdf'
+        'export:pdf',
+        'window:isMaximized'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
+      }
+    },
+    send: (channel, ...args) => {
+      // Whitelist channels that can be sent
+      const validChannels = [
+        'window:minimize',
+        'window:maximize-restore',
+        'window:close'
+      ];
+      if (validChannels.includes(channel)) {
+        ipcRenderer.send(channel, ...args);
       }
     },
     receive: (channel, func) => {
@@ -33,7 +45,9 @@ contextBridge.exposeInMainWorld(
         'create-new-snippet', 
         'sync:update', 
         'sync:connection-status',
-        'sync:log-entry'
+        'sync:log-entry',
+        'window-maximized',
+        'window-unmaximized'
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender` 
@@ -45,7 +59,9 @@ contextBridge.exposeInMainWorld(
         'create-new-snippet', 
         'sync:update', 
         'sync:connection-status',
-        'sync:log-entry'
+        'sync:log-entry',
+        'window-maximized',
+        'window-unmaximized'
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.removeAllListeners(channel);

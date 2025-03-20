@@ -33,6 +33,7 @@ declare global {
   interface Window {
     electron: {
       invoke: (channel: string, ...args: any[]) => Promise<any>;
+      send: (channel: 'window:minimize' | 'window:maximize-restore' | 'window:close', ...args: any[]) => void;
       receive: (channel: string, func: (...args: any[]) => void) => void;
       removeAllListeners: (channel: string) => void;
       getFontsPath: () => Promise<string>;

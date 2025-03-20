@@ -16,6 +16,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
+    frame: false,  // Remove default window frame
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -25,12 +26,46 @@ function createWindow() {
     icon: path.join(__dirname, isDev ? '../public/favicon.ico' : 'favicon.ico'),
   });
 
+  // Remove the native menu
+  Menu.setApplicationMenu(null);
+
   // Load the app
   const startUrl = isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html')}`;
   
   mainWindow.loadURL(startUrl);
+
+  // Window control events
+  ipcMain.on('window:minimize', () => {
+    mainWindow?.minimize();
+  });
+
+  ipcMain.on('window:maximize-restore', () => {
+    if (mainWindow?.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow?.maximize();
+    }
+  });
+
+  ipcMain.on('window:close', () => {
+    mainWindow?.close();
+  });
+
+  // Window state events
+  mainWindow.on('maximize', () => {
+    mainWindow?.webContents.send('window-maximized');
+  });
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow?.webContents.send('window-unmaximized');
+  });
+
+  // Handle window state query
+  ipcMain.handle('window:isMaximized', () => {
+    return mainWindow?.isMaximized();
+  });
 
   // Wait for window to be ready before setting up sync status
   mainWindow.webContents.on('did-finish-load', () => {
@@ -247,9 +282,6 @@ app.whenReady().then(() => {
   // Import services here to ensure app is ready
   snippetService = require('../src/services/snippetService');
   syncService = require('../src/services/syncService');
-  
-  // Remove the native menu bar
-  Menu.setApplicationMenu(null);
   
   // Initialize sync service if enabled
   if (syncEnabled) {

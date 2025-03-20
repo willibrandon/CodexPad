@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import WindowControls from './WindowControls';
 import './AppMenu.css';
 
 const AppMenu: React.FC = () => {
@@ -33,6 +34,7 @@ const AppMenu: React.FC = () => {
   return (
     <div className="app-menu" ref={menuRef}>
       <div className="menu-bar">
+        <div className="menu-bar-drag-region" />
         <div className="menu-bar-items">
           <div 
             className={`menu-item ${activeMenu === 'file' ? 'active' : ''}`}
@@ -111,6 +113,7 @@ const AppMenu: React.FC = () => {
             )}
           </div>
         </div>
+        <WindowControls />
       </div>
     </div>
   );
