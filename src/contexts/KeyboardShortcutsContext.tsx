@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { Snippet } from '../App';
 import { useTabs } from '../components/TabsContext';
 
@@ -41,8 +41,8 @@ export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ c
   const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const { activeTabId, openTabs, openTab, closeTab, setActiveTab } = useTabs();
 
-  // Register a new shortcut
-  const registerShortcut = (shortcut: KeyboardShortcut) => {
+  // Register a new shortcut - memoized to prevent dependency cycles
+  const registerShortcut = useCallback((shortcut: KeyboardShortcut) => {
     setShortcuts(prev => {
       // Replace if exists, otherwise add
       const exists = prev.some(s => s.id === shortcut.id);
@@ -52,12 +52,12 @@ export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ c
         return [...prev, shortcut];
       }
     });
-  };
+  }, []);
 
-  // Unregister a shortcut
-  const unregisterShortcut = (id: string) => {
+  // Unregister a shortcut - memoized to prevent dependency cycles
+  const unregisterShortcut = useCallback((id: string) => {
     setShortcuts(prev => prev.filter(s => s.id !== id));
-  };
+  }, []);
 
   // Handle global keyboard events
   useEffect(() => {
@@ -111,7 +111,9 @@ export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ c
     };
   }, [shortcuts, searchFocused, commandPaletteOpen]);
 
-  // Register default global shortcuts
+  // Register default global shortcuts using a separate ID to prevent re-registration
+  const tabsKey = useMemo(() => openTabs.map(t => t.id).join(','), [openTabs]);
+  
   useEffect(() => {
     // Default shortcuts
     // 1. Global search focus (Ctrl+F or Cmd+F)
@@ -233,22 +235,33 @@ export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ c
       description: 'Show keyboard shortcuts help'
     });
 
-  }, [registerShortcut, openTabs, activeTabId, setActiveTab, closeTab]);
+  }, [registerShortcut, activeTabId, tabsKey, setActiveTab, closeTab]);
+
+  // Create a stable context value to avoid unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    shortcuts,
+    registerShortcut,
+    unregisterShortcut,
+    commandPaletteOpen,
+    setCommandPaletteOpen,
+    searchFocused,
+    setSearchFocused,
+    shortcutsHelpOpen,
+    setShortcutsHelpOpen
+  }), [
+    shortcuts,
+    registerShortcut,
+    unregisterShortcut,
+    commandPaletteOpen,
+    setCommandPaletteOpen,
+    searchFocused,
+    setSearchFocused,
+    shortcutsHelpOpen,
+    setShortcutsHelpOpen
+  ]);
 
   return (
-    <KeyboardShortcutsContext.Provider 
-      value={{ 
-        shortcuts, 
-        registerShortcut, 
-        unregisterShortcut, 
-        commandPaletteOpen, 
-        setCommandPaletteOpen,
-        searchFocused,
-        setSearchFocused,
-        shortcutsHelpOpen,
-        setShortcutsHelpOpen
-      }}
-    >
+    <KeyboardShortcutsContext.Provider value={contextValue}>
       {children}
     </KeyboardShortcutsContext.Provider>
   );
