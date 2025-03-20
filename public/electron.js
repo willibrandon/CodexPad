@@ -10,6 +10,7 @@ let mainWindow;
 let tray;
 let syncEnabled = true; // Default to enabled
 let syncStatusInterval;
+let isWindowDestroyed = false; // Track window destroyed state
 
 // Register IPC handlers that should only be registered once
 ipcMain.handle('window:isMaximized', () => {
@@ -17,6 +18,7 @@ ipcMain.handle('window:isMaximized', () => {
 });
 
 function createWindow() {
+  isWindowDestroyed = false;
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -26,9 +28,59 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      // Memory management settings
+      webPreferences: {
+        v8CacheOptions: 'none', // Disable code caching to reduce memory
+        backgroundThrottling: true, // Enable background throttling
+      }
+    },
+    // Add memory limits
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      preload: path.join(__dirname, 'preload.js'),
+      // Set memory limits
+      javascript: {
+        memoryLimit: 512 // Limit to 512MB
+      }
     },
     icon: path.join(__dirname, isDev ? '../public/favicon.ico' : 'favicon.ico'),
+  });
+
+  // Set additional memory management options
+  mainWindow.webContents.setBackgroundThrottling(true);
+  
+  // Add garbage collection trigger on hide
+  mainWindow.on('hide', () => {
+    clearSyncInterval();
+    if (global.gc) {
+      try {
+        global.gc();
+      } catch (e) {
+        console.error('Failed to trigger GC:', e);
+      }
+    }
+  });
+
+  // Add periodic garbage collection
+  const gcInterval = setInterval(() => {
+    if (global.gc && !isWindowDestroyed && mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        global.gc();
+      } catch (e) {
+        console.error('Failed to trigger periodic GC:', e);
+      }
+    }
+  }, 300000); // Run every 5 minutes
+
+  // Clear GC interval on window close
+  mainWindow.on('closed', () => {
+    isWindowDestroyed = true;
+    clearSyncInterval();
+    clearInterval(gcInterval);
+    mainWindow = null;
   });
 
   // Remove the native menu
@@ -67,10 +119,28 @@ function createWindow() {
     mainWindow?.webContents.send('window-unmaximized');
   });
 
+  // Window events
+  mainWindow.on('closed', () => {
+    isWindowDestroyed = true;
+    clearSyncInterval();
+    mainWindow = null;
+  });
+
+  mainWindow.on('hide', () => {
+    clearSyncInterval();
+  });
+
+  // Set up show listener to restart sync interval
+  mainWindow.on('show', () => {
+    if (syncEnabled && !syncStatusInterval && !isWindowDestroyed) {
+      setupSyncStatusInterval();
+    }
+  });
+
   // Wait for window to be ready before setting up sync status
   mainWindow.webContents.on('did-finish-load', () => {
-    if (syncEnabled && !syncStatusInterval) {
-      syncStatusInterval = setInterval(updateSyncStatus, 5000);
+    if (syncEnabled && !syncStatusInterval && !isWindowDestroyed) {
+      setupSyncStatusInterval();
     }
   });
 
@@ -78,18 +148,6 @@ function createWindow() {
   if (isDev) {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
-
-  // Window events
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  // Set up show listener to restart sync interval
-  mainWindow.on('show', () => {
-    if (syncEnabled && !syncStatusInterval) {
-      syncStatusInterval = setInterval(updateSyncStatus, 5000);
-    }
-  });
 
   // Initialize system tray
   createTray();
@@ -180,58 +238,50 @@ function setupGlobalShortcut() {
 let snippetService;
 let syncService;
 
-// Send sync status updates to renderer
-function updateSyncStatus() {
-  // Check if window exists and isn't destroyed
-  if (!mainWindow || mainWindow.isDestroyed()) {
-    // Clear interval if window is gone
-    if (syncStatusInterval) {
-      clearInterval(syncStatusInterval);
-      syncStatusInterval = null;
-    }
-    return;
+// Helper function to clear sync interval
+function clearSyncInterval() {
+  if (syncStatusInterval) {
+    clearInterval(syncStatusInterval);
+    syncStatusInterval = null;
   }
+}
 
-  // Skip updates if window is not visible or minimized
-  if (!mainWindow.isVisible() || mainWindow.isMinimized()) {
+// Send sync status updates to renderer with improved checks
+function updateSyncStatus() {
+  // Skip update if window is destroyed or hidden
+  if (isWindowDestroyed || !mainWindow || mainWindow.isDestroyed() || !mainWindow.isVisible()) {
+    clearSyncInterval();
     return;
   }
 
   try {
-    // Additional check for webContents
-    if (!mainWindow.webContents || mainWindow.webContents.isDestroyed()) {
-      if (syncStatusInterval) {
-        clearInterval(syncStatusInterval);
-        syncStatusInterval = null;
-      }
-      return;
-    }
-
     // Only send update if sync service exists and window is ready
-    if (syncService && mainWindow.webContents.isLoading() === false) {
+    if (syncService && !mainWindow.webContents.isLoading()) {
       const status = {
         connected: syncEnabled && syncService.isConnectedToServer(),
-        pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0
+        pendingChanges: syncEnabled ? (syncService.pendingChanges?.length || 0) : 0
       };
       
-      mainWindow.webContents.send('sync:connection-status', status);
+      // Final check before sending
+      if (!isWindowDestroyed && !mainWindow.isDestroyed() && mainWindow.webContents) {
+        mainWindow.webContents.send('sync:connection-status', status);
+      }
     }
   } catch (error) {
     console.error('Error updating sync status:', error);
-    // Clear interval on error to prevent spam
-    if (syncStatusInterval) {
-      clearInterval(syncStatusInterval);
-      syncStatusInterval = null;
-    }
+    clearSyncInterval();
   }
 }
 
-// Setup sync status interval with a longer delay
+// Setup sync status interval with memory-conscious settings
 function setupSyncStatusInterval() {
-  if (syncStatusInterval) {
-    clearInterval(syncStatusInterval);
+  clearSyncInterval();
+  
+  // Use a longer interval (15 seconds) to reduce memory pressure
+  // Only set up if window is valid
+  if (!isWindowDestroyed && mainWindow && !mainWindow.isDestroyed()) {
+    syncStatusInterval = setInterval(updateSyncStatus, 15000);
   }
-  syncStatusInterval = setInterval(updateSyncStatus, 5000); // Update every 5 seconds instead of more frequently
 }
 
 // Function to download file from URL to destination
@@ -298,6 +348,9 @@ async function setupFonts() {
 }
 
 app.whenReady().then(() => {
+  // Enable garbage collection
+  app.commandLine.appendSwitch('js-flags', '--expose-gc');
+  
   // Import services here to ensure app is ready
   snippetService = require('../src/services/snippetService');
   syncService = require('../src/services/syncService');
@@ -326,6 +379,15 @@ app.on('window-all-closed', () => {
     syncStatusInterval = null;
   }
   
+  // Trigger garbage collection
+  if (global.gc) {
+    try {
+      global.gc();
+    } catch (e) {
+      console.error('Failed to trigger GC on window close:', e);
+    }
+  }
+  
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -338,6 +400,9 @@ app.on('activate', () => {
 });
 
 app.on('will-quit', () => {
+  // Clear all intervals
+  clearSyncInterval();
+  
   // Unregister all shortcuts
   globalShortcut.unregisterAll();
   
