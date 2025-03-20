@@ -8,6 +8,7 @@ A modern, feature-rich code snippet manager and note-taking application built wi
 - 📝 Create, edit, and organize code snippets and notes
 - 🔍 Advanced search with filters and operators (tag:, language:, created:, etc.)
 - 📂 Tag-based organization system with AI-powered tag suggestions
+- 🤖 Intelligent content summarization for snippet previews
 - 💾 Automatic saving functionality
 - 📱 Responsive design that works across different screen sizes
 
@@ -153,6 +154,7 @@ Detailed documentation is available in the [docs](docs/) directory:
 - [System Architecture](docs/system-architecture.md) - Overview of the entire CodexPad architecture
 - [Sync Protocol](docs/sync-protocol.md) - Detailed explanation of the synchronization protocol
 - [Backup System](docs/backup-system.md) - Information about the backup system and recovery options
+- [AI Features](docs/ai-features.md) - Information about the AI-powered features and capabilities
 
 ## License
 

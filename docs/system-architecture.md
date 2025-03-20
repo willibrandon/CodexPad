@@ -177,6 +177,27 @@ CodexPad supports a flexible theming system:
    - `src/light-mode.css` and `src/dark-mode.css` - Theme definitions
    - `src/components/ThemeSettings.tsx` - UI for theme configuration
 
+## AI Features
+
+CodexPad includes local AI capabilities to enhance the user experience:
+
+1. **Tag Suggestions**:
+   - Analyzes snippet content to suggest relevant tags
+   - Improves organization and discoverability
+   - Implemented in `src/services/ai/tagSuggestionService.ts`
+
+2. **Content Summarization**:
+   - Generates concise previews of snippet content
+   - Improves browsing experience in the snippet list
+   - Implemented in `src/services/ai/summarizationService.ts`
+
+3. **Local Processing**:
+   - Uses TensorFlow.js for client-side machine learning
+   - Ensures privacy by keeping all data on the user's device
+   - Adaptive models that improve with usage
+
+More details can be found in [AI Features](ai-features.md) documentation.
+
 ## Export and Import
 
 ### Export Formats
