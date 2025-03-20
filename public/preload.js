@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld(
         'export:html',
         'export:pdf',
         'window:isMaximized',
+        'platform:get',
         'menu-action'
       ];
       if (validChannels.includes(channel)) {

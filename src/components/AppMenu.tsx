@@ -1,15 +1,28 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import WindowControls from './WindowControls';
+import ThemeToggle from './ThemeToggle';
 import { useTabs } from './TabsContext';
 import './AppMenu.css';
 
 const AppMenu: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [platform, setPlatform] = useState<string>('win32'); // Default to Windows
   const menuRef = useRef<HTMLDivElement>(null);
   const { activeTabId, openTabs } = useTabs();
   
   // Check if a snippet is open
   const isSnippetOpen = activeTabId !== null && openTabs.length > 0;
+
+  // Get platform on component mount
+  useEffect(() => {
+    if (window.electron) {
+      window.electron.invoke('platform:get').then((platform: string) => {
+        setPlatform(platform);
+      }).catch(err => {
+        console.error('Failed to get platform:', err);
+      });
+    }
+  }, []);
 
   // Handle clicks outside the menu
   useEffect(() => {
@@ -42,9 +55,8 @@ const AppMenu: React.FC = () => {
   }, []);
 
   return (
-    <div className="app-menu" ref={menuRef}>
+    <div className={`app-menu ${platform}`} ref={menuRef}>
       <div className="menu-bar">
-        <div className="menu-bar-drag-region" />
         <div className="menu-bar-items">
           <div 
             className={`menu-item ${activeMenu === 'file' ? 'active' : ''}`}
@@ -135,6 +147,10 @@ const AppMenu: React.FC = () => {
               </div>
             )}
           </div>
+        </div>
+        <div className="menu-bar-drag-region" />
+        <div className="titlebar-theme-toggle">
+          <ThemeToggle />
         </div>
         <WindowControls />
       </div>

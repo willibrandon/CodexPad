@@ -1,28 +1,40 @@
 .theme-toggle {
   display: flex;
   align-items: center;
-  margin-left: 10px;
+  gap: 8px;
 }
 
 .theme-toggle-btn,
 .theme-settings-btn {
   background: none;
   border: none;
+  color: var(--text-color);
   cursor: pointer;
+  padding: 4px;
   font-size: 1rem;
-  width: 32px;
-  height: 32px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  color: white;
+  line-height: 1;
 }
 
 .theme-toggle-btn:hover,
 .theme-settings-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--hover-bg);
+}
+
+/* For the titlebar placement */
+.titlebar-theme-toggle .theme-toggle {
+  height: 32px;
+}
+
+.titlebar-theme-toggle .theme-toggle-btn,
+.titlebar-theme-toggle .theme-settings-btn {
+  height: 32px;
+  width: 32px;
+  border-radius: 0;
 }
 
 .settings-icon {

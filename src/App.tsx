@@ -269,7 +269,6 @@ const AppContent: React.FC = () => {
         <h1 className="app-title">CodexPad</h1>
         <SearchBar onSearch={handleSearch} />
         <div className="header-actions">
-          <ThemeToggle />
           <button className="import-btn" onClick={handleOpenImportDialog} title="Import from other apps">
             Import
           </button>

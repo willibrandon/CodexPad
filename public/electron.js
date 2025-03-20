@@ -17,6 +17,11 @@ ipcMain.handle('window:isMaximized', () => {
   return mainWindow?.isMaximized();
 });
 
+// Add platform detection handler
+ipcMain.handle('platform:get', () => {
+  return process.platform;
+});
+
 // Handle menu actions from the renderer process
 ipcMain.handle('menu-action', (event, action, format) => {
   console.log(`Main process received menu action: ${action}${format ? ', format: ' + format : ''}`);
