@@ -71,6 +71,7 @@ CodexPad supports advanced search with the following operators:
 
 - Node.js (v14 or later)
 - npm
+- Go (v1.24 or later) - Required for the sync server
 
 ### Installation
 
@@ -87,6 +88,10 @@ npm install
 
 3. Start the application
 ```
+# Start the sync server (in a separate terminal)
+npm run start:server
+
+# Start the main application
 npm start
 ```
 
@@ -108,6 +113,7 @@ The packaged application will be available in the `dist` directory.
 - `npm start` - Start both React and Electron in development mode
 - `npm run start:react` - Start only the React development server
 - `npm run start:electron` - Start only the Electron application
+- `npm run start:server` - Start the Go sync server
 - `npm run build` - Build the React application
 - `npm run build:electron` - Package the application for distribution
 
@@ -121,10 +127,6 @@ The packaged application will be available in the `dist` directory.
 - **Sync Protocol:** WebSocket with change tracking
 - **Backup System:** Automated SQLite backups with retention management
 - **Code Editing:** Custom editor implementation
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Data Management
 
@@ -143,3 +145,7 @@ The server includes an automated backup system:
 - Automatic cleanup of old backups
 - Manual backup triggers via API endpoint
 - Backups stored in `~/.codexpad/backups` directory
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
