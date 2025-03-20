@@ -5,6 +5,16 @@
   z-index: 999;
 }
 
+/* Specific styles for macOS with traffic lights visible */
+.mac-app-menu {
+  padding-left: 80px; /* Space for traffic lights */
+}
+
+/* Specific styles for macOS with traffic lights visible */
+.mac-app-menu {
+  padding-left: 80px; /* Space for traffic lights */
+}
+
 .menu-bar {
   display: flex;
   align-items: center;
@@ -17,6 +27,20 @@
   flex-grow: 1;
   height: 100%;
   -webkit-app-region: drag;
+}
+
+/* Add space for window controls on macOS */
+.window-controls-spacer {
+  width: 80px;
+  height: 32px;
+  margin-left: auto;
+}
+
+/* Add space for window controls on macOS */
+.window-controls-spacer {
+  width: 80px;
+  height: 32px;
+  margin-left: auto;
 }
 
 .menu-bar-items {

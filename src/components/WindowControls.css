@@ -1,7 +1,15 @@
+.window-controls-container {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+  position: relative;
+  z-index: 1000;
+}
+
 .window-controls {
   display: flex;
   height: 32px;
-  margin-left: auto;
   -webkit-app-region: no-drag;
   position: relative;
   z-index: 1000;
@@ -33,4 +41,45 @@
   width: 16px;
   height: 16px;
   fill: currentColor;
+}
+
+/* App controls styles (theme toggle and settings) */
+.app-controls {
+  display: flex;
+  height: 32px;
+  -webkit-app-region: no-drag;
+}
+
+.app-control {
+  width: 36px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: #cccccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  -webkit-app-region: no-drag;
+}
+
+.app-control:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-control svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* macOS specific styles */
+.window-controls-spacer {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+  position: relative;
+  z-index: 1000;
 } 

@@ -5,7 +5,6 @@ import SnippetList from './components/SnippetList';
 import SnippetEditor from './components/SnippetEditor';
 import TabsBar from './components/TabsBar';
 import SyncStatus from './components/SyncStatus';
-import ThemeToggle from './components/ThemeToggle';
 import ThemeStatus from './components/ThemeStatus';
 import CommandPalette from './components/CommandPalette';
 import ShortcutsHelp from './components/ShortcutsHelp';

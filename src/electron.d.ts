@@ -32,6 +32,7 @@ interface SyncLogEntry {
 declare global {
   interface Window {
     electron: {
+      platform: string;
       invoke: (channel: string, ...args: any[]) => Promise<any>;
       send: (channel: 'window:minimize' | 'window:maximize-restore' | 'window:close', ...args: any[]) => void;
       receive: (channel: string, func: (...args: any[]) => void) => void;
