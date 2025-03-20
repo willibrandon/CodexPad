@@ -83,6 +83,20 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+/* Add light mode styles for window controls */
+:root.light-mode .window-control {
+  color: #424242;
+}
+
+:root.light-mode .window-control:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+:root.light-mode .window-control.close:hover {
+  background-color: #e81123;
+  color: white;
+}
+
 /* macOS specific styles */
 .window-controls-spacer {
   display: flex;
