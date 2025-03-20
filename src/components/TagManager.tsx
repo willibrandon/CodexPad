@@ -104,8 +104,15 @@ const TagManager: React.FC<TagManagerProps> = memo(({
           </button>
         </span>
       ))}
+      <button
+        className={`favorite-button ${favorite ? 'active' : ''}`}
+        onClick={onFavoriteToggle}
+        title={favorite ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        {favorite ? '★' : '☆'}
+      </button>
     </div>
-  ), [tags, handleRemoveTag]);
+  ), [tags, handleRemoveTag, favorite, onFavoriteToggle]);
 
   // Memoize suggested tags
   const renderedSuggestedTags = useMemo(() => (
@@ -130,16 +137,6 @@ const TagManager: React.FC<TagManagerProps> = memo(({
 
   return (
     <div className="tag-manager">
-      <div className="favorite-toggle">
-        <button
-          className={`favorite-button ${favorite ? 'active' : ''}`}
-          onClick={onFavoriteToggle}
-          title={favorite ? 'Remove from favorites' : 'Add to favorites'}
-        >
-          {favorite ? '★' : '☆'}
-        </button>
-      </div>
-      
       {renderedTags}
       {renderedSuggestedTags}
       

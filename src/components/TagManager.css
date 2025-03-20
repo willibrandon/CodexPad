@@ -15,6 +15,16 @@
   cursor: pointer;
   color: var(--text-light);
   transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  margin-left: auto;
+  border-radius: 12px;
+}
+
+.favorite-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .favorite-button.active {
@@ -26,6 +36,7 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
+  align-items: center;
 }
 
 .tag {
