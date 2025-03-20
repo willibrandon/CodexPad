@@ -84,11 +84,6 @@ function createWindow() {
     mainWindow = null;
   });
 
-  mainWindow.on('minimize', (event) => {
-    event.preventDefault();
-    mainWindow.hide();
-  });
-
   // Initialize system tray
   createTray();
 
