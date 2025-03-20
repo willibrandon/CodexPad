@@ -11,6 +11,11 @@ let tray;
 let syncEnabled = true; // Default to enabled
 let syncStatusInterval;
 
+// Register IPC handlers that should only be registered once
+ipcMain.handle('window:isMaximized', () => {
+  return mainWindow?.isMaximized();
+});
+
 function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
@@ -60,11 +65,6 @@ function createWindow() {
 
   mainWindow.on('unmaximize', () => {
     mainWindow?.webContents.send('window-unmaximized');
-  });
-
-  // Handle window state query
-  ipcMain.handle('window:isMaximized', () => {
-    return mainWindow?.isMaximized();
   });
 
   // Wait for window to be ready before setting up sync status
