@@ -51,6 +51,15 @@ ipcMain.handle('menu-action', async (event, action) => {
     case 'command-palette':
       mainWindow.webContents.send('menu-action', 'command-palette');
       break;
+    case 'keyboard-shortcuts':
+      mainWindow.webContents.send('menu-action', 'keyboard-shortcuts');
+      break;
+    case 'documentation':
+      mainWindow.webContents.send('menu-action', 'documentation');
+      break;
+    case 'about':
+      mainWindow.webContents.send('menu-action', 'about');
+      break;
     // Add other menu actions as needed
   }
   

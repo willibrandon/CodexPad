@@ -9,6 +9,7 @@ import ThemeStatus from './components/ThemeStatus';
 import CommandPalette from './components/CommandPalette';
 import ShortcutsHelp from './components/ShortcutsHelp';
 import ImportDialog from './components/ImportDialog';
+import AboutDialog from './components/AboutDialog';
 import { TabsProvider, useTabs } from './components/TabsContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { KeyboardShortcutsProvider, useKeyboardShortcuts } from './contexts/KeyboardShortcutsContext';
@@ -39,6 +40,7 @@ const AppContent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSnippets, setFilteredSnippets] = useState<Snippet[]>([]);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
   const { openTab, activeTabId, openTabs, updateTabContent, closeTab, tabExists } = useTabs();
   const { 
     commandPaletteOpen, 
@@ -89,12 +91,31 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (window.electron) {
       window.electron.receive('menu-action', (action: string) => {
-        if (action === 'command-palette') {
-          setCommandPaletteOpen(true);
+        console.log('App.tsx received menu action:', action);
+        switch (action) {
+          case 'command-palette':
+            console.log('Opening command palette');
+            setCommandPaletteOpen(true);
+            break;
+          case 'keyboard-shortcuts':
+            console.log('Opening keyboard shortcuts');
+            setShortcutsHelpOpen(true);
+            break;
+          case 'documentation':
+            console.log('Opening documentation');
+            // Open documentation in default browser
+            window.electron.invoke('open-external-url', 'https://github.com/yourusername/codexpad/wiki');
+            break;
+          case 'about':
+            console.log('Opening about dialog');
+            setAboutDialogOpen(true);
+            break;
+          default:
+            console.log('Unhandled menu action:', action);
         }
       });
     }
-  }, []);
+  }, [setCommandPaletteOpen, setShortcutsHelpOpen, setAboutDialogOpen]);
 
   // Handle export snippet from menu action
   const handleExportSnippet = useCallback(async (format: string) => {
@@ -272,6 +293,10 @@ const AppContent: React.FC = () => {
     setShortcutsHelpOpen(false);
   };
 
+  const handleCloseAboutDialog = () => {
+    setAboutDialogOpen(false);
+  };
+
   return (
     <div className="app">
       <AppMenu />
@@ -324,6 +349,11 @@ const AppContent: React.FC = () => {
         isOpen={importDialogOpen}
         onClose={handleCloseImportDialog}
         onImport={handleImportSnippets}
+      />
+
+      <AboutDialog
+        isOpen={aboutDialogOpen}
+        onClose={handleCloseAboutDialog}
       />
     </div>
   );

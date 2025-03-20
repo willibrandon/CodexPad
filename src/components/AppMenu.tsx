@@ -31,11 +31,13 @@ const AppMenu: React.FC = () => {
   }, [activeMenu]);
 
   const handleMenuAction = useCallback((action: string, format?: string) => {
-    console.log(`Menu action: ${action}${format ? ', format: ' + format : ''}`);
+    console.log(`Menu action triggered: ${action}${format ? ', format: ' + format : ''}`);
     if (window.electron) {
       if (format) {
+        console.log(`Invoking menu-action with: ${action}, ${format}`);
         window.electron.invoke('menu-action', action, format);
       } else {
+        console.log(`Invoking menu-action with: ${action}`);
         window.electron.invoke('menu-action', action);
       }
     }
@@ -128,6 +130,28 @@ const AppMenu: React.FC = () => {
                   <div className="menu-dropdown-item" onClick={() => handleMenuAction('command-palette')}>
                     Command Palette
                     <span className="shortcut">Ctrl+Shift+P</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div 
+              className={`menu-item ${activeMenu === 'help' ? 'active' : ''}`}
+              onClick={() => handleMenuClick('help')}
+            >
+              Help
+              {activeMenu === 'help' && (
+                <div className="menu-dropdown">
+                  <div className="menu-dropdown-item" onClick={() => handleMenuAction('keyboard-shortcuts')}>
+                    Keyboard Shortcuts
+                    <span className="shortcut">F1</span>
+                  </div>
+                  <div className="menu-dropdown-item" onClick={() => handleMenuAction('documentation')}>
+                    Documentation
+                  </div>
+                  <div className="menu-separator" />
+                  <div className="menu-dropdown-item" onClick={() => handleMenuAction('about')}>
+                    About CodexPad
                   </div>
                 </div>
               )}

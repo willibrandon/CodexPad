@@ -53,6 +53,29 @@
   overflow-y: auto;
 }
 
+/* Scrollbar styling */
+.shortcuts-help-content::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.shortcuts-help-content::-webkit-scrollbar-track {
+  background: var(--editor-bg);
+  border-radius: 4px;
+}
+
+.shortcuts-help-content::-webkit-scrollbar-thumb {
+  background: var(--text-light);
+  border: 2px solid var(--editor-bg);
+  border-radius: 6px;
+  opacity: 0.8;
+}
+
+.shortcuts-help-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color);
+  opacity: 1;
+}
+
 .shortcuts-section {
   margin-bottom: 24px;
 }
