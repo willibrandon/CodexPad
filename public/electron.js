@@ -429,7 +429,13 @@ ipcMain.handle('snippets:create', async (event, title, content, tags) => {
 });
 
 ipcMain.handle('snippets:update', async (event, snippet) => {
-  snippetService.updateSnippet(snippet.id, snippet.title, snippet.content, snippet.tags);
+  snippetService.updateSnippet(
+    snippet.id, 
+    snippet.title, 
+    snippet.content, 
+    snippet.tags,
+    snippet.favorite || false
+  );
   
   // Push to sync server if sync is enabled
   if (syncEnabled) {
