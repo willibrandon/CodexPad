@@ -1,6 +1,5 @@
 @echo off
-setlocal
-
+cmd /c "
 echo Starting CodexPad...
 
 REM Build Go server if needed
@@ -8,14 +7,14 @@ cd %~dp0\server
 go build -o codexpad-server.exe
 
 REM Start the server directly
-start /b "" codexpad-server.exe
+start /b """" codexpad-server.exe
 echo Server started
 
 REM Return to project root
 cd ..
 
 REM Start the app
-start /b npm run start
+start /b """" npm run start
 
 REM Wait for user to close the app (check for Electron process)
 echo CodexPad is running. Close the application window when done.
@@ -41,4 +40,4 @@ taskkill /F /FI "WINDOWTITLE eq CodexPad*" 2>nul
 REM If any of the above are still running, show a warning
 echo.
 echo CodexPad has been closed.
-exit /b 0
+"
