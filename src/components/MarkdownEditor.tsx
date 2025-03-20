@@ -1,50 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback, memo, useMemo, lazy, Suspense } from 'react';
-import ReactMarkdown from 'react-markdown';
-import Prism from 'prismjs';
 import { useTheme } from '../contexts/ThemeContext';
-
-// Import Prism core styles
-import 'prismjs/themes/prism-tomorrow.css';
-
-// Import base language support first
-import 'prismjs/components/prism-core';
-import 'prismjs/components/prism-clike';
-import 'prismjs/components/prism-javascript';   // JavaScript (needed by TypeScript)
-import 'prismjs/components/prism-markup';       // HTML
-
-// Then import dependent languages
-import 'prismjs/components/prism-csharp';       // C#
-import 'prismjs/components/prism-fsharp';       // F#
-import 'prismjs/components/prism-powershell';   // PowerShell
-import 'prismjs/components/prism-css';          // CSS  
-import 'prismjs/components/prism-typescript';   // TypeScript
-import 'prismjs/components/prism-json';         // JSON
-import 'prismjs/components/prism-sql';          // SQL
-import 'prismjs/components/prism-bash';         // Bash
-import 'prismjs/components/prism-yaml';         // YAML
-import 'prismjs/components/prism-markdown';     // Markdown
-import 'prismjs/components/prism-jsx';          // JSX
-import 'prismjs/components/prism-tsx';          // TSX
-
-// Import VB.NET last since it depends on other languages
-// This fixes the "Cannot set properties of undefined (setting 'comment')" error
-import 'prismjs/components/prism-basic';        // Basic (needed by VB.NET)
-import 'prismjs/components/prism-vbnet';        // VB.NET
-
 import './MarkdownEditor.css';
+
+// Import ReactMarkdown lazily to defer loading until needed
+const ReactMarkdown = lazy(() => import('react-markdown'));
+
+// Support for syntax highlighting
+import Prism from 'prismjs';
+import { loadPrismLanguage } from '../utils/prismUtils';
+
+// Maximum size in bytes for direct rendering (approximately 100KB)
+const MAX_DIRECT_RENDER_SIZE = 100 * 1024;
 
 interface MarkdownEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
 }
-
-// Lazy load Prism languages
-const loadPrismLanguage = (language: string) => {
-  import(`prismjs/components/prism-${language}`).catch(() => {
-    console.warn(`Failed to load language: ${language}`);
-  });
-};
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   content,
@@ -54,9 +26,52 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   const [isPreview, setIsPreview] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [isLargeContent, setIsLargeContent] = useState(false);
+  const [viewportContent, setViewportContent] = useState('');
   const previewRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { settings, updateSettings } = useTheme();
+  
+  // Check if content is too large and update state accordingly
+  useEffect(() => {
+    const contentSize = new Blob([content]).size;
+    setIsLargeContent(contentSize > MAX_DIRECT_RENDER_SIZE);
+    
+    // If we're in preview mode with large content, prepare a truncated version
+    if (isPreview && contentSize > MAX_DIRECT_RENDER_SIZE) {
+      // Extract first ~50KB for preview
+      setViewportContent(content.substring(0, 50000) + 
+        '\n\n---\n\n*Content truncated for preview. Full content will be saved.*');
+    } else {
+      setViewportContent(content);
+    }
+  }, [content, isPreview]);
+
+  // Handle paste events to manage large content
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    const pastedSize = new Blob([pastedText]).size;
+    
+    // For extremely large pastes (>1MB), show a confirmation
+    if (pastedSize > 1024 * 1024) {
+      e.preventDefault();
+      if (window.confirm(`You're pasting ${Math.round(pastedSize/1024/1024)}MB of text, which may cause performance issues. Continue?`)) {
+        // Process paste in chunks using a web worker or timeout
+        if (textareaRef.current) {
+          const textarea = textareaRef.current;
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const beforeText = content.substring(0, start);
+          const afterText = content.substring(end);
+          
+          // Perform the update with a slight delay to allow UI to respond
+          setTimeout(() => {
+            onChange(beforeText + pastedText + afterText);
+          }, 50);
+        }
+      }
+    }
+  }, [content, onChange]);
   
   // Memoize markdown preview component
   const MarkdownPreview = useMemo(() => {
@@ -109,10 +124,10 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
         }}
         remarkPlugins={[]}
       >
-        {content || '_No content_'}
+        {viewportContent || '_No content_'}
       </ReactMarkdown>
     );
-  }, [content, settings.codeFont]);
+  }, [viewportContent, settings.codeFont]);
 
   // Debounce syntax highlighting with RAF
   useEffect(() => {
@@ -128,7 +143,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
         if (rafId) cancelAnimationFrame(rafId);
       };
     }
-  }, [isPreview, content]);
+  }, [isPreview, viewportContent]);
 
   // Format selected text or insert at cursor position
   const formatText = useCallback((formatType: string) => {
@@ -492,6 +507,16 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
         </div>
       </div>
       
+      {isLargeContent && (
+        <div className="content-warning">
+          <span>
+            {isPreview 
+              ? "Large content - preview is truncated but full content will be saved" 
+              : "Large content - editor performance may be affected"}
+          </span>
+        </div>
+      )}
+      
       {showKeyboardHelp && (
         <div className="keyboard-help">
           <div className="keyboard-help-header">
@@ -562,6 +587,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
             value={content}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             placeholder={placeholder}
           />
         )}

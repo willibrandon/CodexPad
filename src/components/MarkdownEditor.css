@@ -393,4 +393,19 @@ pre[class*="language-vbnet"] {
   .toolbar-group::-webkit-scrollbar {
     display: none; /* Hide scrollbar in Chrome/Safari */
   }
+}
+
+.content-warning {
+  background-color: rgba(255, 152, 0, 0.1);
+  border-left: 3px solid #ff9800;
+  color: #e65100;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.content-warning span {
+  display: inline-block;
 } 
