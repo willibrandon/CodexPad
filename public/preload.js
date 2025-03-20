@@ -27,7 +27,9 @@ contextBridge.exposeInMainWorld(
         'export:pdf',
         'window:isMaximized',
         'platform:get',
-        'menu-action'
+        'menu-action',
+        'toggle-theme',
+        'open-settings'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
@@ -53,7 +55,9 @@ contextBridge.exposeInMainWorld(
         'window-maximized',
         'window-unmaximized',
         'open-import-dialog',
-        'export-snippet'
+        'export-snippet',
+        'toggle-theme',
+        'open-settings'
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender` 
@@ -69,7 +73,9 @@ contextBridge.exposeInMainWorld(
         'window-maximized',
         'window-unmaximized',
         'open-import-dialog',
-        'export-snippet'
+        'export-snippet',
+        'toggle-theme',
+        'open-settings'
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.removeAllListeners(channel);

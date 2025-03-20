@@ -23,32 +23,35 @@ ipcMain.handle('platform:get', () => {
 });
 
 // Handle menu actions from the renderer process
-ipcMain.handle('menu-action', (event, action, format) => {
-  console.log(`Main process received menu action: ${action}${format ? ', format: ' + format : ''}`);
+ipcMain.handle('menu-action', async (event, action) => {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  
   switch (action) {
     case 'new':
-      // Send create-new-snippet event to renderer
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('create-new-snippet');
-      }
+      mainWindow.webContents.send('create-new-snippet');
       break;
     case 'import':
-      // Send open-import-dialog event to renderer
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('open-import-dialog');
-      }
+      mainWindow.webContents.send('open-import-dialog');
       break;
-    case 'export':
-      console.log(`Export action, sending export-snippet event with format: ${format}`);
-      if (mainWindow && !mainWindow.isDestroyed() && format) {
-        mainWindow.webContents.send('export-snippet', format);
-      }
+    case 'export-markdown':
+      mainWindow.webContents.send('export-snippet', 'markdown');
       break;
-    case 'exit':
-      app.quit();
+    case 'export-html':
+      mainWindow.webContents.send('export-snippet', 'html');
       break;
-    // Add other menu actions here...
+    case 'export-pdf':
+      mainWindow.webContents.send('export-snippet', 'pdf');
+      break;
+    case 'toggle-theme':
+      mainWindow.webContents.send('toggle-theme');
+      break;
+    case 'settings':
+      mainWindow.webContents.send('open-settings');
+      break;
+    // Add other menu actions as needed
   }
+  
+  return { success: true };
 });
 
 function createWindow() {
