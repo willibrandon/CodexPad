@@ -229,15 +229,6 @@ function createWindow() {
             }
           },
           { type: 'separator' },
-          {
-            label: 'Toggle Theme',
-            click: () => {
-              if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('menu-action', 'toggle-theme');
-              }
-            }
-          },
-          { type: 'separator' },
           { role: 'reload' },
           { role: 'forceReload' },
           { role: 'toggleDevTools' },
@@ -247,6 +238,35 @@ function createWindow() {
           { role: 'zoomOut' },
           { type: 'separator' },
           { role: 'togglefullscreen' }
+        ]
+      },
+      {
+        label: 'Help',
+        submenu: [
+          {
+            label: 'Keyboard Shortcuts',
+            accelerator: 'F1',
+            click: () => {
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('menu-action', 'keyboard-shortcuts');
+              }
+            }
+          },
+          {
+            label: 'Documentation',
+            click: () => {
+              openDocumentation();
+            }
+          },
+          { type: 'separator' },
+          {
+            label: 'About CodexPad',
+            click: () => {
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('menu-action', 'about');
+              }
+            }
+          }
         ]
       },
       {
