@@ -146,6 +146,14 @@ The server includes an automated backup system:
 - Manual backup triggers via API endpoint
 - Backups stored in `~/.codexpad/backups` directory
 
+## Documentation
+
+Detailed documentation is available in the [docs](docs/) directory:
+
+- [System Architecture](docs/system-architecture.md) - Overview of the entire CodexPad architecture
+- [Sync Protocol](docs/sync-protocol.md) - Detailed explanation of the synchronization protocol
+- [Backup System](docs/backup-system.md) - Information about the backup system and recovery options
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
