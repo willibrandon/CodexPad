@@ -192,8 +192,8 @@ function updateSyncStatus() {
     return;
   }
 
-  // Skip updates if window is not visible
-  if (!mainWindow.isVisible()) {
+  // Skip updates if window is not visible or minimized
+  if (!mainWindow.isVisible() || mainWindow.isMinimized()) {
     return;
   }
 
@@ -207,13 +207,15 @@ function updateSyncStatus() {
       return;
     }
 
-    const status = {
-      connected: syncEnabled && syncService.isConnectedToServer(),
-      pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0,
-      lastSyncedAt: syncEnabled ? null : null // TODO: Track last sync timestamp
-    };
-    
-    mainWindow.webContents.send('sync:connection-status', status);
+    // Only send update if sync service exists and window is ready
+    if (syncService && mainWindow.webContents.isLoading() === false) {
+      const status = {
+        connected: syncEnabled && syncService.isConnectedToServer(),
+        pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0
+      };
+      
+      mainWindow.webContents.send('sync:connection-status', status);
+    }
   } catch (error) {
     console.error('Error updating sync status:', error);
     // Clear interval on error to prevent spam
@@ -222,6 +224,14 @@ function updateSyncStatus() {
       syncStatusInterval = null;
     }
   }
+}
+
+// Setup sync status interval with a longer delay
+function setupSyncStatusInterval() {
+  if (syncStatusInterval) {
+    clearInterval(syncStatusInterval);
+  }
+  syncStatusInterval = setInterval(updateSyncStatus, 5000); // Update every 5 seconds instead of more frequently
 }
 
 // Function to download file from URL to destination
@@ -344,6 +354,12 @@ ipcMain.handle('snippets:getAll', async () => {
 
 ipcMain.handle('snippets:create', async (event, title, content, tags) => {
   const id = snippetService.createSnippet(title, content, tags);
+  
+  // Log the creation if sync is enabled
+  if (syncEnabled) {
+    syncService.log('info', `Created new snippet #${id}`, `Title: ${title}`);
+  }
+  
   return { id, title, content, tags };
 });
 
@@ -353,6 +369,7 @@ ipcMain.handle('snippets:update', async (event, snippet) => {
   // Push to sync server if sync is enabled
   if (syncEnabled) {
     syncService.pushSnippet(snippet);
+    syncService.log('info', `Saved snippet #${snippet.id}`, `Title: ${snippet.title}`);
   }
   
   return true;
@@ -360,6 +377,12 @@ ipcMain.handle('snippets:update', async (event, snippet) => {
 
 ipcMain.handle('snippets:delete', async (event, id) => {
   snippetService.deleteSnippet(id);
+  
+  // Log the deletion if sync is enabled
+  if (syncEnabled) {
+    syncService.log('info', `Deleted snippet #${id}`);
+  }
+  
   return true;
 });
 
@@ -452,7 +475,7 @@ ipcMain.handle('sync:backup', async () => {
     const result = await response.json();
     
     // Add to sync log
-    syncService.logEvent('info', 'Manual backup created', result.message);
+    syncService.log('info', 'Manual backup created', result.message);
     
     return { 
       success: true, 
@@ -462,7 +485,7 @@ ipcMain.handle('sync:backup', async () => {
     console.error('Failed to trigger backup:', error);
     
     // Add to sync log
-    syncService.logEvent('error', 'Manual backup failed', error.message);
+    syncService.log('error', 'Manual backup failed', error.message);
     
     return { 
       success: false, 
