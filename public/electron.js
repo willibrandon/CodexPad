@@ -18,7 +18,8 @@ ipcMain.handle('window:isMaximized', () => {
 });
 
 // Handle menu actions from the renderer process
-ipcMain.handle('menu-action', (event, action) => {
+ipcMain.handle('menu-action', (event, action, format) => {
+  console.log(`Main process received menu action: ${action}${format ? ', format: ' + format : ''}`);
   switch (action) {
     case 'new':
       // Send create-new-snippet event to renderer
@@ -30,6 +31,12 @@ ipcMain.handle('menu-action', (event, action) => {
       // Send open-import-dialog event to renderer
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('open-import-dialog');
+      }
+      break;
+    case 'export':
+      console.log(`Export action, sending export-snippet event with format: ${format}`);
+      if (mainWindow && !mainWindow.isDestroyed() && format) {
+        mainWindow.webContents.send('export-snippet', format);
       }
       break;
     case 'exit':

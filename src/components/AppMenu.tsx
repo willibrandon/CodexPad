@@ -1,10 +1,15 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import WindowControls from './WindowControls';
+import { useTabs } from './TabsContext';
 import './AppMenu.css';
 
 const AppMenu: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { activeTabId, openTabs } = useTabs();
+  
+  // Check if a snippet is open
+  const isSnippetOpen = activeTabId !== null && openTabs.length > 0;
 
   // Handle clicks outside the menu
   useEffect(() => {
@@ -24,9 +29,14 @@ const AppMenu: React.FC = () => {
     setActiveMenu(activeMenu === menuName ? null : menuName);
   }, [activeMenu]);
 
-  const handleMenuAction = useCallback((action: string) => {
+  const handleMenuAction = useCallback((action: string, format?: string) => {
+    console.log(`Menu action: ${action}${format ? ', format: ' + format : ''}`);
     if (window.electron) {
-      window.electron.invoke('menu-action', action);
+      if (format) {
+        window.electron.invoke('menu-action', action, format);
+      } else {
+        window.electron.invoke('menu-action', action);
+      }
     }
     setActiveMenu(null);
   }, []);
@@ -51,8 +61,21 @@ const AppMenu: React.FC = () => {
                 <div className="menu-dropdown-item" onClick={() => handleMenuAction('import')}>
                   Import...
                 </div>
-                <div className="menu-dropdown-item" onClick={() => handleMenuAction('export')}>
-                  Export...
+                <div className={`menu-dropdown-item ${!isSnippetOpen ? 'disabled' : ''}`}>
+                  Export
+                  {isSnippetOpen && (
+                    <div className="menu-submenu">
+                      <div className="menu-dropdown-item" onClick={() => handleMenuAction('export', 'markdown')}>
+                        Markdown (.md)
+                      </div>
+                      <div className="menu-dropdown-item" onClick={() => handleMenuAction('export', 'html')}>
+                        HTML (.html)
+                      </div>
+                      <div className="menu-dropdown-item" onClick={() => handleMenuAction('export', 'pdf')}>
+                        PDF (.pdf)
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="menu-separator" />
                 <div className="menu-dropdown-item" onClick={() => handleMenuAction('exit')}>

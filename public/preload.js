@@ -49,7 +49,8 @@ contextBridge.exposeInMainWorld(
         'sync:log-entry',
         'window-maximized',
         'window-unmaximized',
-        'open-import-dialog'
+        'open-import-dialog',
+        'export-snippet'
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender` 
@@ -64,7 +65,8 @@ contextBridge.exposeInMainWorld(
         'sync:log-entry',
         'window-maximized',
         'window-unmaximized',
-        'open-import-dialog'
+        'open-import-dialog',
+        'export-snippet'
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.removeAllListeners(channel);
