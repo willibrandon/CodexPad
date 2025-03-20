@@ -188,7 +188,7 @@ export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ c
       category: ShortcutCategory.Editing,
       action: () => {
         if (window.electron) {
-          window.electron.invoke('create-new-snippet');
+          window.electron.invoke('menu-action', 'new');
         }
       },
       description: 'Create a new snippet'

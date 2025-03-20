@@ -23,7 +23,8 @@ contextBridge.exposeInMainWorld(
         'export:markdown',
         'export:html',
         'export:pdf',
-        'window:isMaximized'
+        'window:isMaximized',
+        'menu-action'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);

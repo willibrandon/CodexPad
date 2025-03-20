@@ -17,6 +17,22 @@ ipcMain.handle('window:isMaximized', () => {
   return mainWindow?.isMaximized();
 });
 
+// Handle menu actions from the renderer process
+ipcMain.handle('menu-action', (event, action) => {
+  switch (action) {
+    case 'new':
+      // Send create-new-snippet event to renderer
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('create-new-snippet');
+      }
+      break;
+    case 'exit':
+      app.quit();
+      break;
+    // Add other menu actions here...
+  }
+});
+
 function createWindow() {
   isWindowDestroyed = false;
   // Create the browser window
