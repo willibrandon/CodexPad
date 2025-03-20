@@ -32,6 +32,13 @@ function createWindow() {
   
   mainWindow.loadURL(startUrl);
 
+  // Wait for window to be ready before setting up sync status
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (syncEnabled && !syncStatusInterval) {
+      syncStatusInterval = setInterval(updateSyncStatus, 5000);
+    }
+  });
+
   // Open DevTools in development mode
   if (isDev) {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
@@ -138,7 +145,7 @@ let syncService;
 
 // Send sync status updates to renderer
 function updateSyncStatus() {
-  if (!mainWindow || mainWindow.isDestroyed()) {
+  if (!mainWindow || mainWindow.isDestroyed() || !mainWindow.webContents) {
     // Clear interval if window is gone
     if (syncStatusInterval) {
       clearInterval(syncStatusInterval);
@@ -153,6 +160,14 @@ function updateSyncStatus() {
       pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0,
       lastSyncedAt: syncEnabled ? null : null // TODO: Track last sync timestamp
     };
+    
+    if (mainWindow.webContents.isDestroyed()) {
+      if (syncStatusInterval) {
+        clearInterval(syncStatusInterval);
+        syncStatusInterval = null;
+      }
+      return;
+    }
     
     mainWindow.webContents.send('sync:connection-status', status);
   } catch (error) {
@@ -236,9 +251,6 @@ app.whenReady().then(() => {
   // Initialize sync service if enabled
   if (syncEnabled) {
     syncService.initialize();
-    
-    // Set up periodic sync status updates
-    syncStatusInterval = setInterval(updateSyncStatus, 5000);
   }
   
   setupFonts().catch(err => console.error('Error setting up fonts:', err));
