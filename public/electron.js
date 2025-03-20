@@ -26,6 +26,12 @@ ipcMain.handle('menu-action', (event, action) => {
         mainWindow.webContents.send('create-new-snippet');
       }
       break;
+    case 'import':
+      // Send open-import-dialog event to renderer
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('open-import-dialog');
+      }
+      break;
     case 'exit':
       app.quit();
       break;

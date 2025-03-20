@@ -76,11 +76,13 @@ const AppContent: React.FC = () => {
     // Listen for "create-new-snippet" event from main process
     if (window.electron) {
       window.electron.receive('create-new-snippet', handleCreateNewSnippet);
+      window.electron.receive('open-import-dialog', handleOpenImportDialog);
     }
     
     return () => {
       if (window.electron) {
         window.electron.removeAllListeners('create-new-snippet');
+        window.electron.removeAllListeners('open-import-dialog');
       }
     };
   }, []);
