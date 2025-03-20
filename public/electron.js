@@ -17,13 +17,48 @@ ipcMain.handle('window:isMaximized', () => {
   return mainWindow?.isMaximized();
 });
 
+// Add platform detection handler
+ipcMain.handle('platform:get', () => {
+  return process.platform;
+});
+
+// Handle menu actions from the renderer process
+ipcMain.handle('menu-action', (event, action, format) => {
+  console.log(`Main process received menu action: ${action}${format ? ', format: ' + format : ''}`);
+  switch (action) {
+    case 'new':
+      // Send create-new-snippet event to renderer
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('create-new-snippet');
+      }
+      break;
+    case 'import':
+      // Send open-import-dialog event to renderer
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('open-import-dialog');
+      }
+      break;
+    case 'export':
+      console.log(`Export action, sending export-snippet event with format: ${format}`);
+      if (mainWindow && !mainWindow.isDestroyed() && format) {
+        mainWindow.webContents.send('export-snippet', format);
+      }
+      break;
+    case 'exit':
+      app.quit();
+      break;
+    // Add other menu actions here...
+  }
+});
+
 function createWindow() {
   isWindowDestroyed = false;
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
-    frame: false,  // Remove default window frame
+    frame: process.platform !== 'darwin', // Use default frame for macOS
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined, // Use hiddenInset for macOS
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -83,8 +118,141 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // Remove the native menu
-  Menu.setApplicationMenu(null);
+  // Remove the native menu for Windows/Linux, but create it for macOS
+  if (process.platform === 'darwin') {
+    // Create a native menu for macOS
+    const macTemplate = [
+      {
+        label: app.name,
+        submenu: [
+          { role: 'about' },
+          { type: 'separator' },
+          { role: 'services' },
+          { type: 'separator' },
+          { role: 'hide' },
+          { role: 'hideOthers' },
+          { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' }
+        ]
+      },
+      {
+        label: 'File',
+        submenu: [
+          { 
+            label: 'New Snippet',
+            accelerator: 'CmdOrCtrl+N',
+            click: () => {
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('create-new-snippet');
+              }
+            }
+          },
+          { type: 'separator' },
+          {
+            label: 'Import...',
+            click: () => {
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('open-import-dialog');
+              }
+            }
+          },
+          {
+            label: 'Export',
+            submenu: [
+              {
+                label: 'Markdown (.md)',
+                click: () => {
+                  if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('export-snippet', 'markdown');
+                  }
+                }
+              },
+              {
+                label: 'HTML (.html)',
+                click: () => {
+                  if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('export-snippet', 'html');
+                  }
+                }
+              },
+              {
+                label: 'PDF (.pdf)',
+                click: () => {
+                  if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('export-snippet', 'pdf');
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'delete' },
+          { role: 'selectAll' }
+        ]
+      },
+      {
+        label: 'View',
+        submenu: [
+          {
+            label: 'Command Palette',
+            accelerator: 'CmdOrCtrl+Shift+P',
+            click: () => {
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('menu-action', 'command-palette');
+              }
+            }
+          },
+          { type: 'separator' },
+          {
+            label: 'Toggle Theme',
+            click: () => {
+              if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('menu-action', 'toggle-theme');
+              }
+            }
+          },
+          { type: 'separator' },
+          { role: 'reload' },
+          { role: 'forceReload' },
+          { role: 'toggleDevTools' },
+          { type: 'separator' },
+          { role: 'resetZoom' },
+          { role: 'zoomIn' },
+          { role: 'zoomOut' },
+          { type: 'separator' },
+          { role: 'togglefullscreen' }
+        ]
+      },
+      {
+        role: 'window',
+        submenu: [
+          { role: 'minimize' },
+          { role: 'zoom' },
+          { type: 'separator' },
+          { role: 'front' },
+          { type: 'separator' },
+          { role: 'close' }
+        ]
+      }
+    ];
+
+    const menu = Menu.buildFromTemplate(macTemplate);
+    Menu.setApplicationMenu(menu);
+  } else {
+    // Remove the native menu for Windows/Linux
+    Menu.setApplicationMenu(null);
+  }
 
   // Load the app
   const startUrl = isDev

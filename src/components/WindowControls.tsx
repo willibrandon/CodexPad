@@ -3,6 +3,7 @@ import './WindowControls.css';
 
 const WindowControls: React.FC = () => {
   const [isMaximized, setIsMaximized] = useState(false);
+  const isMac = window.electron && window.electron.platform === 'darwin';
 
   useEffect(() => {
     if (!window.electron) return;
@@ -40,6 +41,12 @@ const WindowControls: React.FC = () => {
       window.electron.send('window:close');
     }
   };
+
+  // On macOS, we don't need to render the custom window controls
+  // as the native ones will be visible in the titlebar
+  if (isMac) {
+    return <div className="window-controls-spacer" />;
+  }
 
   return (
     <div className="window-controls">

@@ -1,10 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const { platform } = process;
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld(
   'electron',
   {
+    platform: platform,
     invoke: (channel, ...args) => {
       // Whitelist channels that can be invoked
       const validChannels = [
@@ -23,7 +25,9 @@ contextBridge.exposeInMainWorld(
         'export:markdown',
         'export:html',
         'export:pdf',
-        'window:isMaximized'
+        'window:isMaximized',
+        'platform:get',
+        'menu-action'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
@@ -47,7 +51,9 @@ contextBridge.exposeInMainWorld(
         'sync:connection-status',
         'sync:log-entry',
         'window-maximized',
-        'window-unmaximized'
+        'window-unmaximized',
+        'open-import-dialog',
+        'export-snippet'
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender` 
@@ -61,7 +67,9 @@ contextBridge.exposeInMainWorld(
         'sync:connection-status',
         'sync:log-entry',
         'window-maximized',
-        'window-unmaximized'
+        'window-unmaximized',
+        'open-import-dialog',
+        'export-snippet'
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.removeAllListeners(channel);

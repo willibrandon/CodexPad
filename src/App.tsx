@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import SearchBar from './components/SearchBar';
 import SnippetList from './components/SnippetList';
@@ -51,6 +51,64 @@ const AppContent: React.FC = () => {
   // Get the currently active snippet
   const activeSnippet = openTabs.find(tab => tab.id === activeTabId) || null;
 
+  // Handler function for creating a new snippet
+  const handleCreateNewSnippet = useCallback(async () => {
+    try {
+      if (window.electron) {
+        const newTitle = 'New Snippet';
+        const newContent = '';
+        const newTags: string[] = [];
+        
+        const id = await window.electron.invoke('snippets:create', newTitle, newContent, newTags);
+        const newSnippet = {
+          id,
+          title: newTitle,
+          content: newContent,
+          tags: newTags,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          favorite: false
+        };
+        
+        // Update local state
+        setSnippets(prev => [newSnippet, ...prev]);
+        
+        // Open the new snippet in a tab
+        openTab(newSnippet);
+      }
+    } catch (error) {
+      console.error('Failed to create new snippet:', error);
+    }
+  }, [openTab]);
+
+  // Handler for opening the import dialog
+  const handleOpenImportDialog = useCallback(() => {
+    setImportDialogOpen(true);
+  }, []);
+
+  // Handle export snippet from menu action
+  const handleExportSnippet = useCallback(async (format: string) => {
+    console.log(`Export snippet called with format: ${format}`);
+    // Make sure there's an active snippet to export
+    if (activeSnippet) {
+      console.log(`Active snippet found: ${activeSnippet.title}`);
+      try {
+        if (window.electron) {
+          console.log(`Invoking export:${format}`);
+          const result = await window.electron.invoke(`export:${format}`, activeSnippet);
+          console.log(`Export result:`, result);
+          // The export functionality is handled by the main process
+          // We could add a toast notification here if desired
+          console.log(`Export ${result.success ? 'successful' : 'failed'}: ${result.message || ''}`);
+        }
+      } catch (error) {
+        console.error('Failed to export snippet:', error);
+      }
+    } else {
+      console.log('No active snippet found for export');
+    }
+  }, [activeSnippet]);
+
   // Load all snippets and initialize AI services on component mount
   useEffect(() => {
     const initializeApp = async () => {
@@ -76,14 +134,18 @@ const AppContent: React.FC = () => {
     // Listen for "create-new-snippet" event from main process
     if (window.electron) {
       window.electron.receive('create-new-snippet', handleCreateNewSnippet);
+      window.electron.receive('open-import-dialog', handleOpenImportDialog);
+      window.electron.receive('export-snippet', handleExportSnippet);
     }
     
     return () => {
       if (window.electron) {
         window.electron.removeAllListeners('create-new-snippet');
+        window.electron.removeAllListeners('open-import-dialog');
+        window.electron.removeAllListeners('export-snippet');
       }
     };
-  }, []);
+  }, [handleCreateNewSnippet, handleOpenImportDialog, handleExportSnippet]);
 
   // Update filtered snippets when snippets or search term changes
   useEffect(() => {
@@ -132,35 +194,6 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleCreateNewSnippet = async () => {
-    try {
-      if (window.electron) {
-        const newTitle = 'New Snippet';
-        const newContent = '';
-        const newTags: string[] = [];
-        
-        const id = await window.electron.invoke('snippets:create', newTitle, newContent, newTags);
-        const newSnippet = {
-          id,
-          title: newTitle,
-          content: newContent,
-          tags: newTags,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          favorite: false
-        };
-        
-        // Update local state
-        setSnippets(prev => [newSnippet, ...prev]);
-        
-        // Open the new snippet in a tab
-        openTab(newSnippet);
-      }
-    } catch (error) {
-      console.error('Failed to create new snippet:', error);
-    }
-  };
-
   const handleDeleteSnippet = async (id: number) => {
     try {
       if (window.electron) {
@@ -177,10 +210,6 @@ const AppContent: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete snippet:', error);
     }
-  };
-
-  const handleOpenImportDialog = () => {
-    setImportDialogOpen(true);
   };
 
   const handleCloseImportDialog = () => {
@@ -240,7 +269,6 @@ const AppContent: React.FC = () => {
         <h1 className="app-title">CodexPad</h1>
         <SearchBar onSearch={handleSearch} />
         <div className="header-actions">
-          <ThemeToggle />
           <button className="import-btn" onClick={handleOpenImportDialog} title="Import from other apps">
             Import
           </button>
