@@ -71,8 +71,8 @@ export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ c
         return;
       }
 
-      // Open command palette with Ctrl+P or Cmd+P
-      if ((e.ctrlKey || e.metaKey) && e.key === 'p' && !e.shiftKey) {
+      // Open command palette with Ctrl+Shift+P or Cmd+Shift+P
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'p') {
         e.preventDefault();
         setCommandPaletteOpen(true);
         return;

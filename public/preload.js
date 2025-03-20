@@ -57,7 +57,8 @@ contextBridge.exposeInMainWorld(
         'open-import-dialog',
         'export-snippet',
         'toggle-theme',
-        'open-settings'
+        'open-settings',
+        'menu-action'
       ];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender` 

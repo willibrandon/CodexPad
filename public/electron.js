@@ -48,6 +48,9 @@ ipcMain.handle('menu-action', async (event, action) => {
     case 'settings':
       mainWindow.webContents.send('open-settings');
       break;
+    case 'command-palette':
+      mainWindow.webContents.send('menu-action', 'command-palette');
+      break;
     // Add other menu actions as needed
   }
   

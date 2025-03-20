@@ -85,6 +85,17 @@ const AppContent: React.FC = () => {
     setImportDialogOpen(true);
   }, []);
 
+  // Listen for menu actions
+  useEffect(() => {
+    if (window.electron) {
+      window.electron.receive('menu-action', (action: string) => {
+        if (action === 'command-palette') {
+          setCommandPaletteOpen(true);
+        }
+      });
+    }
+  }, []);
+
   // Handle export snippet from menu action
   const handleExportSnippet = useCallback(async (format: string) => {
     console.log(`Export snippet called with format: ${format}`);
