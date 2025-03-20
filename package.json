@@ -5,7 +5,7 @@
   "main": "public/electron.js",
   "scripts": {
     "start": "concurrently \"npm run start:react\" \"npm run start:electron\"",
-    "start:react": "BROWSER=none react-scripts start",
+    "start:react": "cross-env BROWSER=none react-scripts start",
     "start:electron": "wait-on http://localhost:3000 && electron .",
     "build": "react-scripts build",
     "postbuild": "electron-builder",
@@ -42,6 +42,7 @@
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
     "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
     "electron": "^23.1.0",
     "electron-builder": "^23.6.0",
     "electron-rebuild": "^3.2.9",
