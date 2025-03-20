@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useKeyboardShortcuts, KeyboardShortcut, ShortcutCategory } from '../contexts/KeyboardShortcutsContext';
 import './CommandPalette.css';
 
@@ -10,31 +10,34 @@ interface CommandPaletteProps {
 const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   const { shortcuts } = useKeyboardShortcuts();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredCommands, setFilteredCommands] = useState<KeyboardShortcut[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedCommandRef = useRef<HTMLDivElement>(null);
 
-  // Filter commands when search term changes
-  useEffect(() => {
+  // Memoize filtered commands
+  const filteredCommands = useMemo(() => {
     if (!searchTerm.trim()) {
-      setFilteredCommands([...shortcuts]);
-    } else {
-      const lowerCaseSearch = searchTerm.toLowerCase();
-      const filtered = shortcuts.filter(shortcut => 
-        shortcut.name.toLowerCase().includes(lowerCaseSearch) ||
-        shortcut.description.toLowerCase().includes(lowerCaseSearch) ||
-        shortcut.category.toLowerCase().includes(lowerCaseSearch)
-      );
-      setFilteredCommands(filtered);
+      return shortcuts;
     }
-    setSelectedIndex(0);
+    const lowerCaseSearch = searchTerm.toLowerCase();
+    return shortcuts.filter(shortcut => 
+      shortcut.name.toLowerCase().includes(lowerCaseSearch) ||
+      shortcut.description.toLowerCase().includes(lowerCaseSearch) ||
+      shortcut.category.toLowerCase().includes(lowerCaseSearch)
+    );
   }, [searchTerm, shortcuts]);
+
+  // Reset selection when search term changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [searchTerm]);
 
   // Focus input when palette opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
+      setSearchTerm('');
+      setSelectedIndex(0);
     }
   }, [isOpen]);
 
@@ -48,7 +51,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     }
   }, [selectedIndex]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     // Escape to close
     if (e.key === 'Escape') {
       onClose();
@@ -74,10 +77,10 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
         onClose();
       }
     }
-  };
+  }, [filteredCommands, selectedIndex, onClose]);
 
-  // Render the shortcut keys
-  const renderShortcut = (shortcut: KeyboardShortcut) => {
+  // Memoize shortcut rendering
+  const renderShortcut = useCallback((shortcut: KeyboardShortcut) => {
     return (
       <div className="command-shortcut">
         {shortcut.keys.map((key, index) => (
@@ -85,10 +88,10 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
         ))}
       </div>
     );
-  };
+  }, []);
 
-  // Group commands by category
-  const getCommandsByCategory = () => {
+  // Memoize command grouping
+  const commandsByCategory = useMemo(() => {
     const grouped: Record<string, KeyboardShortcut[]> = {};
     
     filteredCommands.forEach(cmd => {
@@ -99,11 +102,10 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     });
     
     return grouped;
-  };
+  }, [filteredCommands]);
 
   if (!isOpen) return null;
 
-  const commandsByCategory = getCommandsByCategory();
   let currentIndex = 0;
 
   return (
@@ -117,7 +119,6 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleKeyDown}
-            autoFocus
           />
         </div>
         
@@ -166,4 +167,4 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   );
 };
 
-export default CommandPalette; 
+export default React.memo(CommandPalette); 
