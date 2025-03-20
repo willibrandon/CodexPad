@@ -164,7 +164,7 @@
 /* Fix the editor container styles to properly hide line numbers in preview mode */
 .editor-container {
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
   position: relative;
 }
 
@@ -195,6 +195,7 @@
   line-height: 1.5;
   background-color: var(--editor-bg);
   color: var(--text-color);
+  overflow: auto;
 }
 
 .markdown-textarea:focus {
@@ -424,6 +425,7 @@ pre[class*="language-vbnet"] {
 .editor-wrapper {
   position: relative;
   height: 100%;
+  overflow: hidden;
 }
 
 .line-numbers {
