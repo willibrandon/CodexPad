@@ -303,13 +303,14 @@ pre[class*="language-vbnet"] {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: white;
+  background-color: var(--editor-bg);
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   width: 400px;
   max-width: 90%;
   z-index: 1000;
   overflow: hidden;
+  color: var(--text-color);
 }
 
 .keyboard-help-header {
@@ -319,6 +320,7 @@ pre[class*="language-vbnet"] {
   padding: 12px 16px;
   background-color: var(--primary-color);
   color: white;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .keyboard-help-header h3 {
@@ -326,7 +328,7 @@ pre[class*="language-vbnet"] {
   font-size: 1.1em;
 }
 
-.close-btn {
+.keyboard-help .close-btn {
   background: none;
   border: none;
   color: white;
@@ -336,10 +338,40 @@ pre[class*="language-vbnet"] {
   line-height: 1;
 }
 
+.keyboard-help .close-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .keyboard-help-content {
   padding: 16px;
   max-height: 400px;
   overflow-y: auto;
+}
+
+/* Keyboard help scrollbar styling */
+.keyboard-help-content::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.keyboard-help-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.keyboard-help-content::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: 6px;
+  border: 3px solid var(--editor-bg);
+}
+
+.keyboard-help-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover-color);
+}
+
+/* Firefox scrollbar styling for keyboard help */
+.keyboard-help-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) transparent;
 }
 
 .shortcut-group {
@@ -348,10 +380,9 @@ pre[class*="language-vbnet"] {
 
 .shortcut-group h4 {
   margin: 0 0 8px 0;
-  font-size: 1em;
-  color: var(--text-light);
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
 }
 
 .shortcut-item {
@@ -361,29 +392,17 @@ pre[class*="language-vbnet"] {
   font-size: 0.9em;
 }
 
-.key {
-  background-color: #f5f5f5;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-  font-size: 0.85em;
-}
-
-.desc {
+.shortcut-item .key {
+  background-color: var(--background-color);
   color: var(--text-color);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Cascadia Code', 'Menlo', 'Monaco', 'Courier New', monospace;
+  border: 1px solid var(--border-color);
 }
 
-.shortcut-tip {
-  font-size: 0.85em;
+.shortcut-item .desc {
   color: var(--text-light);
-  border-top: 1px solid var(--border-color);
-  padding-top: 8px;
-  margin-top: 8px;
-}
-
-.shortcut-tip p {
-  margin: 0;
 }
 
 /* Make toolbar look better on smaller screens */
