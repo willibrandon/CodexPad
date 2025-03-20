@@ -16,6 +16,7 @@ import { KeyboardShortcutsProvider, useKeyboardShortcuts } from './contexts/Keyb
 import { tagSuggestionService } from './services/ai/tagSuggestionService';
 import { summarizationService } from './services/ai/summarizationService';
 import { SearchService } from './services/search/searchService';
+import AppMenu from './components/AppMenu';
 
 // Define TypeScript interfaces for our data
 export interface Snippet {
@@ -234,6 +235,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="app">
+      <AppMenu />
       <header className="app-header">
         <h1 className="app-title">CodexPad</h1>
         <SearchBar onSearch={handleSearch} />

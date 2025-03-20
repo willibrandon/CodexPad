@@ -248,6 +248,9 @@ app.whenReady().then(() => {
   snippetService = require('../src/services/snippetService');
   syncService = require('../src/services/syncService');
   
+  // Remove the native menu bar
+  Menu.setApplicationMenu(null);
+  
   // Initialize sync service if enabled
   if (syncEnabled) {
     syncService.initialize();
