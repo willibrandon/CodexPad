@@ -84,6 +84,13 @@ function createWindow() {
     mainWindow = null;
   });
 
+  // Set up show listener to restart sync interval
+  mainWindow.on('show', () => {
+    if (syncEnabled && !syncStatusInterval) {
+      syncStatusInterval = setInterval(updateSyncStatus, 5000);
+    }
+  });
+
   // Initialize system tray
   createTray();
 
@@ -175,7 +182,8 @@ let syncService;
 
 // Send sync status updates to renderer
 function updateSyncStatus() {
-  if (!mainWindow || mainWindow.isDestroyed() || !mainWindow.webContents) {
+  // Check if window exists and isn't destroyed
+  if (!mainWindow || mainWindow.isDestroyed()) {
     // Clear interval if window is gone
     if (syncStatusInterval) {
       clearInterval(syncStatusInterval);
@@ -184,20 +192,26 @@ function updateSyncStatus() {
     return;
   }
 
+  // Skip updates if window is not visible
+  if (!mainWindow.isVisible()) {
+    return;
+  }
+
   try {
-    const status = {
-      connected: syncEnabled && syncService.isConnectedToServer(),
-      pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0,
-      lastSyncedAt: syncEnabled ? null : null // TODO: Track last sync timestamp
-    };
-    
-    if (mainWindow.webContents.isDestroyed()) {
+    // Additional check for webContents
+    if (!mainWindow.webContents || mainWindow.webContents.isDestroyed()) {
       if (syncStatusInterval) {
         clearInterval(syncStatusInterval);
         syncStatusInterval = null;
       }
       return;
     }
+
+    const status = {
+      connected: syncEnabled && syncService.isConnectedToServer(),
+      pendingChanges: syncEnabled ? (syncService.pendingChanges ? syncService.pendingChanges.length : 0) : 0,
+      lastSyncedAt: syncEnabled ? null : null // TODO: Track last sync timestamp
+    };
     
     mainWindow.webContents.send('sync:connection-status', status);
   } catch (error) {
