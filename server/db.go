@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 type DBManager struct {
@@ -15,7 +15,7 @@ type DBManager struct {
 
 // NewDBManager creates a new database manager
 func NewDBManager(dbPath string) (*DBManager, error) {
-	db, err := sql.Open("sqlite3", dbPath)
+	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
@@ -176,4 +176,4 @@ type Change struct {
 	Version   int         `json:"version"`
 	Operation string      `json:"operation"`
 	Changes   interface{} `json:"changes"`
-} 
+}
