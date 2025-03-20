@@ -161,9 +161,27 @@
   display: block;
 }
 
+/* Fix the editor container styles to properly hide line numbers in preview mode */
 .editor-container {
   flex: 1;
   overflow: auto;
+  position: relative;
+}
+
+/* Make preview mode take over the entire container */
+.preview-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  overflow: auto;
+  background-color: var(--editor-bg);
+  color: var(--text-color);
+  z-index: 10; /* Make sure it's above the line numbers */
 }
 
 .markdown-textarea {
@@ -181,14 +199,6 @@
 
 .markdown-textarea:focus {
   outline: none;
-}
-
-.preview-container {
-  padding: 16px;
-  height: 100%;
-  overflow: auto;
-  background-color: var(--editor-bg);
-  color: var(--text-color);
 }
 
 .markdown-preview {
@@ -408,4 +418,38 @@ pre[class*="language-vbnet"] {
 
 .content-warning span {
   display: inline-block;
+}
+
+/* Add simple line numbers styling */
+.editor-wrapper {
+  position: relative;
+  height: 100%;
+}
+
+.line-numbers {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  background-color: var(--background-color);
+  border-right: 1px solid var(--border-color);
+  padding-top: 16px;
+  text-align: right;
+  font-family: monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: var(--text-light);
+  overflow: hidden;
+  user-select: none;
+  z-index: 1;
+}
+
+.line-number {
+  padding-right: 8px;
+  opacity: 0.7;
+}
+
+.markdown-textarea.with-line-numbers {
+  padding-left: 56px;
 } 

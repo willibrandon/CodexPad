@@ -28,8 +28,10 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [isLargeContent, setIsLargeContent] = useState(false);
   const [viewportContent, setViewportContent] = useState('');
+  const [showLineNumbers, setShowLineNumbers] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
   const { settings, updateSettings } = useTheme();
   
   // Check if content is too large and update state accordingly
@@ -46,6 +48,37 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
       setViewportContent(content);
     }
   }, [content, isPreview]);
+
+  // Update line numbers when content changes or when scrolling
+  useEffect(() => {
+    if (!isPreview && showLineNumbers) {
+      // Generate line numbers
+      const lineCount = content.split('\n').length;
+      const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1)
+        .map(num => `<div class="line-number">${num}</div>`)
+        .join('');
+      
+      if (lineNumbersRef.current) {
+        lineNumbersRef.current.innerHTML = lineNumbers;
+      }
+      
+      // Sync scrolling
+      const handleScroll = () => {
+        if (textareaRef.current && lineNumbersRef.current) {
+          lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+        }
+      };
+      
+      if (textareaRef.current) {
+        textareaRef.current.addEventListener('scroll', handleScroll);
+        return () => {
+          if (textareaRef.current) {
+            textareaRef.current.removeEventListener('scroll', handleScroll);
+          }
+        };
+      }
+    }
+  }, [content, showLineNumbers, isPreview]);
 
   // Handle paste events to manage large content
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -325,9 +358,13 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
             setShowKeyboardHelp(!showKeyboardHelp);
           }
           break;
+        case 'l': // Line numbers toggle
+          e.preventDefault();
+          setShowLineNumbers(!showLineNumbers);
+          break;
       }
     }
-  }, [content, formatText, isFullscreen, isPreview, onChange, showKeyboardHelp]);
+  }, [content, formatText, isFullscreen, isPreview, onChange, showKeyboardHelp, showLineNumbers]);
 
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
@@ -337,6 +374,11 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   // Toggle keyboard help
   const toggleKeyboardHelp = () => {
     setShowKeyboardHelp(!showKeyboardHelp);
+  };
+
+  // Toggle line numbers
+  const toggleLineNumbers = () => {
+    setShowLineNumbers(!showLineNumbers);
   };
 
   // Handle code font change
@@ -470,6 +512,16 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
             <span className="icon">{isFullscreen ? '↙' : '↗'}</span>
           </button>
           
+          {!isPreview && (
+            <button 
+              className={`toolbar-btn ${showLineNumbers ? 'active' : ''}`}
+              onClick={toggleLineNumbers}
+              title="Toggle Line Numbers (Ctrl+L)"
+            >
+              <span className="icon">#</span>
+            </button>
+          )}
+          
           <div className="code-font-dropdown">
             <button className="toolbar-btn" title="Change Code Font">
               <span className="icon">A</span>
@@ -539,6 +591,10 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
                 <span className="desc">Toggle Fullscreen</span>
               </div>
               <div className="shortcut-item">
+                <span className="key">Ctrl+L</span>
+                <span className="desc">Toggle Line Numbers</span>
+              </div>
+              <div className="shortcut-item">
                 <span className="key">Ctrl+Shift+/</span>
                 <span className="desc">Show/Hide Keyboard Help</span>
               </div>
@@ -573,7 +629,11 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
       
       <div className="editor-container">
         {isPreview ? (
-          <div className="preview-container" ref={previewRef}>
+          <div 
+            key="preview-mode" 
+            className="preview-container" 
+            ref={previewRef}
+          >
             <div className="markdown-preview">
               <Suspense fallback={<div>Loading preview...</div>}>
                 {MarkdownPreview}
@@ -581,15 +641,23 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
             </div>
           </div>
         ) : (
-          <textarea
-            ref={textareaRef}
-            className="markdown-textarea"
-            value={content}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={placeholder}
-          />
+          <div 
+            key="edit-mode" 
+            className="editor-wrapper"
+          >
+            {showLineNumbers && (
+              <div className="line-numbers" ref={lineNumbersRef}></div>
+            )}
+            <textarea
+              ref={textareaRef}
+              className={`markdown-textarea ${showLineNumbers ? 'with-line-numbers' : ''}`}
+              value={content}
+              onChange={(e) => onChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder={placeholder}
+            />
+          </div>
         )}
       </div>
     </div>
