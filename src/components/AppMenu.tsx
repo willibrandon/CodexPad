@@ -45,7 +45,6 @@ const AppMenu: React.FC = () => {
   return (
     <div className={`app-menu ${isMac ? 'mac-app-menu' : ''}`} ref={menuRef}>
       <div className="menu-bar">
-        <div className="menu-bar-drag-region" />
         {!isMac && (
           <div className="menu-bar-items">
             <div 
@@ -139,6 +138,7 @@ const AppMenu: React.FC = () => {
             </div>
           </div>
         )}
+        <div className="menu-bar-drag-region" />
         <WindowControls />
       </div>
     </div>
