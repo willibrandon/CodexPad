@@ -60,8 +60,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
-    frame: process.platform !== 'darwin', // Use default frame for macOS
-    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined, // Use hiddenInset for macOS
+    frame: false, // Remove default frame for all platforms
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden', // Use hiddenInset for macOS, hidden for others
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
