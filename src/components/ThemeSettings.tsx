@@ -1,12 +1,35 @@
+/**
+ * @fileoverview Component for customizing application theme settings
+ * including color schemes, fonts, and display modes.
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import './ThemeSettings.css';
 
+/**
+ * Props for the ThemeSettings component
+ */
 interface ThemeSettingsProps {
+  /** Whether the settings modal is visible */
   isOpen: boolean;
+  /** Callback to close the settings modal */
   onClose: () => void;
 }
 
+/**
+ * A component that provides a modal interface for customizing theme settings.
+ * Supports changing theme mode, color scheme, font size, and code font.
+ * 
+ * Features:
+ * - Light/dark/system theme modes
+ * - Multiple color schemes
+ * - Font size adjustment
+ * - Code font selection with preview
+ * - Settings persistence
+ * 
+ * @component
+ */
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({ isOpen, onClose }) => {
   const { settings, updateSettings, resetToDefaults, isDarkMode } = useTheme();
   const previewRef = useRef<HTMLElement>(null);

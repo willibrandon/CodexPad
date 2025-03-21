@@ -1,9 +1,17 @@
+/**
+ * Styles for the TagManager component
+ * Implements a tag management interface with AI-powered suggestions
+ * Features responsive design and smooth animations
+ */
+
+/* Main container for tag management */
 .tag-manager {
   padding: 10px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--editor-bg);
 }
 
+/* Container for displaying existing tags */
 .tags-container {
   display: flex;
   flex-wrap: wrap;

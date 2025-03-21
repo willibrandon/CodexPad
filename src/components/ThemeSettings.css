@@ -1,3 +1,10 @@
+/**
+ * Styles for the ThemeSettings component
+ * Implements a modal interface for theme customization
+ * Features responsive design, live preview, and smooth transitions
+ */
+
+/* Modal overlay with semi-transparent background */
 .theme-settings-overlay {
   position: fixed;
   top: 0;
@@ -12,6 +19,7 @@
   animation: fadeIn 0.2s ease-in-out;
 }
 
+/* Main container for theme settings */
 .theme-settings-container {
   background-color: var(--editor-bg);
   border-radius: 8px;

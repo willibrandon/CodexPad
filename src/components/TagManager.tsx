@@ -1,13 +1,36 @@
+/**
+ * @fileoverview Component for managing snippet tags with AI-powered suggestions
+ * and real-time updates.
+ */
+
 import React, { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import './TagManager.css';
 import { tagSuggestionService } from '../services/ai/tagSuggestionService';
 
+/**
+ * Props for the TagManager component
+ */
 interface TagManagerProps {
+  /** Array of current tags */
   tags: string[];
-  content?: string;  // Add content prop for AI suggestions
+  /** Content to analyze for tag suggestions */
+  content?: string;
+  /** Callback when tags are added or removed */
   onTagsChange: (tags: string[]) => void;
 }
 
+/**
+ * A component that manages tags for snippets, including adding, removing,
+ * and suggesting tags based on content analysis.
+ * 
+ * Features:
+ * - Add/remove tags
+ * - AI-powered tag suggestions
+ * - Tag autocomplete from existing tags
+ * - Real-time updates
+ * 
+ * @component
+ */
 const TagManager: React.FC<TagManagerProps> = memo(({
   tags = [],
   content = '',  // Default to empty string
