@@ -1,20 +1,37 @@
+/**
+ * @fileoverview Theme context and provider for application-wide theming
+ * This module provides a React context for managing theme settings including
+ * dark/light mode, font sizes, code fonts, and color schemes.
+ * @module ThemeContext
+ */
+
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 
-// Define the types for our theme settings
+/** Type for theme mode selection */
 export type ThemeMode = 'light' | 'dark' | 'system';
+/** Type for font size selection */
 export type FontSize = 'small' | 'medium' | 'large';
+/** Type for code font selection */
 export type CodeFont = 'default' | 'fira-code' | 'jetbrains-mono' | 'cascadia-code';
+/** Type for color scheme selection */
 export type ColorScheme = 'default' | 'solarized' | 'nord' | 'github' | 'dracula';
 
-// Interface for our theme settings
+/**
+ * Interface defining theme settings
+ * @interface ThemeSettings
+ */
 export interface ThemeSettings {
+  /** Selected theme mode */
   mode: ThemeMode;
+  /** Selected font size */
   fontSize: FontSize;
+  /** Selected code font */
   codeFont: CodeFont;
+  /** Selected color scheme */
   colorScheme: ColorScheme;
 }
 
-// Default theme settings
+/** Default theme settings */
 const defaultSettings: ThemeSettings = {
   mode: 'system',
   fontSize: 'medium',
@@ -22,14 +39,22 @@ const defaultSettings: ThemeSettings = {
   colorScheme: 'default'
 };
 
-// Create the context with default values
+/**
+ * Interface for theme context value
+ * @interface ThemeContextType
+ */
 interface ThemeContextType {
+  /** Current theme settings */
   settings: ThemeSettings;
+  /** Function to update theme settings */
   updateSettings: (settings: Partial<ThemeSettings>) => void;
+  /** Function to reset settings to defaults */
   resetToDefaults: () => void;
+  /** Whether dark mode is currently active */
   isDarkMode: boolean;
 }
 
+// Create the context with default values
 const ThemeContext = createContext<ThemeContextType>({
   settings: defaultSettings,
   updateSettings: () => {},
@@ -37,16 +62,28 @@ const ThemeContext = createContext<ThemeContextType>({
   isDarkMode: false
 });
 
-// Create a hook to use the theme context
+/**
+ * Hook to use theme context
+ * @returns {ThemeContextType} Theme context value
+ */
 export const useTheme = () => useContext(ThemeContext);
 
-// Create a provider component
+/**
+ * Props for ThemeProvider component
+ * @interface ThemeProviderProps
+ */
 interface ThemeProviderProps {
+  /** Child components */
   children: ReactNode;
 }
 
+/**
+ * Provider component for theme functionality
+ * Manages theme settings and applies them to the document
+ * @param {ThemeProviderProps} props - Component props
+ */
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // Get stored settings or use defaults
+  // Initialize settings from localStorage or defaults
   const [settings, setSettings] = useState<ThemeSettings>(() => {
     const storedSettings = localStorage.getItem('themeSettings');
     return storedSettings ? JSON.parse(storedSettings) : defaultSettings;
@@ -54,7 +91,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   
   const [isDarkMode, setIsDarkMode] = useState(false);
   
-  // Check for system dark mode preference
+  // Monitor system dark mode preference
   useEffect(() => {
     const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
@@ -75,7 +112,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     };
   }, [settings.mode]);
   
-  // Update isDarkMode when settings change
+  // Update dark mode when settings change
   useEffect(() => {
     if (settings.mode === 'dark') {
       setIsDarkMode(true);
@@ -85,7 +122,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // If it's 'system', the other useEffect will handle it
   }, [settings.mode]);
   
-  // Apply CSS classes based on theme settings
+  // Apply theme classes to document
   useEffect(() => {
     const htmlElement = document.documentElement;
     

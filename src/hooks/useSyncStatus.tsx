@@ -1,12 +1,32 @@
+/**
+ * @fileoverview Custom hook for managing snippet synchronization status
+ * This module provides functionality to monitor and control the synchronization
+ * state between the local database and remote server.
+ * @module useSyncStatus
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 
+/**
+ * Interface representing the current synchronization status
+ * @interface SyncStatus
+ */
 export interface SyncStatus {
+  /** Whether synchronization is enabled */
   enabled: boolean;
+  /** Whether connected to sync server */
   connected: boolean;
+  /** Number of changes waiting to be synced */
   pendingChanges: number;
+  /** ISO timestamp of last successful sync */
   lastSyncedAt?: string;
 }
 
+/**
+ * Custom hook for managing synchronization status and operations.
+ * Provides functions to monitor sync status and control sync operations.
+ * @returns {Object} Object containing sync status and control functions
+ */
 export function useSyncStatus() {
   const [status, setStatus] = useState<SyncStatus>({
     enabled: true,
@@ -45,7 +65,11 @@ export function useSyncStatus() {
     }
   }, []);
 
-  // Toggle sync enable/disable
+  /**
+   * Toggles synchronization on/off.
+   * @param {boolean} [enable] - Optional flag to explicitly set sync state
+   * @returns {Promise<boolean>} New sync enabled state
+   */
   const toggleSync = useCallback(async (enable?: boolean) => {
     if (window.electron) {
       try {
@@ -60,7 +84,10 @@ export function useSyncStatus() {
     return status.enabled;
   }, [status.enabled]);
 
-  // Trigger a manual backup
+  /**
+   * Triggers a manual backup of the database.
+   * @returns {Promise<{success: boolean, message?: string, error?: string}>} Backup result
+   */
   const triggerBackup = useCallback(async () => {
     if (window.electron) {
       try {
@@ -74,7 +101,11 @@ export function useSyncStatus() {
     return { success: false, error: 'Electron API not available' };
   }, []);
 
-  // Force push a snippet to the server
+  /**
+   * Forces a snippet to be pushed to the server.
+   * @param {any} snippet - The snippet to push
+   * @returns {Promise<{success: boolean, error?: string}>} Push result
+   */
   const pushSnippet = useCallback(async (snippet: any) => {
     if (window.electron) {
       try {
@@ -87,7 +118,11 @@ export function useSyncStatus() {
     return { success: false, error: 'Electron API not available' };
   }, []);
 
-  // Pull a snippet from the server
+  /**
+   * Pulls a specific snippet from the server.
+   * @param {number} snippetId - ID of the snippet to pull
+   * @returns {Promise<{success: boolean, error?: string}>} Pull result
+   */
   const pullSnippet = useCallback(async (snippetId: number) => {
     if (window.electron) {
       try {

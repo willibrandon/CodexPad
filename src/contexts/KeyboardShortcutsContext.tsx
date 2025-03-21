@@ -1,8 +1,18 @@
+/**
+ * @fileoverview Keyboard shortcuts context and provider for application-wide keyboard shortcuts
+ * This module provides a React context for managing global keyboard shortcuts,
+ * command palette state, search focus state, and keyboard shortcuts help dialog.
+ * @module KeyboardShortcutsContext
+ */
+
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { Snippet } from '../App';
 import { useTabs } from '../components/TabsContext';
 
-// Define shortcut categories
+/**
+ * Enumeration of shortcut categories for organization
+ * @enum {string}
+ */
 export enum ShortcutCategory {
   Navigation = 'Navigation',
   Editing = 'Editing',
@@ -10,30 +20,59 @@ export enum ShortcutCategory {
   View = 'View',
 }
 
-// Define interface for a keyboard shortcut
+/**
+ * Interface defining a keyboard shortcut
+ * @interface KeyboardShortcut
+ */
 export interface KeyboardShortcut {
+  /** Unique identifier for the shortcut */
   id: string;
+  /** Display name of the shortcut */
   name: string;
+  /** Array of keys that make up the shortcut (e.g., ['Ctrl', 'S']) */
   keys: string[];
+  /** Category the shortcut belongs to */
   category: ShortcutCategory;
+  /** Function to execute when shortcut is triggered */
   action: () => void;
+  /** Description of what the shortcut does */
   description: string;
 }
 
+/**
+ * Interface for keyboard shortcuts context value
+ * @interface KeyboardShortcutsContextType
+ */
 interface KeyboardShortcutsContextType {
+  /** List of registered keyboard shortcuts */
   shortcuts: KeyboardShortcut[];
+  /** Function to register a new shortcut */
   registerShortcut: (shortcut: KeyboardShortcut) => void;
+  /** Function to unregister an existing shortcut */
   unregisterShortcut: (id: string) => void;
+  /** Whether the command palette is open */
   commandPaletteOpen: boolean;
+  /** Function to set command palette open state */
   setCommandPaletteOpen: (open: boolean) => void;
+  /** Whether the search input is focused */
   searchFocused: boolean;
+  /** Function to set search focus state */
   setSearchFocused: (focused: boolean) => void;
+  /** Whether the shortcuts help dialog is open */
   shortcutsHelpOpen: boolean;
+  /** Function to set shortcuts help dialog open state */
   setShortcutsHelpOpen: (open: boolean) => void;
 }
 
+// Create the context with undefined default value
 const KeyboardShortcutsContext = createContext<KeyboardShortcutsContextType | undefined>(undefined);
 
+/**
+ * Provider component for keyboard shortcuts functionality
+ * Manages global keyboard shortcuts and related UI states
+ * @param {Object} props - Component props
+ * @param {ReactNode} props.children - Child components
+ */
 export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [shortcuts, setShortcuts] = useState<KeyboardShortcut[]>([]);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -267,6 +306,11 @@ export const KeyboardShortcutsProvider: React.FC<{ children: ReactNode }> = ({ c
   );
 };
 
+/**
+ * Hook to use keyboard shortcuts context
+ * @returns {KeyboardShortcutsContextType} Keyboard shortcuts context value
+ * @throws {Error} If used outside of KeyboardShortcutsProvider
+ */
 export const useKeyboardShortcuts = (): KeyboardShortcutsContextType => {
   const context = useContext(KeyboardShortcutsContext);
   if (context === undefined) {
