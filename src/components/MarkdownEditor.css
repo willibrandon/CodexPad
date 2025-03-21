@@ -510,4 +510,43 @@ pre[class*="language-vbnet"] {
 .markdown-textarea {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb-color, var(--border-color)) transparent;
+}
+
+.code-font-dropdown:hover .toolbar-btn[title] {
+  pointer-events: none;
+}
+
+.code-font-dropdown:hover .toolbar-btn[title]::before,
+.code-font-dropdown:hover .toolbar-btn[title]::after {
+  display: none !important;
+}
+
+.code-font-dropdown {
+  position: relative;
+  height: 36px;
+  z-index: 100;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 36px;
+  right: 0;
+  background-color: var(--editor-bg);
+  min-width: 200px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  z-index: 101;
+  border-radius: 4px;
+  padding: 8px 0;
+  margin-top: 2px;
+  border: 1px solid var(--border-color);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.code-font-dropdown:hover .dropdown-content {
+  display: block;
+  opacity: 1;
+  visibility: visible;
 } 
