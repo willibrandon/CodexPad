@@ -311,28 +311,86 @@
 }
 
 .markdown-preview code {
-  font-family: var(--code-font-family) !important;
+  font-family: var(--code-font-family);
   padding: 0.2em 0.4em;
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--background-color);
   border-radius: 3px;
   white-space: pre-wrap;
 }
 
 .markdown-preview pre {
-  background-color: #1e1e1e;
-  color: #dcdcdc;
+  background-color: var(--editor-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 16px;
   margin: 0 0 1em 0;
   overflow: auto;
-  font-family: var(--code-font-family) !important;
 }
 
 .markdown-preview pre code {
   background-color: transparent;
   padding: 0;
   white-space: pre;
-  font-family: var(--code-font-family) !important;
+  font-family: var(--code-font-family);
+}
+
+/* Theme-aware syntax highlighting */
+[data-theme="light"] .markdown-preview pre {
+  background-color: var(--editor-bg);
+}
+
+[data-theme="dark"] .markdown-preview pre {
+  background-color: #2d2d2d;
+}
+
+[data-theme="light"] .markdown-preview pre code {
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .markdown-preview pre code {
+  color: #ccc;
+}
+
+/* Language-specific styling */
+.markdown-preview pre[class*="language-"] {
+  position: relative;
+}
+
+.markdown-preview pre[class*="language-"]::before {
+  content: attr(class);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 8px;
+  font-size: 0.7em;
+  background: var(--border-color);
+  color: var(--text-color);
+  border-radius: 0 4px 0 4px;
+  opacity: 0.7;
+}
+
+/* Special styling for specific languages */
+.markdown-preview pre[class*="language-typescript"],
+.markdown-preview pre[class*="language-javascript"] {
+  border-left: 3px solid #007acc;
+}
+
+.markdown-preview pre[class*="language-python"] {
+  border-left: 3px solid #3572A5;
+}
+
+.markdown-preview pre[class*="language-rust"] {
+  border-left: 3px solid #dea584;
+}
+
+.markdown-preview pre[class*="language-go"] {
+  border-left: 3px solid #00ADD8;
+}
+
+.markdown-preview pre[class*="language-csharp"],
+.markdown-preview pre[class*="language-fsharp"],
+.markdown-preview pre[class*="language-vbnet"] {
+  border-left: 3px solid #8a2be2;
 }
 
 .markdown-preview blockquote {
@@ -361,28 +419,6 @@
 .markdown-preview th {
   background-color: var(--background-color);
   font-weight: 600;
-}
-
-/* Add styles for syntax highlighting of .NET languages */
-pre[class*="language-csharp"],
-pre[class*="language-fsharp"],
-pre[class*="language-vbnet"] {
-  background-color: #1e1e1e !important; /* VS Code-like dark background */
-  border-left: 3px solid #8a2be2 !important; /* Purple border for .NET languages */
-}
-
-/* Improve code formatting */
-.markdown-preview pre {
-  background-color: #1e1e1e;
-  color: #dcdcdc;
-  border-radius: 4px;
-  padding: 16px;
-  margin: 0 0 1em 0;
-  overflow: auto;
-}
-
-.markdown-preview code {
-  font-family: 'Cascadia Code', 'Menlo', 'Monaco', 'Courier New', monospace;
 }
 
 /* Keyboard help panel */

@@ -7,6 +7,9 @@ const ReactMarkdown = lazy(() => import('react-markdown'));
 
 // Support for syntax highlighting
 import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';  // Light theme
+import 'prismjs/themes/prism-tomorrow.css';  // Dark theme
+import 'prismjs/components/prism-markup-templating';  // Required for PHP and other template languages
 import { loadPrismLanguage } from '../utils/prismUtils';
 
 // Maximum size in bytes for direct rendering (approximately 100KB)
