@@ -3,7 +3,7 @@
  * including opening, closing, and switching between tabs.
  */
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Snippet } from '../App';
 
 /**
@@ -103,13 +103,22 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return editorStates.get(activeTabId);
   };
 
-  const updateEditorState = (id: number, state: EditorState) => {
+  const updateEditorState = useCallback((id: number, state: EditorState) => {
     setEditorStates(prev => {
+      // Skip update if the state hasn't changed
+      const currentState = prev.get(id);
+      if (currentState && 
+          currentState.isPreviewMode === state.isPreviewMode && 
+          currentState.textareaRef === state.textareaRef) {
+        return prev; // Return existing state to avoid unnecessary updates
+      }
+      
+      // Otherwise, update with new state
       const newStates = new Map(prev);
       newStates.set(id, state);
       return newStates;
     });
-  };
+  }, []);
 
   return (
     <TabsContext.Provider 

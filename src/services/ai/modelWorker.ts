@@ -8,8 +8,12 @@
 import * as tf from '@tensorflow/tfjs';
 import { Snippet } from '../../App';
 
-// Initialize TensorFlow.js in the worker
+// Configure TensorFlow.js memory flags
 tf.setBackend('cpu');
+tf.env().set('WEBGL_DELETE_TEXTURE_THRESHOLD', 0); 
+tf.env().set('WEBGL_FLUSH_THRESHOLD', 1);
+tf.env().set('KEEP_INTERMEDIATE_TENSORS', false);
+tf.env().set('CPU_HANDOFF_SIZE_THRESHOLD', 128);
 
 /**
  * Handles messages from the main thread to perform model operations.
@@ -38,68 +42,99 @@ self.onmessage = async (e: MessageEvent) => {
       await trainTagSuggestionModel(data.snippets);
       self.postMessage({ type: 'tagSuggestionTrained' });
       break;
+      
+    case 'cleanup':
+      cleanupResources();
+      self.postMessage({ type: 'resourcesCleaned' });
+      break;
   }
 };
 
 /**
- * Initializes the summarization model with an optimized architecture.
- * Uses a combination of embedding, LSTM, and dense layers for text summarization.
- * @async
+ * Cleans up TensorFlow resources to free memory
  */
-async function initializeSummarizationModel() {
-  const maxSequenceLength = 200;
-  const maxWords = 2000;
-  const outputDim = 16;
-
-  const input = tf.input({ shape: [maxSequenceLength] });
-  
-  const embedding = tf.layers.embedding({
-    inputDim: maxWords,
-    outputDim: 16,
-    inputLength: maxSequenceLength,
-    embeddingsInitializer: 'glorotNormal'
-  }).apply(input) as tf.SymbolicTensor;
-
-  const lstm = tf.layers.lstm({
-    units: 16,
-    returnSequences: false,
-    kernelInitializer: 'glorotNormal',
-    recurrentInitializer: 'glorotNormal',
-    implementation: 2
-  }).apply(embedding) as tf.SymbolicTensor;
-
-  const dense1 = tf.layers.dense({
-    units: 16,
-    activation: 'relu',
-    kernelInitializer: 'glorotNormal'
-  }).apply(lstm) as tf.SymbolicTensor;
-
-  const dropout = tf.layers.dropout({ rate: 0.2 }).apply(dense1) as tf.SymbolicTensor;
-
-  const output = tf.layers.dense({
-    units: 16,
-    activation: 'sigmoid',
-    kernelInitializer: 'glorotNormal'
-  }).apply(dropout) as tf.SymbolicTensor;
-
-  const model = tf.model({ inputs: input, outputs: output });
-  model.compile({
-    optimizer: tf.train.adam(0.001),
-    loss: 'meanSquaredError',
-    metrics: ['accuracy']
-  });
-
-  // Store model in worker context
-  (self as any).summarizationModel = model;
-  console.log('Summarization model initialized with optimized architecture');
+function cleanupResources() {
+  try {
+    // Clean up summarization model
+    if ((self as any).summarizationModel) {
+      (self as any).summarizationModel.dispose();
+      (self as any).summarizationModel = null;
+    }
+    
+    // Clean up tag suggestion model
+    if ((self as any).tagSuggestionModel) {
+      (self as any).tagSuggestionModel.dispose();
+      (self as any).tagSuggestionModel = null;
+    }
+    
+    // Force TensorFlow garbage collection
+    tf.disposeVariables();
+    tf.tidy(() => {});
+    
+    // Log memory state after cleanup
+    const memInfo = tf.memory();
+    console.log('Worker memory after cleanup:', {
+      tensors: memInfo.numTensors,
+      bytes: memInfo.numBytes
+    });
+  } catch (error) {
+    console.error('Error during worker resource cleanup:', error);
+  }
 }
 
 /**
- * Initializes the tag suggestion model with a sequential architecture.
- * Uses embedding and dense layers for text classification and tag prediction.
+ * Initializes the summarization model with a tiny, memory-efficient architecture
+ * @async
+ */
+async function initializeSummarizationModel() {
+  // Dispose any existing model
+  if ((self as any).summarizationModel) {
+    (self as any).summarizationModel.dispose();
+  }
+  
+  // Create a lightweight model with minimal memory usage
+  const maxSequenceLength = 200;
+  const maxWords = 1000;
+  
+  const model = tf.sequential({
+    layers: [
+      tf.layers.embedding({
+        inputDim: maxWords,
+        outputDim: 8,
+        inputLength: maxSequenceLength
+      }),
+      tf.layers.globalAveragePooling1d(),
+      tf.layers.dense({ units: 8, activation: 'relu' }),
+      tf.layers.dense({ units: 8, activation: 'softmax' })
+    ]
+  });
+  
+  model.compile({
+    optimizer: 'adam',
+    loss: 'categoricalCrossentropy',
+    metrics: ['accuracy']
+  });
+  
+  // Store the model
+  (self as any).summarizationModel = model;
+  
+  // Force cleanup of any lingering tensors
+  tf.tidy(() => {});
+  
+  console.log('Summarization model initialized with memory-efficient architecture');
+}
+
+/**
+ * Initializes the tag suggestion model with a tiny, memory-efficient architecture
  * @async
  */
 async function initializeTagSuggestionModel() {
+  // Dispose any existing model
+  if ((self as any).tagSuggestionModel) {
+    (self as any).tagSuggestionModel.dispose();
+  }
+  
+  // Create a lightweight model with minimal memory usage
   const maxWords = 1000;
   const maxSequenceLength = 100;
 
@@ -107,13 +142,12 @@ async function initializeTagSuggestionModel() {
     layers: [
       tf.layers.embedding({
         inputDim: maxWords,
-        outputDim: 32,
+        outputDim: 8,
         inputLength: maxSequenceLength
       }),
       tf.layers.globalAveragePooling1d(),
-      tf.layers.dense({ units: 64, activation: 'relu' }),
-      tf.layers.dropout({ rate: 0.5 }),
-      tf.layers.dense({ units: 32, activation: 'softmax' })
+      tf.layers.dense({ units: 8, activation: 'relu' }),
+      tf.layers.dense({ units: 8, activation: 'softmax' })
     ]
   });
 
@@ -122,10 +156,14 @@ async function initializeTagSuggestionModel() {
     loss: 'categoricalCrossentropy',
     metrics: ['accuracy']
   });
-
-  // Store model in worker context
+  
+  // Store the model
   (self as any).tagSuggestionModel = model;
-  console.log('Tag suggestion model initialized with optimized architecture');
+  
+  // Force cleanup of any lingering tensors
+  tf.tidy(() => {});
+  
+  console.log('Tag suggestion model initialized with memory-efficient architecture');
 }
 
 /**

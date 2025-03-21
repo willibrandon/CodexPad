@@ -53,31 +53,66 @@ const SnippetList: React.FC<SnippetListProps> = ({
    * Falls back to content preview if summarization fails
    */
   useEffect(() => {
+    let isMounted = true;
+    const summaryMap = new Map();
+    
+    // Create a stable key for comparison to prevent unnecessary re-runs
+    const snippetsKey = snippets.map(s => `${s.id}-${s.updatedAt}`).join('|');
+    
     const generateSummaries = async () => {
-      const newSummaries: { [key: number]: string } = {};
+      // Skip processing if summaries are already generated for all snippets
+      if (snippets.every(snippet => summaries[snippet.id])) {
+        return;
+      }
+      
+      const newSummaries: { [key: number]: string } = { ...summaries };
+      let hasChanges = false;
       
       for (const snippet of snippets) {
+        // Skip if we already have a summary for this snippet and it hasn't changed
+        if (summaries[snippet.id] && summaryMap.has(snippet.id) && 
+            summaryMap.get(snippet.id) === `${snippet.id}-${snippet.updatedAt}`) {
+          continue;
+        }
+        
         try {
           // Handle empty snippets
           if (!snippet.content || snippet.content.trim() === '') {
             newSummaries[snippet.id] = 'No content';
+            hasChanges = true;
             continue;
           }
           
           const summary = await summarizationService.summarize(snippet.content);
+          
+          // Only update if component is still mounted
+          if (!isMounted) return;
+          
           newSummaries[snippet.id] = summary;
+          summaryMap.set(snippet.id, `${snippet.id}-${snippet.updatedAt}`);
+          hasChanges = true;
         } catch (error) {
           console.error(`Failed to generate summary for snippet ${snippet.id}:`, error);
           // Fall back to first few characters if summarization fails
+          if (!isMounted) return;
           newSummaries[snippet.id] = snippet.content ? snippet.content.slice(0, 100) + '...' : 'No content';
+          summaryMap.set(snippet.id, `${snippet.id}-${snippet.updatedAt}`);
+          hasChanges = true;
         }
       }
       
-      setSummaries(newSummaries);
+      // Only update state if something has changed
+      if (hasChanges && isMounted) {
+        setSummaries(newSummaries);
+      }
     };
 
     generateSummaries();
-  }, [snippets]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [snippets]); // Only depend on snippets array
 
   /**
    * Handles snippet deletion with confirmation

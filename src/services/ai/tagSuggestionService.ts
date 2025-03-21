@@ -9,28 +9,56 @@ import * as tf from '@tensorflow/tfjs';
 import { Snippet } from '../../App';
 import { modelInitializer } from './modelInitializer';
 
+// Configure TensorFlow memory management for minimal memory footprint
+tf.env().set('WEBGL_DELETE_TEXTURE_THRESHOLD', 0);
+tf.env().set('WEBGL_FLUSH_THRESHOLD', 1);
+tf.env().set('KEEP_INTERMEDIATE_TENSORS', false);
+tf.env().set('CPU_HANDOFF_SIZE_THRESHOLD', 128);
+tf.setBackend('cpu'); // Force CPU backend for lower memory usage
+
+// Cache for suggestion results to avoid redundant processing
+interface SuggestionCacheEntry {
+  suggestions: string[];
+  timestamp: number;
+}
+
 /**
  * Service class for generating tag suggestions for snippets.
- * Uses a combination of deep learning and word frequency analysis.
+ * Uses word frequency analysis for memory efficiency.
  */
 export class TagSuggestionService {
-  /** TensorFlow model for tag suggestions */
+  /** TensorFlow model for tag suggestions - kept as null to save memory */
   private model: tf.LayersModel | null = null;
   /** List of words in the training vocabulary */
   private vocabulary: string[] = [];
   /** Maximum number of words in vocabulary */
-  private maxWords = 1000;
+  private maxWords = 500; // Reduced from 1000
   /** Maximum length of input sequences */
-  private maxSequenceLength = 100;
+  private maxSequenceLength = 50; // Reduced from 100
   /** Flag indicating if the service is initialized */
   private isInitialized = false;
   /** Flag indicating if model training is in progress */
   private isTraining = false;
   /** Flag indicating if the model is initialized */
   private modelInitialized = false;
+  /** Cache for suggestions to reduce redundant processing */
+  private suggestionCache: Map<string, SuggestionCacheEntry> = new Map();
+  /** Time in milliseconds that cached suggestions are considered valid */
+  private cacheTTL = 300000; // 5 minutes - increased from 1 minute
+  /** Counter to trigger memory cleanup */
+  private processCount = 0;
+  /** Set of stopwords to exclude from tag suggestions */
+  private stopWords = new Set([
+    'the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'will', 'not',
+    'are', 'was', 'were', 'been', 'has', 'had', 'would', 'could', 'should',
+    'what', 'when', 'where', 'which', 'who', 'whom', 'why', 'how', 'any',
+    'all', 'some', 'many', 'few', 'most', 'other', 'such', 'only', 'then',
+    'than', 'can', 'may', 'might', 'must', 'shall', 'should', 'will', 'would'
+  ]);
 
   constructor() {
-    // Initialization is now handled by the worker
+    // Memory optimization - prune cache at intervals
+    setInterval(() => this.cleanupCache(), 60000); // Clean cache every minute
   }
 
   /**
@@ -40,192 +68,171 @@ export class TagSuggestionService {
    */
   public async initialize(snippets: Snippet[]) {
     if (this.isInitialized) return;
-    await modelInitializer.initialize(snippets);
+    
+    // Just mark as initialized without loading model to save memory
     this.isInitialized = true;
+    
+    // Update vocabulary from snippets (limited to most common words)
+    this.updateVocabularyFromSnippets(snippets);
+    
+    // Let worker know we're ready, but avoid loading the actual model
+    await modelInitializer.initialize([]);
+    
+    console.log('Tag suggestion service initialized with vocabulary-only approach');
   }
 
   /**
-   * Initializes the TensorFlow model with sequential architecture.
+   * Update vocabulary from a collection of snippets
    * @private
-   * @returns {Promise<void>}
+   * @param {Snippet[]} snippets - Array of snippets
    */
-  private async initializeModel() {
-    if (this.modelInitialized) {
-      return;
-    }
-
-    try {
-      // Create a simple text classification model
-      this.model = tf.sequential({
-        layers: [
-          tf.layers.embedding({
-            inputDim: this.maxWords,
-            outputDim: 32,
-            inputLength: this.maxSequenceLength
-          }),
-          tf.layers.globalAveragePooling1d(),
-          tf.layers.dense({ units: 64, activation: 'relu' }),
-          tf.layers.dropout({ rate: 0.5 }),
-          tf.layers.dense({ units: 32, activation: 'softmax' })
-        ]
-      });
-
-      // Compile the model
-      this.model.compile({
-        optimizer: 'adam',
-        loss: 'categoricalCrossentropy',
-        metrics: ['accuracy']
-      });
-
-      this.modelInitialized = true;
-    } catch (error) {
-      console.error('Failed to initialize tag suggestion model:', error);
-    }
-  }
-
-  /**
-   * Preprocesses content for model input by converting to word indices.
-   * @private
-   * @param {string} content - Content to preprocess
-   * @returns {number[]} Array of word indices
-   */
-  private preprocessContent(content: string): number[] {
-    const words = content.toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter(word => word.length > 0);
-
-    // Convert words to indices based on vocabulary
-    const sequence = words.map(word => {
-      const index = this.vocabulary.indexOf(word);
-      return index !== -1 ? index : 0; // 0 for unknown words
-    });
-
-    // Pad or truncate to fixed length
-    while (sequence.length < this.maxSequenceLength) {
-      sequence.push(0);
-    }
-    return sequence.slice(0, this.maxSequenceLength);
-  }
-
-  /**
-   * Updates the vocabulary with new content.
-   * @private
-   * @param {string} content - Content to update vocabulary with
-   */
-  private updateVocabulary(content: string) {
-    const words = content.toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter(word => word.length > 0);
-
-    for (const word of words) {
-      if (!this.vocabulary.includes(word) && this.vocabulary.length < this.maxWords) {
-        this.vocabulary.push(word);
+  private updateVocabularyFromSnippets(snippets: Snippet[]) {
+    // Count word frequency across all snippets
+    const wordCount: {[key: string]: number} = {};
+    
+    // Process each snippet
+    for (const snippet of snippets) {
+      if (!snippet.content) continue;
+      
+      // Only process the first 1000 chars of each snippet
+      const trimmedContent = snippet.content.substring(0, 1000);
+      const words = trimmedContent.toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter(word => 
+          word.length > 3 && 
+          !this.stopWords.has(word)
+        );
+      
+      // Count occurrences
+      for (const word of words) {
+        wordCount[word] = (wordCount[word] || 0) + 1;
       }
     }
+    
+    // Convert to array of [word, count] pairs and sort by frequency
+    const wordPairs = Object.entries(wordCount);
+    wordPairs.sort((a, b) => b[1] - a[1]);
+    
+    // Take the most frequent words up to maxWords
+    this.vocabulary = wordPairs
+      .slice(0, this.maxWords)
+      .map(pair => pair[0]);
+    
+    console.log(`Vocabulary updated with ${this.vocabulary.length} words`);
   }
 
   /**
-   * Trains the model with a batch of snippets.
-   * @param {Snippet[]} snippets - Array of snippets to train with
-   * @returns {Promise<void>}
+   * Generates a unique key for caching suggestions
+   * @private
+   * @param {string} content - The content being analyzed
+   * @param {string[]} existingTags - The current tags
+   * @returns {string} A cache key
    */
-  public async trainModel(snippets: Snippet[]) {
-    if (!this.model || this.isTraining) {
-      console.error('Model not ready for training');
-      return;
+  private getCacheKey(content: string, existingTags: string[]): string {
+    // Use a hash of content to save memory in the cache key
+    const contentHash = this.hashString(content.substring(0, 100));
+    return `${contentHash}_${existingTags.sort().join(',')}`;
+  }
+  
+  /**
+   * Creates a simple hash of a string
+   * @private
+   * @param {string} str - String to hash
+   * @returns {number} Hash value
+   */
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
     }
-
-    try {
-      this.isTraining = true;
-
-      // Update vocabulary with all snippets
-      snippets.forEach(snippet => {
-        this.updateVocabulary(snippet.content);
-      });
-
-      // Prepare training data
-      const trainData = snippets.map(snippet => ({
-        input: this.preprocessContent(snippet.content),
-        tags: snippet.tags
-      }));
-
-      if (trainData.length === 0) {
-        console.log('No training data available');
-        this.isTraining = false;
-        return;
-      }
-
-      // Convert to tensors
-      const inputTensor = tf.tensor2d(
-        trainData.map(d => d.input),
-        [trainData.length, this.maxSequenceLength]
-      );
-
-      // Create a simple target tensor (we'll improve this later)
-      const targetTensor = tf.zeros([trainData.length, 32]);
-
-      try {
-        // Train the model
-        await this.model.fit(inputTensor, targetTensor, {
-          epochs: 5,
-          batchSize: Math.min(32, trainData.length),
-          validationSplit: 0.2,
-          shuffle: true
-        });
-      } finally {
-        // Clean up tensors
-        inputTensor.dispose();
-        targetTensor.dispose();
-      }
-    } catch (error) {
-      console.error('Failed to train tag suggestion model:', error);
-    } finally {
-      this.isTraining = false;
-    }
+    return hash;
   }
 
   /**
    * Suggests tags for the given content.
-   * Falls back to simple word frequency analysis if the model isn't ready.
+   * Uses word frequency analysis for memory efficiency.
    * @param {string} content - Content to suggest tags for
    * @param {string[]} existingTags - Array of existing tags to exclude
    * @returns {Promise<string[]>} Array of suggested tags
    */
   public async suggestTags(content: string, existingTags: string[] = []): Promise<string[]> {
-    if (!this.model || !this.isInitialized) {
-      // Fall back to simple word frequency analysis if model isn't ready
-      return this.getSimpleSuggestions(content, existingTags);
+    // Skip if content is too short
+    if (!content || content.length < 20) {
+      return [];
     }
-
-    try {
-      // Preprocess the content
-      const processedContent = this.preprocessContent(content);
+    
+    // Limit content to reduce memory usage (only take first 1500 characters)
+    const trimmedContent = content.substring(0, 1500);
+    
+    // Check cache first
+    const cacheKey = this.getCacheKey(trimmedContent, existingTags);
+    const cachedResult = this.suggestionCache.get(cacheKey);
+    if (cachedResult && (Date.now() - cachedResult.timestamp) < this.cacheTTL) {
+      return cachedResult.suggestions;
+    }
+    
+    // Get suggestions using simple word frequency
+    const suggestions = this.getSimpleSuggestions(trimmedContent, existingTags);
+    
+    // Cache the result
+    this.suggestionCache.set(cacheKey, {
+      suggestions,
+      timestamp: Date.now()
+    });
+    
+    // Clean up old cache entries
+    this.processCount++;
+    if (this.processCount % 10 === 0) {
+      this.cleanupCache();
       
-      // Convert to tensor
-      const inputTensor = tf.tensor2d([processedContent], [1, this.maxSequenceLength]);
-      
+      // Force tensor cleanup
       try {
-        // Get model predictions
-        const predictions = await this.model.predict(inputTensor) as tf.Tensor;
-        const values = await predictions.data();
-        
-        // Fall back to simple suggestions if predictions aren't useful
-        if (!values.some(v => v > 0)) {
-          return this.getSimpleSuggestions(content, existingTags);
-        }
-
-        // Combine model predictions with word frequency analysis
-        const simpleSuggestions = await this.getSimpleSuggestions(content, existingTags);
-        return simpleSuggestions;
-      } finally {
-        // Clean up tensors
-        inputTensor.dispose();
+        tf.disposeVariables();
+        tf.tidy(() => {});
+      } catch (e) {
+        console.error('Error during tag suggestion memory cleanup', e);
       }
-    } catch (error) {
-      console.error('Failed to generate tag suggestions:', error);
-      return this.getSimpleSuggestions(content, existingTags);
+    }
+    
+    return suggestions;
+  }
+
+  /**
+   * Cleans up old entries from the suggestion cache
+   * @private
+   */
+  private cleanupCache() {
+    // Keep cache size reasonable
+    if (this.suggestionCache.size > 20) {
+      const now = Date.now();
+      
+      // Convert to array first to avoid iterator issues
+      const entriesToRemove: string[] = [];
+      this.suggestionCache.forEach((entry, key) => {
+        if (now - entry.timestamp > this.cacheTTL) {
+          entriesToRemove.push(key);
+        }
+      });
+      
+      // Delete old entries
+      entriesToRemove.forEach(key => {
+        this.suggestionCache.delete(key);
+      });
+      
+      // If we still have too many entries, remove the oldest ones
+      if (this.suggestionCache.size > 20) {
+        const entries = Array.from(this.suggestionCache.entries());
+        // Sort by timestamp (oldest first)
+        entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+        // Remove oldest entries to keep only 20
+        const toRemove = entries.slice(0, entries.length - 20);
+        toRemove.forEach(([key]) => {
+          this.suggestionCache.delete(key);
+        });
+      }
     }
   }
 
@@ -239,25 +246,34 @@ export class TagSuggestionService {
   private getSimpleSuggestions(content: string, existingTags: string[]): string[] {
     // Extract keywords from content as potential tags
     const words = content.toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
+      .replace(/[^\w\s]/g, ' ')  // Replace punctuation with spaces
+      .replace(/\s+/g, ' ')      // Replace multiple spaces with single space
+      .split(/\s+/)              // Split on whitespace
       .filter(word => 
-        word.length > 3 && // Only words longer than 3 characters
-        !existingTags.includes(word) && // Not already used as a tag
-        !['the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'will'].includes(word) // Skip common words
+        word.length > 3 &&                   // Only words longer than 3 characters
+        !existingTags.includes(word) &&      // Not already used as a tag
+        !this.stopWords.has(word)            // Not a stop word
       );
 
-    // Get word frequency
-    const wordFreq = words.reduce((acc: {[key: string]: number}, word) => {
-      acc[word] = (acc[word] || 0) + 1;
-      return acc;
-    }, {});
+    // Use object instead of Map for better performance with string keys
+    const wordFreq: {[key: string]: number} = {};
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      wordFreq[word] = (wordFreq[word] || 0) + 1;
+    }
+
+    // Convert to array of [word, frequency] pairs
+    const pairs: [string, number][] = [];
+    for (const word in wordFreq) {
+      // Only consider words in our vocabulary or with high frequency
+      if (this.vocabulary.includes(word) || wordFreq[word] > 2) {
+        pairs.push([word, wordFreq[word]]);
+      }
+    }
 
     // Sort by frequency and get top 5
-    const suggestions = Object.entries(wordFreq)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .map(([word]) => word);
+    pairs.sort((a, b) => b[1] - a[1]);
+    const suggestions = pairs.slice(0, 5).map(pair => pair[0]);
 
     return suggestions;
   }

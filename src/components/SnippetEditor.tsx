@@ -253,9 +253,11 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
   const handleEditorStateChange = useCallback((state: { isPreviewMode: boolean; textareaRef: React.RefObject<HTMLTextAreaElement> }) => {
     if (snippet) {
       // Update the editor state in the TabsContext
-      updateEditorState(snippet.id, state);
+      // Use ID instead of the entire snippet to reduce dependency changes
+      const snippetId = snippet.id;
+      updateEditorState(snippetId, state);
     }
-  }, [snippet, updateEditorState]);
+  }, [snippet?.id, updateEditorState]); // Only depend on the ID, not the entire snippet object
 
   if (!snippet) {
     return (

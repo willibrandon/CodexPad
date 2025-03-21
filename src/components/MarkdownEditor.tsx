@@ -519,12 +519,16 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   // Notify parent of editor state changes
   useEffect(() => {
     if (onEditorStateChange) {
-      onEditorStateChange({
+      // Memoize the state object to prevent unnecessary updates
+      const editorState = {
         isPreviewMode: isPreview,
         textareaRef
-      });
+      };
+      
+      // Only call the callback when preview mode changes, not on every render
+      onEditorStateChange(editorState);
     }
-  }, [isPreview, onEditorStateChange]);
+  }, [isPreview, onEditorStateChange, textareaRef]); // Include textareaRef in dependencies
 
   return (
     <div className={`markdown-editor ${isFullscreen ? 'fullscreen' : ''}`}>
