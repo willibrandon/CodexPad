@@ -1,3 +1,10 @@
+/**
+ * Styles for the Import Dialog component
+ * Implements a modal dialog for importing files with drag-and-drop support
+ * Features responsive design, animations, and visual feedback for user interactions
+ */
+
+/* Semi-transparent overlay for modal backdrop */
 .import-dialog-overlay {
   position: fixed;
   top: 0;
@@ -12,6 +19,7 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+/* Main dialog container with responsive sizing */
 .import-dialog {
   background-color: var(--bg-primary);
   border-radius: 8px;
@@ -26,6 +34,7 @@
   border: 1px solid var(--border-color);
 }
 
+/* Dialog header with title and close button */
 .import-dialog-header {
   display: flex;
   justify-content: space-between;
@@ -34,6 +43,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Dialog title styling */
 .import-dialog-header h3 {
   margin: 0;
   font-size: 1.1rem;
@@ -41,6 +51,7 @@
   color: var(--text-primary);
 }
 
+/* Close button styling */
 .import-dialog-close {
   background: none;
   border: none;
@@ -52,16 +63,19 @@
   margin: 0;
 }
 
+/* Close button hover effect */
 .import-dialog-close:hover {
   color: var(--text-primary);
 }
 
+/* Main content area with scrolling */
 .import-dialog-content {
   padding: 20px;
   flex: 1;
   overflow-y: auto;
 }
 
+/* Import description text */
 .import-description {
   margin-top: 0;
   margin-bottom: 10px;
@@ -69,6 +83,7 @@
   font-size: 0.9rem;
 }
 
+/* Supported formats list */
 .import-formats {
   margin-top: 0;
   margin-bottom: 20px;
@@ -81,6 +96,7 @@
   margin-bottom: 4px;
 }
 
+/* Drag and drop zone styling */
 .import-dropzone {
   border: 2px dashed var(--border-color);
   border-radius: 6px;
@@ -92,17 +108,20 @@
   position: relative;
 }
 
+/* Active drag state */
 .import-dropzone.active {
   border-color: var(--accent-color);
   background-color: var(--bg-hover);
 }
 
+/* State when files are selected */
 .import-dropzone.has-files {
   border-style: solid;
   border-color: var(--border-color);
   padding: 15px;
 }
 
+/* Hidden file input */
 .file-input {
   opacity: 0;
   position: absolute;
@@ -113,33 +132,39 @@
   cursor: pointer;
 }
 
+/* Dropzone icon styling */
 .dropzone-icon {
   margin-bottom: 10px;
   color: var(--text-secondary);
 }
 
+/* Dropzone text styling */
 .dropzone-text {
   color: var(--text-secondary);
   margin: 0;
   font-size: 0.9rem;
 }
 
+/* Browse link styling */
 .browse-link {
   color: var(--accent-color);
   text-decoration: underline;
   cursor: pointer;
 }
 
+/* Selected files display */
 .files-selected {
   display: flex;
   align-items: center;
 }
 
+/* File icon styling */
 .files-icon {
   color: var(--accent-color);
   margin-right: 15px;
 }
 
+/* File info container */
 .files-info {
   flex: 1;
   text-align: left;
@@ -148,11 +173,13 @@
   align-items: center;
 }
 
+/* File name styling */
 .files-name {
   color: var(--text-primary);
   font-weight: 500;
 }
 
+/* Change files button */
 .change-files-btn {
   background: none;
   border: none;
@@ -167,6 +194,7 @@
   text-decoration: underline;
 }
 
+/* Error message styling */
 .import-error {
   color: var(--error-color);
   margin: 10px 0;
@@ -176,6 +204,7 @@
   font-size: 0.9rem;
 }
 
+/* Success message styling */
 .import-success {
   color: var(--success-color);
   margin: 10px 0;
@@ -185,6 +214,7 @@
   font-size: 0.9rem;
 }
 
+/* Dialog footer with action buttons */
 .import-dialog-footer {
   display: flex;
   justify-content: flex-end;
@@ -193,6 +223,7 @@
   gap: 10px;
 }
 
+/* Cancel and submit button base styles */
 .import-cancel-btn, .import-submit-btn {
   padding: 8px 15px;
   border-radius: 4px;
@@ -202,6 +233,7 @@
   transition: background-color 0.2s;
 }
 
+/* Cancel button styling */
 .import-cancel-btn {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -211,6 +243,7 @@
   background-color: var(--bg-hover);
 }
 
+/* Submit button styling */
 .import-submit-btn {
   background-color: var(--accent-color);
   color: white;
@@ -220,12 +253,14 @@
   background-color: var(--accent-color-hover);
 }
 
+/* Disabled submit button states */
 .import-submit-btn.disabled,
 .import-submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* Fade in animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -235,6 +270,7 @@
   }
 }
 
+/* Scale in animation */
 @keyframes scaleIn {
   from {
     opacity: 0;

@@ -1,14 +1,41 @@
+/**
+ * @fileoverview Import Dialog component for file import functionality
+ * Provides a modal interface for importing files with drag-and-drop support
+ * Handles multiple file formats and provides visual feedback for import status
+ * @module ImportDialog
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { importFiles } from '../utils/importUtils';
 import { Snippet } from '../App';
 import './ImportDialog.css';
 
+/**
+ * Props for the ImportDialog component
+ * @interface ImportDialogProps
+ */
 interface ImportDialogProps {
+  /** Whether the import dialog is currently open */
   isOpen: boolean;
+  /** Callback function to close the dialog */
   onClose: () => void;
+  /** Callback function called with imported snippets */
   onImport: (snippets: Partial<Snippet>[]) => void;
 }
 
+/**
+ * Import Dialog component for handling file imports
+ * Features include:
+ * - Drag and drop file upload
+ * - Multiple file selection
+ * - Progress feedback
+ * - Error handling
+ * - Success confirmation
+ * 
+ * @component
+ * @param {ImportDialogProps} props - Component props
+ * @returns {React.ReactElement | null} The import dialog or null if not open
+ */
 const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport }) => {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
@@ -17,7 +44,10 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport }
   const [importedCount, setImportedCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Reset state when dialog opens
+  /**
+   * Reset state when dialog opens
+   * @effect
+   */
   useEffect(() => {
     if (isOpen) {
       setFiles(null);
@@ -29,6 +59,10 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport }
   
   if (!isOpen) return null;
   
+  /**
+   * Handle drag events for the dropzone
+   * @param {React.DragEvent<HTMLDivElement>} e - Drag event
+   */
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -40,6 +74,10 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport }
     }
   };
   
+  /**
+   * Handle file drop events
+   * @param {React.DragEvent<HTMLDivElement>} e - Drop event
+   */
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -50,16 +88,27 @@ const ImportDialog: React.FC<ImportDialogProps> = ({ isOpen, onClose, onImport }
     }
   };
   
+  /**
+   * Handle file selection through input
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Change event
+   */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFiles(e.target.files);
     }
   };
   
+  /**
+   * Trigger file selection dialog
+   */
   const handleSelectFiles = () => {
     fileInputRef.current?.click();
   };
   
+  /**
+   * Process selected files and import them
+   * Handles validation, import process, and feedback
+   */
   const handleSubmit = async () => {
     if (!files || files.length === 0) {
       setError('Please select at least one file to import');
