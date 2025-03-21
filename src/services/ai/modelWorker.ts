@@ -1,10 +1,20 @@
+/**
+ * @fileoverview Web Worker implementation for AI model operations
+ * This module runs in a separate thread and handles the CPU-intensive tasks
+ * of initializing and training the AI models for summarization and tag suggestion.
+ * @module modelWorker
+ */
+
 import * as tf from '@tensorflow/tfjs';
 import { Snippet } from '../../App';
 
 // Initialize TensorFlow.js in the worker
 tf.setBackend('cpu');
 
-// Handle messages from the main thread
+/**
+ * Handles messages from the main thread to perform model operations.
+ * Supports initialization and training of both summarization and tag suggestion models.
+ */
 self.onmessage = async (e: MessageEvent) => {
   const { type, data } = e.data;
 
@@ -31,7 +41,11 @@ self.onmessage = async (e: MessageEvent) => {
   }
 };
 
-// Summarization model initialization
+/**
+ * Initializes the summarization model with an optimized architecture.
+ * Uses a combination of embedding, LSTM, and dense layers for text summarization.
+ * @async
+ */
 async function initializeSummarizationModel() {
   const maxSequenceLength = 200;
   const maxWords = 2000;
@@ -80,7 +94,11 @@ async function initializeSummarizationModel() {
   console.log('Summarization model initialized with optimized architecture');
 }
 
-// Tag suggestion model initialization
+/**
+ * Initializes the tag suggestion model with a sequential architecture.
+ * Uses embedding and dense layers for text classification and tag prediction.
+ * @async
+ */
 async function initializeTagSuggestionModel() {
   const maxWords = 1000;
   const maxSequenceLength = 100;
@@ -110,7 +128,11 @@ async function initializeTagSuggestionModel() {
   console.log('Tag suggestion model initialized with optimized architecture');
 }
 
-// Training functions
+/**
+ * Trains the summarization model with provided snippets.
+ * @param {Snippet[]} snippets - Array of snippets to train the model with
+ * @async
+ */
 async function trainSummarizationModel(snippets: Snippet[]) {
   const model = (self as any).summarizationModel;
   if (!model) return;
@@ -119,6 +141,11 @@ async function trainSummarizationModel(snippets: Snippet[]) {
   console.log('Summarization model trained');
 }
 
+/**
+ * Trains the tag suggestion model with provided snippets.
+ * @param {Snippet[]} snippets - Array of snippets to train the model with
+ * @async
+ */
 async function trainTagSuggestionModel(snippets: Snippet[]) {
   const model = (self as any).tagSuggestionModel;
   if (!model) return;

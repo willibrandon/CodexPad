@@ -1,26 +1,54 @@
+/**
+ * @fileoverview Tag suggestion service using TensorFlow.js
+ * This module provides AI-powered tag suggestions for snippets with
+ * fallback to frequency-based suggestions when the model is not ready.
+ * @module tagSuggestionService
+ */
+
 import * as tf from '@tensorflow/tfjs';
 import { Snippet } from '../../App';
 import { modelInitializer } from './modelInitializer';
 
+/**
+ * Service class for generating tag suggestions for snippets.
+ * Uses a combination of deep learning and word frequency analysis.
+ */
 export class TagSuggestionService {
+  /** TensorFlow model for tag suggestions */
   private model: tf.LayersModel | null = null;
+  /** List of words in the training vocabulary */
   private vocabulary: string[] = [];
-  private maxWords = 1000; // Limit vocabulary size
-  private maxSequenceLength = 100; // Limit input sequence length
+  /** Maximum number of words in vocabulary */
+  private maxWords = 1000;
+  /** Maximum length of input sequences */
+  private maxSequenceLength = 100;
+  /** Flag indicating if the service is initialized */
   private isInitialized = false;
+  /** Flag indicating if model training is in progress */
   private isTraining = false;
+  /** Flag indicating if the model is initialized */
   private modelInitialized = false;
 
   constructor() {
     // Initialization is now handled by the worker
   }
 
+  /**
+   * Initializes the tag suggestion service with existing snippets.
+   * @param {Snippet[]} snippets - Array of snippets to initialize with
+   * @returns {Promise<void>}
+   */
   public async initialize(snippets: Snippet[]) {
     if (this.isInitialized) return;
     await modelInitializer.initialize(snippets);
     this.isInitialized = true;
   }
 
+  /**
+   * Initializes the TensorFlow model with sequential architecture.
+   * @private
+   * @returns {Promise<void>}
+   */
   private async initializeModel() {
     if (this.modelInitialized) {
       return;
@@ -55,7 +83,12 @@ export class TagSuggestionService {
     }
   }
 
-  // Process text content into a format suitable for the model
+  /**
+   * Preprocesses content for model input by converting to word indices.
+   * @private
+   * @param {string} content - Content to preprocess
+   * @returns {number[]} Array of word indices
+   */
   private preprocessContent(content: string): number[] {
     const words = content.toLowerCase()
       .replace(/[^\w\s]/g, '')
@@ -75,7 +108,11 @@ export class TagSuggestionService {
     return sequence.slice(0, this.maxSequenceLength);
   }
 
-  // Update vocabulary based on new content
+  /**
+   * Updates the vocabulary with new content.
+   * @private
+   * @param {string} content - Content to update vocabulary with
+   */
   private updateVocabulary(content: string) {
     const words = content.toLowerCase()
       .replace(/[^\w\s]/g, '')
@@ -89,7 +126,11 @@ export class TagSuggestionService {
     }
   }
 
-  // Train the model with a batch of snippets
+  /**
+   * Trains the model with a batch of snippets.
+   * @param {Snippet[]} snippets - Array of snippets to train with
+   * @returns {Promise<void>}
+   */
   public async trainModel(snippets: Snippet[]) {
     if (!this.model || this.isTraining) {
       console.error('Model not ready for training');
@@ -145,7 +186,13 @@ export class TagSuggestionService {
     }
   }
 
-  // Get tag suggestions for new content
+  /**
+   * Suggests tags for the given content.
+   * Falls back to simple word frequency analysis if the model isn't ready.
+   * @param {string} content - Content to suggest tags for
+   * @param {string[]} existingTags - Array of existing tags to exclude
+   * @returns {Promise<string[]>} Array of suggested tags
+   */
   public async suggestTags(content: string, existingTags: string[] = []): Promise<string[]> {
     if (!this.model || !this.isInitialized) {
       // Fall back to simple word frequency analysis if model isn't ready
@@ -182,7 +229,13 @@ export class TagSuggestionService {
     }
   }
 
-  // Simple word frequency analysis for tag suggestions
+  /**
+   * Generates tag suggestions based on word frequency analysis.
+   * @private
+   * @param {string} content - Content to analyze
+   * @param {string[]} existingTags - Array of existing tags to exclude
+   * @returns {string[]} Array of suggested tags
+   */
   private getSimpleSuggestions(content: string, existingTags: string[]): string[] {
     // Extract keywords from content as potential tags
     const words = content.toLowerCase()
@@ -210,4 +263,5 @@ export class TagSuggestionService {
   }
 }
 
+/** Singleton instance of the TagSuggestionService */
 export const tagSuggestionService = new TagSuggestionService(); 

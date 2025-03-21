@@ -1,11 +1,18 @@
+/**
+ * @fileoverview Database schema and initialization for CodexPad
+ * This module handles the SQLite database schema creation, initialization,
+ * and provides prepared statements for common database operations.
+ * @module dbSchema
+ */
+
 import Database from 'better-sqlite3';
 import path from 'path';
 import { app } from 'electron';
 
-// Schema version for future migrations
+/** Current schema version for database migrations */
 const SCHEMA_VERSION = 1;
 
-// SQL to create the initial schema
+/** SQL statements for creating the initial database schema */
 const SCHEMA_SQL = `
 -- Create snippets table
 CREATE TABLE IF NOT EXISTS snippets (
@@ -44,6 +51,14 @@ CREATE INDEX IF NOT EXISTS idx_snippets_favorite ON snippets(favorite);
 CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
 `;
 
+/**
+ * Initializes the SQLite database with the required schema.
+ * Creates the database file if it doesn't exist and sets up all necessary tables and indexes.
+ * Also manages schema versioning for future migrations.
+ * 
+ * @returns {Database.Database} Initialized SQLite database instance
+ * @throws {Error} If database initialization fails
+ */
 export function initializeDatabase(): Database.Database {
     // Get the user data path from electron
     const userDataPath = app.getPath('userData');
@@ -67,7 +82,13 @@ export function initializeDatabase(): Database.Database {
     return db;
 }
 
-// Prepared statements for common operations
+/**
+ * Creates and returns prepared statements for common database operations.
+ * Using prepared statements improves performance and prevents SQL injection.
+ * 
+ * @param {Database.Database} db - The initialized SQLite database instance
+ * @returns {Object} Object containing all prepared statements for database operations
+ */
 export function prepareStatements(db: Database.Database) {
     return {
         // Snippet operations
@@ -145,20 +166,40 @@ export function prepareStatements(db: Database.Database) {
     };
 }
 
-// Type definitions for our database operations
+/**
+ * Represents a snippet record in the database.
+ * @interface DBSnippet
+ */
 export interface DBSnippet {
+    /** Unique identifier for the snippet */
     id: number;
+    /** Title of the snippet */
     title: string;
+    /** Content/body of the snippet */
     content: string;
+    /** ISO timestamp of when the snippet was created */
     created_at: string;
+    /** ISO timestamp of when the snippet was last updated */
     updated_at: string;
+    /** Boolean flag (0 or 1) indicating if the snippet is favorited */
     favorite: number;
+    /** Comma-separated list of tags associated with the snippet */
     tags?: string;
 }
 
+/**
+ * Represents a tag record in the database.
+ * @interface DBTag
+ */
 export interface DBTag {
+    /** Unique identifier for the tag */
     id: number;
+    /** Name of the tag */
     name: string;
 }
 
+/**
+ * Type definition for the return value of prepareStatements function.
+ * Contains all prepared statements for database operations.
+ */
 export type PreparedStatements = ReturnType<typeof prepareStatements>; 
