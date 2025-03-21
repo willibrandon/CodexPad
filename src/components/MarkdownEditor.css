@@ -190,8 +190,8 @@
   padding: 16px;
   border: none;
   resize: none;
-  font-family: var(--code-font);
-  font-size: 0.9em;
+  font-family: var(--code-font-family);
+  font-size: var(--code-font-size);
   line-height: 1.5;
   background-color: var(--editor-bg);
   color: var(--text-color);
@@ -223,7 +223,7 @@
 }
 
 .markdown-preview code {
-  font-family: inherit !important;
+  font-family: var(--code-font-family) !important;
   padding: 0.2em 0.4em;
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: 3px;
@@ -237,14 +237,14 @@
   padding: 16px;
   margin: 0 0 1em 0;
   overflow: auto;
-  font-family: inherit !important;
+  font-family: var(--code-font-family) !important;
 }
 
 .markdown-preview pre code {
   background-color: transparent;
   padding: 0;
   white-space: pre;
-  font-family: inherit !important;
+  font-family: var(--code-font-family) !important;
 }
 
 .markdown-preview blockquote {
