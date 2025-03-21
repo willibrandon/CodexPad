@@ -1,3 +1,11 @@
+/**
+ * @fileoverview A full-featured snippet editor component that provides editing, tagging,
+ * and export capabilities for code snippets. Includes real-time saving, markdown editing,
+ * and export functionality.
+ * 
+ * @module SnippetEditor
+ */
+
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Snippet } from '../App';
 import TagManager from './TagManager';
@@ -6,25 +14,63 @@ import { useExport, ExportFormat } from '../hooks/useExport';
 import { useTabs } from './TabsContext';
 import './SnippetEditor.css';
 
+/**
+ * Props interface for the SnippetEditor component
+ * @interface SnippetEditorProps
+ */
 interface SnippetEditorProps {
+  /** The snippet to edit, or null if no snippet is selected */
   snippet: Snippet | null;
+  /** Callback function to handle snippet updates */
   onUpdateSnippet: (snippet: Snippet) => void;
+  /** Callback function to handle snippet deletion */
   onDeleteSnippet: (id: number) => void;
 }
 
+/**
+ * A comprehensive editor component for managing code snippets.
+ * Provides functionality for editing, tagging, favoriting, and exporting snippets.
+ * 
+ * Features:
+ * - Real-time saving with debounce
+ * - Markdown editing with preview
+ * - Tag management
+ * - Export to multiple formats (Markdown, HTML, PDF)
+ * - Favorite/unfavorite functionality
+ * - Save status indicators
+ * 
+ * @component
+ * @param {SnippetEditorProps} props - Component props
+ * @returns {React.ReactElement} The rendered snippet editor
+ */
 const SnippetEditor: React.FC<SnippetEditorProps> = memo(({ 
   snippet, 
   onUpdateSnippet, 
   onDeleteSnippet 
 }) => {
   const { updateTabContent, updateEditorState } = useTabs();
+  /** Title of the snippet being edited */
   const [editedTitle, setEditedTitle] = useState('');
+  
+  /** Content of the snippet being edited */
   const [editedContent, setEditedContent] = useState('');
+  
+  /** Tags associated with the snippet */
   const [editedTags, setEditedTags] = useState<string[]>([]);
+  
+  /** Favorite status of the snippet */
   const [isFavorite, setIsFavorite] = useState(false);
+  
+  /** Timeout ID for debounced saving */
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  /** Current save status indicator */
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | null>(null);
+  
+  /** Controls visibility of the export dropdown */
   const [exportDropdownVisible, setExportDropdownVisible] = useState(false);
+  
+  /** Export operation status and feedback */
   const [exportStatus, setExportStatus] = useState<{
     status: 'idle' | 'exporting' | 'success' | 'error';
     message?: string;

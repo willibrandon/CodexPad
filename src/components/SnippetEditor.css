@@ -1,3 +1,10 @@
+/**
+ * Styles for the SnippetEditor component
+ * Implements a modern, responsive editor interface with theme support
+ * Features flexible layout, animations, and consistent styling across different states
+ */
+
+/* Main editor container with flex layout */
 .snippet-editor {
   display: flex;
   flex-direction: column;
@@ -6,6 +13,7 @@
   position: relative;
 }
 
+/* Header section with title and actions */
 .editor-header {
   display: flex;
   justify-content: space-between;
@@ -14,6 +22,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Left side of header containing title and status */
 .editor-header-left {
   display: flex;
   align-items: center;
@@ -21,12 +30,14 @@
   gap: 10px;
 }
 
+/* Right side of header containing action buttons */
 .editor-header-right {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+/* Title input field styling */
 .editor-title {
   font-size: 1.2rem;
   font-weight: 600;
@@ -38,10 +49,12 @@
   margin-right: 10px;
 }
 
+/* Remove outline on title focus */
 .editor-title:focus {
   outline: none;
 }
 
+/* Save status indicator */
 .save-status {
   font-size: 0.75rem;
   padding: 2px 6px;
@@ -49,14 +62,17 @@
   animation: fadeIn 0.2s ease-in-out;
 }
 
+/* Saving state styling */
 .save-status.saving {
   color: var(--warning-color);
 }
 
+/* Saved state styling */
 .save-status.saved {
   color: var(--success-color);
 }
 
+/* Delete button styling */
 .delete-btn {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -68,16 +84,19 @@
   transition: all 0.2s;
 }
 
+/* Delete button hover effect */
 .delete-btn:hover {
   background-color: var(--bg-hover);
 }
 
+/* Main content area */
 .editor-content {
   flex: 1;
   overflow: hidden;
   position: relative;
 }
 
+/* Empty state styling */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -93,11 +112,12 @@
   margin-bottom: 10px;
 }
 
-/* Export button and dropdown */
+/* Export functionality styling */
 .export-dropdown-container {
   position: relative;
 }
 
+/* Export button styling */
 .export-btn {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -113,6 +133,7 @@
   background-color: var(--bg-hover);
 }
 
+/* Export dropdown menu */
 .export-dropdown {
   position: absolute;
   top: 100%;
@@ -127,6 +148,7 @@
   animation: fadeIn 0.2s ease-in-out;
 }
 
+/* Export dropdown buttons */
 .export-dropdown button {
   display: block;
   width: 100%;
@@ -157,6 +179,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Export status states */
 .export-status.exporting {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
@@ -173,6 +196,7 @@
   color: white;
 }
 
+/* Fade in animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -184,6 +208,7 @@
   }
 }
 
+/* Favorite button styling */
 .favorite-button {
   background: none;
   border: none;
@@ -203,6 +228,7 @@
   background-color: var(--bg-hover);
 }
 
+/* Active state for favorite button */
 .favorite-button.active {
   color: #f1c40f;
 } 
