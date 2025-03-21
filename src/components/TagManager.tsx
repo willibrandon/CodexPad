@@ -103,25 +103,27 @@ const TagManager: React.FC<TagManagerProps> = memo(({
     </div>
   ), [tags, handleRemoveTag]);
 
-  // Memoize suggested tags
+  // Memoize suggested tags - always render the container to prevent layout shift
   const renderedSuggestedTags = useMemo(() => (
-    suggestedTags.length > 0 && (
-      <div className="suggested-tags">
-        <span className="suggested-tags-label">
-          {isLoadingSuggestions ? 'Getting suggestions...' : 'Suggested tags:'}
-        </span>
-        {suggestedTags.map(tag => (
-          <button
-            key={tag}
-            className="suggested-tag"
-            onClick={() => handleAddSuggestedTag(tag)}
-            title="Click to add this tag"
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
-    )
+    <div className="suggested-tags-container">
+      {(suggestedTags.length > 0 || isLoadingSuggestions) && (
+        <div className="suggested-tags">
+          <span className="suggested-tags-label">
+            {isLoadingSuggestions ? 'Getting suggestions...' : 'Suggested tags:'}
+          </span>
+          {suggestedTags.map(tag => (
+            <button
+              key={tag}
+              className="suggested-tag"
+              onClick={() => handleAddSuggestedTag(tag)}
+              title="Click to add this tag"
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   ), [suggestedTags, isLoadingSuggestions, handleAddSuggestedTag]);
 
   return (

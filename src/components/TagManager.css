@@ -73,8 +73,13 @@
   background-color: var(--primary-color-dark);
 }
 
-.suggested-tags {
+/* Added container to maintain consistent height and prevent layout shift */
+.suggested-tags-container {
+  min-height: 30px; /* Reserve space even when empty */
   margin: 10px 0;
+}
+
+.suggested-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
