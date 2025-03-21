@@ -263,8 +263,63 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
 
   // Add a helper to insert code snippets with language
   const insertCodeSnippet = (language: string) => {
+    // Get language-specific template
+    let template = '';
+    switch (language) {
+      case 'javascript':
+        template = '// JavaScript example\nfunction example() {\n  console.log("Hello World!");\n}';
+        break;
+      case 'typescript':
+        template = '// TypeScript example\nfunction example(): void {\n  console.log("Hello World!");\n}';
+        break;
+      case 'python':
+        template = '# Python example\ndef example():\n    print("Hello World!")';
+        break;
+      case 'java':
+        template = '// Java example\npublic class Example {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}';
+        break;
+      case 'csharp':
+        template = '// C# example\npublic class Example\n{\n    public static void Main()\n    {\n        Console.WriteLine("Hello World!");\n    }\n}';
+        break;
+      case 'html':
+        template = '<!-- HTML example -->\n<div class="example">\n    <h1>Hello World!</h1>\n</div>';
+        break;
+      case 'css':
+        template = '/* CSS example */\n.example {\n    color: blue;\n    padding: 20px;\n}';
+        break;
+      case 'sql':
+        template = '-- SQL example\nSELECT column_name\nFROM table_name\nWHERE condition;';
+        break;
+      case 'json':
+        template = '{\n    "example": {\n        "message": "Hello World!",\n        "value": 42\n    }\n}';
+        break;
+      case 'yaml':
+        template = '# YAML example\nexample:\n  message: Hello World!\n  value: 42';
+        break;
+      case 'bash':
+        template = '#!/bin/bash\n# Bash example\necho "Hello World!"';
+        break;
+      case 'jsx':
+        template = '// React JSX example\nfunction Example() {\n  return (\n    <div className="example">\n      <h1>Hello World!</h1>\n    </div>\n  );\n}';
+        break;
+      case 'vue':
+        template = '<!-- Vue example -->\n<template>\n  <div class="example">\n    <h1>{{ message }}</h1>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      message: "Hello World!"\n    }\n  }\n}\n</script>';
+        break;
+      case 'graphql':
+        template = '# GraphQL example\ntype Query {\n  example: Example!\n}\n\ntype Example {\n  message: String!\n  value: Int!\n}';
+        break;
+      case 'dockerfile':
+        template = '# Dockerfile example\nFROM node:latest\nWORKDIR /app\nCOPY . .\nRUN npm install\nCMD ["npm", "start"]';
+        break;
+      case 'terraform':
+        template = '# Terraform example\nresource "aws_instance" "example" {\n  ami           = "ami-0c55b159cbfafe1f0"\n  instance_type = "t2.micro"\n\n  tags = {\n    Name = "Example Instance"\n  }\n}';
+        break;
+      default:
+        template = `Enter your ${language} code here...`;
+    }
+    
     // Create a code snippet template with the selected language
-    const codeTemplate = `\n\`\`\`${language}\n// Your ${language} code here\n\`\`\`\n`;
+    const codeTemplate = `\n\`\`\`${language}\n${template}\n\`\`\`\n`;
     
     // Insert at cursor position or append to end
     if (textareaRef.current) {
@@ -281,8 +336,8 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
       // Set cursor position after insertion
       setTimeout(() => {
         textarea.focus();
-        const newPosition = start + codeTemplate.indexOf('// Your');
-        textarea.setSelectionRange(newPosition, newPosition + `// Your ${language} code here`.length);
+        const newPosition = start + codeTemplate.length;
+        textarea.setSelectionRange(newPosition, newPosition);
       }, 0);
     }
   };
@@ -463,7 +518,22 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
                 <span className="icon">&lt;/&gt;</span>
               </button>
               <div className="dropdown-content">
-                <button onClick={() => formatText('code')}>Inline Code</button>
+                <div className="dropdown-section">
+                  <span className="dropdown-title">Basic</span>
+                  <button onClick={() => formatText('code')}>Inline Code</button>
+                  <button onClick={() => insertCodeSnippet('text')}>Plain Text</button>
+                </div>
+                <div className="dropdown-divider"></div>
+                <div className="dropdown-section">
+                  <span className="dropdown-title">Web</span>
+                  <button onClick={() => insertCodeSnippet('javascript')}>JavaScript</button>
+                  <button onClick={() => insertCodeSnippet('typescript')}>TypeScript</button>
+                  <button onClick={() => insertCodeSnippet('html')}>HTML</button>
+                  <button onClick={() => insertCodeSnippet('css')}>CSS</button>
+                  <button onClick={() => insertCodeSnippet('json')}>JSON</button>
+                  <button onClick={() => insertCodeSnippet('jsx')}>JSX/React</button>
+                  <button onClick={() => insertCodeSnippet('vue')}>Vue</button>
+                </div>
                 <div className="dropdown-divider"></div>
                 <div className="dropdown-section">
                   <span className="dropdown-title">.NET</span>
@@ -474,19 +544,30 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
                 </div>
                 <div className="dropdown-divider"></div>
                 <div className="dropdown-section">
-                  <span className="dropdown-title">Web</span>
-                  <button onClick={() => insertCodeSnippet('javascript')}>JavaScript</button>
-                  <button onClick={() => insertCodeSnippet('typescript')}>TypeScript</button>
-                  <button onClick={() => insertCodeSnippet('html')}>HTML</button>
-                  <button onClick={() => insertCodeSnippet('css')}>CSS</button>
-                  <button onClick={() => insertCodeSnippet('json')}>JSON</button>
+                  <span className="dropdown-title">Backend</span>
+                  <button onClick={() => insertCodeSnippet('python')}>Python</button>
+                  <button onClick={() => insertCodeSnippet('java')}>Java</button>
+                  <button onClick={() => insertCodeSnippet('php')}>PHP</button>
+                  <button onClick={() => insertCodeSnippet('ruby')}>Ruby</button>
+                  <button onClick={() => insertCodeSnippet('go')}>Go</button>
+                  <button onClick={() => insertCodeSnippet('rust')}>Rust</button>
                 </div>
                 <div className="dropdown-divider"></div>
                 <div className="dropdown-section">
-                  <span className="dropdown-title">Other</span>
+                  <span className="dropdown-title">Data & Config</span>
                   <button onClick={() => insertCodeSnippet('sql')}>SQL</button>
-                  <button onClick={() => insertCodeSnippet('bash')}>Bash</button>
                   <button onClick={() => insertCodeSnippet('yaml')}>YAML</button>
+                  <button onClick={() => insertCodeSnippet('toml')}>TOML</button>
+                  <button onClick={() => insertCodeSnippet('xml')}>XML</button>
+                  <button onClick={() => insertCodeSnippet('graphql')}>GraphQL</button>
+                </div>
+                <div className="dropdown-divider"></div>
+                <div className="dropdown-section">
+                  <span className="dropdown-title">Shell & DevOps</span>
+                  <button onClick={() => insertCodeSnippet('bash')}>Bash</button>
+                  <button onClick={() => insertCodeSnippet('dockerfile')}>Dockerfile</button>
+                  <button onClick={() => insertCodeSnippet('nginx')}>Nginx</button>
+                  <button onClick={() => insertCodeSnippet('terraform')}>Terraform</button>
                 </div>
               </div>
             </div>
