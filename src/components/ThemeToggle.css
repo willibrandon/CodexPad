@@ -1,9 +1,17 @@
+/**
+ * Styles for the ThemeToggle component
+ * Implements a theme switcher with settings button
+ * Features smooth transitions and responsive design
+ */
+
+/* Main container for theme toggle controls */
 .theme-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+/* Common styles for toggle and settings buttons */
 .theme-toggle-btn,
 .theme-settings-btn {
   background: none;
@@ -20,12 +28,13 @@
   line-height: 1;
 }
 
+/* Hover states for buttons */
 .theme-toggle-btn:hover,
 .theme-settings-btn:hover {
   background-color: var(--hover-bg);
 }
 
-/* For the titlebar placement */
+/* Titlebar-specific styling */
 .titlebar-theme-toggle .theme-toggle {
   height: 32px;
 }
@@ -37,10 +46,12 @@
   border-radius: 0;
 }
 
+/* Settings icon specific styling */
 .settings-icon {
   font-size: 16px;
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .theme-toggle {
     margin-left: 5px;

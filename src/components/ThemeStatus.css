@@ -1,3 +1,10 @@
+/**
+ * Styles for the ThemeStatus component
+ * Implements a status bar showing current theme settings
+ * Features responsive design and consistent theme variables
+ */
+
+/* Main container for theme status display */
 .theme-status {
   display: flex;
   align-items: center;
@@ -10,20 +17,24 @@
   border-top: 1px solid var(--border-color);
 }
 
+/* Individual status item container */
 .theme-status-item {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
+/* Label styling for status items */
 .theme-status-label {
   font-weight: 500;
 }
 
+/* Value styling for status items */
 .theme-status-value {
   color: var(--primary-color);
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .theme-status {
     flex-direction: column;

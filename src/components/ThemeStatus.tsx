@@ -1,7 +1,24 @@
+/**
+ * @fileoverview Component that displays current theme configuration status
+ * including mode, color scheme, and font settings.
+ */
+
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import './ThemeStatus.css';
 
+/**
+ * A component that shows the current theme configuration status.
+ * Displays the active theme mode (light/dark), color scheme, and font settings.
+ * 
+ * Features:
+ * - Theme mode indicator (Light/Dark/System)
+ * - Color scheme display
+ * - Font size and family information
+ * - Responsive layout
+ * 
+ * @component
+ */
 const ThemeStatus: React.FC = () => {
   const { settings, isDarkMode } = useTheme();
   
