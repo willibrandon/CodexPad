@@ -434,9 +434,61 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   }, [content, formatText, isFullscreen, isPreview, onChange, showKeyboardHelp, showLineNumbers]);
 
   // Toggle fullscreen mode
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
+  const toggleFullscreen = useCallback(() => {
+    // Force blur any active element to prevent focus issues
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    
+    setIsFullscreen(prev => {
+      // When entering fullscreen, save the scroll position
+      if (!prev) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+      return !prev;
+    });
+  }, []);
+
+  // Handle escape key to exit fullscreen
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        // Force blur any active element
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        setIsFullscreen(false);
+        document.body.style.overflow = '';
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isFullscreen]);
+
+  // Handle window resize to prevent fullscreen getting stuck
+  useEffect(() => {
+    const handleResize = () => {
+      if (isFullscreen && window.innerWidth < 768) {
+        setIsFullscreen(false);
+        document.body.style.overflow = '';
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isFullscreen]);
+
+  // Clean up fullscreen state on unmount
+  useEffect(() => {
+    return () => {
+      if (isFullscreen) {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [isFullscreen]);
 
   // Toggle keyboard help
   const toggleKeyboardHelp = () => {
@@ -598,9 +650,10 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
           </button>
           
           <button 
-            className={`toolbar-btn ${isFullscreen ? 'active' : ''}`}
+            className={`toolbar-btn fullscreen-btn ${isFullscreen ? 'active' : ''}`}
             onClick={toggleFullscreen}
-            title="Toggle Fullscreen (Ctrl+Shift+F)"
+            title={`${isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'} (Ctrl+Shift+F)`}
+            style={{ zIndex: isFullscreen ? 10001 : undefined }}
           >
             <span className="icon">{isFullscreen ? '↙' : '↗'}</span>
           </button>

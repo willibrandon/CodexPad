@@ -24,15 +24,103 @@
   border-radius: 0;
   border: none;
   background-color: var(--editor-bg);
+  /* Add padding for macOS title bar in fullscreen */
+  padding-top: 28px; /* Height of macOS title bar */
 }
 
-/* Minimal toolbar */
+/* Ensure toolbar stays below macOS title bar in fullscreen */
+.markdown-editor.fullscreen .toolbar {
+  position: fixed;
+  top: 28px; /* Height of macOS title bar */
+  left: 0;
+  right: 0;
+  background-color: var(--background-color);
+  z-index: 10000; /* Above everything */
+  /* Add padding for macOS traffic lights */
+  padding-left: 80px; /* Space for traffic lights */
+}
+
+/* Adjust editor container position in fullscreen */
+.markdown-editor.fullscreen .editor-container {
+  margin-top: 36px; /* Height of toolbar */
+  height: calc(100vh - 64px); /* Viewport height minus toolbar and title bar */
+}
+
+/* Ensure preview container adjusts in fullscreen */
+.markdown-editor.fullscreen .preview-container {
+  margin-top: 36px; /* Height of toolbar */
+  height: calc(100vh - 64px); /* Viewport height minus toolbar and title bar */
+}
+
+/* Make sure buttons remain clickable in fullscreen */
+.markdown-editor.fullscreen .toolbar-btn {
+  z-index: 10001; /* Above toolbar */
+  position: relative;
+}
+
+/* Ensure dropdowns appear above the toolbar in fullscreen */
+.markdown-editor.fullscreen .dropdown-content {
+  z-index: 10002;
+}
+
+/* Prevent text selection of toolbar buttons */
+.toolbar-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Ensure proper stacking context for fullscreen elements */
+.markdown-editor.fullscreen * {
+  position: relative; /* Create stacking context */
+}
+
+/* Add specific styles for macOS */
+@media screen and (platform: macos) {
+  .markdown-editor.fullscreen {
+    padding-top: 28px; /* macOS title bar height */
+  }
+  
+  .markdown-editor.fullscreen .toolbar {
+    padding-left: 80px; /* Space for traffic lights */
+  }
+}
+
+/* Fallback for browsers that don't support platform media query */
+@supports not (padding: env(safe-area-inset-top)) {
+  .markdown-editor.fullscreen {
+    padding-top: 28px;
+  }
+  
+  .markdown-editor.fullscreen .toolbar {
+    padding-left: 80px;
+  }
+}
+
+/* Ensure toolbar stays on top in fullscreen */
 .toolbar {
   display: flex;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--background-color);
   padding: 0;
   height: 36px;
+  position: relative;
+  z-index: 102; /* Above dropdowns */
+}
+
+/* Ensure fullscreen button stays clickable */
+.toolbar-btn.fullscreen-btn {
+  z-index: 103; /* Above toolbar */
+  position: relative;
+}
+
+.toolbar-btn.fullscreen-btn:hover {
+  background-color: var(--background-color);
+  color: var(--primary-color);
+}
+
+.toolbar-btn.fullscreen-btn.active {
+  background-color: var(--primary-color);
+  color: white;
 }
 
 .toolbar.minimal {
