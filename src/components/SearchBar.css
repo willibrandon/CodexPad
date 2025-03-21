@@ -1,3 +1,10 @@
+/**
+ * Styles for the SearchBar component
+ * Implements a modern search interface with help panel and theme support
+ * Uses CSS variables for theming and consistent styling across the application
+ */
+
+/* Container for the entire search component */
 .search-container {
   position: relative;
   display: flex;
@@ -6,6 +13,7 @@
   width: 100%;
 }
 
+/* Main search input styling */
 .search-input {
   width: 100%;
   padding: 8px 36px 8px 12px;
@@ -17,16 +25,19 @@
   transition: all 0.2s ease;
 }
 
+/* Focus state for search input */
 .search-input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
 }
 
+/* Placeholder text styling */
 .search-input::placeholder {
   color: var(--text-light);
 }
 
+/* Help button styling */
 .search-help-button {
   position: absolute;
   right: 8px;
@@ -45,10 +56,12 @@
   transition: opacity 0.2s;
 }
 
+/* Help button hover state */
 .search-help-button:hover {
   opacity: 1;
 }
 
+/* Help panel container */
 .search-help {
   position: absolute;
   top: calc(100% + 8px);
@@ -63,44 +76,52 @@
   border: 1px solid var(--border-color);
 }
 
+/* Help panel header */
 .search-help h3 {
   margin: 0 0 12px 0;
   font-size: 1rem;
   color: var(--text-color);
 }
 
+/* Help content sections */
 .search-help-section {
   margin-bottom: 12px;
 }
 
+/* Section headers */
 .search-help-section h4 {
   margin: 0 0 8px 0;
   font-size: 0.9rem;
   color: var(--text-light);
 }
 
+/* Individual help items */
 .search-help-item {
   display: flex;
   margin-bottom: 6px;
 }
 
+/* Search operator formatting */
 .search-help-operator {
   flex: 0 0 120px;
   font-family: var(--code-font-family);
   color: var(--primary-color);
 }
 
+/* Help item description */
 .search-help-desc {
   flex: 1;
   color: var(--text-color);
 }
 
+/* Examples section */
 .search-help-examples {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
 }
 
+/* Individual example styling */
 .search-help-example {
   color: var(--text-light);
   font-style: italic;

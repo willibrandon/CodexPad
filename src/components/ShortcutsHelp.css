@@ -1,3 +1,10 @@
+/**
+ * Styles for the ShortcutsHelp component
+ * Implements a modal interface for displaying keyboard shortcuts with theme support
+ * Features responsive design and custom scrollbar styling
+ */
+
+/* Semi-transparent overlay for the modal */
 .shortcuts-help-overlay {
   position: fixed;
   top: 0;
@@ -12,6 +19,7 @@
   animation: fadeIn 0.2s ease-in-out;
 }
 
+/* Main container for the shortcuts help modal */
 .shortcuts-help-container {
   background-color: var(--editor-bg);
   border-radius: 8px;
@@ -25,6 +33,7 @@
   flex-direction: column;
 }
 
+/* Modal header with title and close button */
 .shortcuts-help-header {
   display: flex;
   justify-content: space-between;
@@ -33,12 +42,14 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Header title styling */
 .shortcuts-help-header h3 {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
 }
 
+/* Close button styling */
 .close-btn {
   background: none;
   border: none;
@@ -48,12 +59,13 @@
   color: var(--text-light);
 }
 
+/* Main content area with scrolling */
 .shortcuts-help-content {
   padding: 16px 20px;
   overflow-y: auto;
 }
 
-/* Scrollbar styling */
+/* Custom scrollbar styling for Webkit browsers */
 .shortcuts-help-content::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -76,10 +88,12 @@
   opacity: 1;
 }
 
+/* Individual shortcut category sections */
 .shortcuts-section {
   margin-bottom: 24px;
 }
 
+/* Category headers */
 .shortcuts-section h4 {
   margin: 0 0 12px 0;
   font-size: 1rem;
@@ -89,12 +103,14 @@
   padding-bottom: 8px;
 }
 
+/* Grid layout for shortcuts list */
 .shortcuts-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
 }
 
+/* Individual shortcut item styling */
 .shortcut-item {
   display: flex;
   align-items: center;
@@ -102,12 +118,14 @@
   padding: 8px 0;
 }
 
+/* Container for key combination display */
 .shortcut-keys {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
+/* Individual key styling */
 .key {
   background-color: var(--border-color);
   color: var(--text-color);
@@ -120,11 +138,13 @@
   font-family: var(--code-font-family);
 }
 
+/* Shortcut description text */
 .shortcut-description {
   color: var(--text-light);
   font-size: 0.9rem;
 }
 
+/* Modal footer */
 .shortcuts-help-footer {
   padding: 16px 20px;
   border-top: 1px solid var(--border-color);
@@ -132,6 +152,7 @@
   justify-content: flex-end;
 }
 
+/* Close button in footer */
 .close-shortcuts-btn {
   padding: 8px 16px;
   border-radius: 4px;
@@ -142,6 +163,7 @@
   font-size: 0.9rem;
 }
 
+/* Responsive design adjustments */
 @media (max-width: 768px) {
   .shortcuts-help-container {
     width: 95%;

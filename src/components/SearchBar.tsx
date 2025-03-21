@@ -1,17 +1,56 @@
+/**
+ * @fileoverview A search bar component with advanced search operators and help functionality.
+ * Supports tag-based search, language filtering, date ranges, and other search operators.
+ * Includes a help panel that shows available search operators and examples.
+ * 
+ * @module SearchBar
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useKeyboardShortcuts } from '../contexts/KeyboardShortcutsContext';
 import './SearchBar.css';
 
+/**
+ * Props interface for the SearchBar component
+ * @interface SearchBarProps
+ */
 interface SearchBarProps {
+  /** Callback function triggered when search term changes */
   onSearch: (term: string) => void;
 }
 
+/**
+ * A search bar component with advanced search capabilities and integrated help.
+ * Supports various search operators and provides a help panel for users.
+ * 
+ * Features:
+ * - Tag-based search (tag:react)
+ * - Language filtering (language:typescript)
+ * - Date range queries (created:>2024-01-01)
+ * - Special filters (is:favorite)
+ * - Exclusion operators (-term)
+ * 
+ * @component
+ * @param {SearchBarProps} props - Component props
+ * @returns {React.ReactElement} The rendered search bar
+ */
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+  /** Current search term state */
   const [searchTerm, setSearchTerm] = useState('');
+  
+  /** Controls visibility of the help panel */
   const [showHelp, setShowHelp] = useState(false);
+  
+  /** Reference to the help button for click outside detection */
   const helpButtonRef = useRef<HTMLButtonElement>(null);
+  
+  /** Reference to the help panel for click outside detection */
   const helpPanelRef = useRef<HTMLDivElement>(null);
+  
+  /** Reference to the search input for focus management */
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  /** Hook to manage search focus state in the keyboard shortcuts context */
   const { setSearchFocused } = useKeyboardShortcuts();
 
   // Close help panel when clicking outside

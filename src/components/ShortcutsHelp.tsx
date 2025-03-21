@@ -1,16 +1,48 @@
+/**
+ * @fileoverview A modal component that displays all available keyboard shortcuts in the application.
+ * Organizes shortcuts by category and provides a clear, searchable interface for users to discover
+ * keyboard commands.
+ * 
+ * @module ShortcutsHelp
+ */
+
 import React from 'react';
 import { useKeyboardShortcuts, ShortcutCategory } from '../contexts/KeyboardShortcutsContext';
 import './ShortcutsHelp.css';
 
+/**
+ * Props interface for the ShortcutsHelp component
+ * @interface ShortcutsHelpProps
+ */
 interface ShortcutsHelpProps {
+  /** Controls whether the shortcuts help modal is visible */
   isOpen: boolean;
+  /** Callback function to close the shortcuts help modal */
   onClose: () => void;
 }
 
+/**
+ * A modal component that displays keyboard shortcuts organized by category.
+ * Provides a comprehensive view of all available keyboard commands in the application.
+ * 
+ * Features:
+ * - Categorized display of shortcuts
+ * - Visual representation of key combinations
+ * - Responsive design for different screen sizes
+ * - Click outside to close functionality
+ * 
+ * @component
+ * @param {ShortcutsHelpProps} props - Component props
+ * @returns {React.ReactElement | null} The rendered shortcuts help modal or null if closed
+ */
 const ShortcutsHelp: React.FC<ShortcutsHelpProps> = ({ isOpen, onClose }) => {
+  /** Access the shortcuts from the keyboard shortcuts context */
   const { shortcuts } = useKeyboardShortcuts();
 
-  // Group shortcuts by category
+  /**
+   * Groups shortcuts by their category for organized display
+   * @returns {Record<string, Array>} An object with categories as keys and arrays of shortcuts as values
+   */
   const getShortcutsByCategory = () => {
     const grouped: Record<string, typeof shortcuts> = {};
     
@@ -25,7 +57,11 @@ const ShortcutsHelp: React.FC<ShortcutsHelpProps> = ({ isOpen, onClose }) => {
     return grouped;
   };
 
-  // Render keyboard keys
+  /**
+   * Renders keyboard keys with proper formatting and separators
+   * @param {string[]} keys - Array of key names to render
+   * @returns {React.ReactElement} The rendered key combination
+   */
   const renderKeys = (keys: string[]) => {
     return (
       <div className="shortcut-keys">
