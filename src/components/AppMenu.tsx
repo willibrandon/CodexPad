@@ -1,8 +1,23 @@
+/**
+ * @fileoverview Application menu bar component
+ * Implements a native-like menu bar with platform-specific behavior
+ * Supports file operations, editing, view controls, and help functionality
+ * @module AppMenu
+ */
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import WindowControls from './WindowControls';
 import { useTabs } from './TabsContext';
 import './AppMenu.css';
 
+/**
+ * Application menu bar component
+ * Provides a native-like menu interface with dropdown menus and keyboard shortcuts
+ * Handles platform-specific differences (Windows/macOS) and maintains editor state
+ * 
+ * @component
+ * @returns {React.ReactElement} The menu bar component
+ */
 const AppMenu: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -19,7 +34,10 @@ const AppMenu: React.FC = () => {
   const editorState = getActiveEditor();
   const canEdit = isSnippetOpen && editorState && !editorState.isPreviewMode;
 
-  // Handle clicks outside the menu
+  /**
+   * Handles clicks outside the menu to close it
+   * @effect
+   */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -33,13 +51,17 @@ const AppMenu: React.FC = () => {
     };
   }, []);
 
-  // This handler prevents the default behavior that would cause the selection to be lost
+  /**
+   * Handles mouse down events on menu items
+   * Prevents default behavior for Edit menu to preserve text selection
+   * 
+   * @param {React.MouseEvent} e - Mouse event
+   * @param {string} menuName - Name of the menu being clicked
+   */
   const handleMenuMouseDown = useCallback((e: React.MouseEvent, menuName: string) => {
-    // Prevent default behavior only for the Edit menu
     if (menuName === 'edit') {
       e.preventDefault();
       
-      // Store the current selection
       if (editorState?.textareaRef?.current) {
         const textarea = editorState.textareaRef.current;
         selectionRef.current = {
@@ -50,21 +72,30 @@ const AppMenu: React.FC = () => {
     }
   }, [editorState]);
 
-  // When opening/clicking a menu
+  /**
+   * Handles menu item clicks
+   * Toggles menu open/closed state
+   * 
+   * @param {string} menuName - Name of the menu to toggle
+   */
   const handleMenuClick = useCallback((menuName: string) => {
-    // Toggle the menu
     setActiveMenu(activeMenu === menuName ? null : menuName);
   }, [activeMenu]);
 
+  /**
+   * Handles menu action execution
+   * Processes edit operations and Electron IPC calls
+   * 
+   * @param {string} action - Action to execute
+   * @param {string} [format] - Optional format for export actions
+   */
   const handleMenuAction = useCallback((action: string, format?: string) => {
     console.log(`Menu action triggered: ${action}${format ? ', format: ' + format : ''}`);
     
-    // For edit operations, check if we can edit
     if (['undo', 'redo', 'cut', 'copy', 'paste'].includes(action)) {
       if (canEdit && editorState?.textareaRef?.current) {
         const textarea = editorState.textareaRef.current;
         
-        // Restore selection for copy/cut operations
         if ((action === 'cut' || action === 'copy') && selectionRef.current && 
             selectionRef.current.start !== selectionRef.current.end) {
           textarea.focus();
@@ -73,14 +104,11 @@ const AppMenu: React.FC = () => {
           textarea.focus();
         }
         
-        // Execute command
         document.execCommand(action);
-        
         return;
       }
     }
     
-    // For other actions, use the Electron API
     if (window.electron) {
       if (format) {
         console.log(`Invoking menu-action with: ${action}, ${format}`);

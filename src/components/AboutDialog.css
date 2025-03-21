@@ -1,3 +1,10 @@
+/**
+ * Styles for the About dialog component
+ * Uses CSS variables for theming support and consistent styling
+ * Implements a modal dialog with overlay, header, and content sections
+ */
+
+/* Modal overlay - covers entire viewport */
 .dialog-overlay {
   position: fixed;
   top: 0;
@@ -8,21 +15,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1000; /* Ensure dialog appears above other content */
 }
 
+/* Main dialog container */
 .dialog-content.about-dialog {
   background-color: var(--editor-bg);
   border-radius: 8px;
   padding: 0;
   width: 480px;
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 90vw; /* Responsive width */
+  max-height: 90vh; /* Responsive height */
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   color: var(--text-color);
 }
 
+/* Dialog header with title and close button */
 .dialog-header {
   display: flex;
   justify-content: space-between;
@@ -31,12 +40,14 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Dialog title styling */
 .dialog-header h2 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
 }
 
+/* Close button styling */
 .close-button {
   background: none;
   border: none;
@@ -46,50 +57,60 @@
   padding: 0 8px;
 }
 
+/* Close button hover state */
 .close-button:hover {
   color: var(--text-color);
 }
 
+/* Main content area */
 .dialog-body {
   padding: 20px;
 }
 
+/* App information section */
 .app-info {
   text-align: center;
   margin-bottom: 24px;
 }
 
+/* App title styling */
 .app-info h3 {
   margin: 0 0 8px 0;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
+/* App description text */
 .app-info p {
   margin: 8px 0;
   color: var(--text-light);
 }
 
+/* Features section */
 .features {
   margin-bottom: 24px;
 }
 
+/* Features section title */
 .features h4 {
   margin: 0 0 12px 0;
   font-size: 1.1rem;
   font-weight: 600;
 }
 
+/* Features list container */
 .features ul {
   margin: 0;
   padding-left: 24px;
 }
 
+/* Individual feature items */
 .features li {
   margin: 8px 0;
   color: var(--text-light);
 }
 
+/* Credits section at bottom */
 .credits {
   text-align: center;
   font-size: 0.9rem;

@@ -1,11 +1,34 @@
+/**
+ * @fileoverview About dialog component that displays application information
+ * This module provides a modal dialog showing app version, features, and credits.
+ * @module AboutDialog
+ */
+
 import React from 'react';
 import './AboutDialog.css';
 
+/**
+ * Props for the AboutDialog component
+ * @interface AboutDialogProps
+ */
 interface AboutDialogProps {
+  /** Whether the dialog is currently open */
   isOpen: boolean;
+  /** Callback function to close the dialog */
   onClose: () => void;
 }
 
+/**
+ * Modal dialog component displaying application information and features
+ * Renders a modal overlay with app version, feature list, and credits
+ * Closes when clicking outside the dialog content or the close button
+ * 
+ * @component
+ * @param {AboutDialogProps} props - Component props
+ * @param {boolean} props.isOpen - Controls dialog visibility
+ * @param {() => void} props.onClose - Function to call when dialog should close
+ * @returns {React.ReactElement | null} The dialog component or null if not open
+ */
 const AboutDialog: React.FC<AboutDialogProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 

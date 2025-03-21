@@ -1,12 +1,37 @@
+/**
+ * @fileoverview Command Palette component for quick access to application commands
+ * Implements a Spotlight/VS Code-like interface with search, keyboard navigation,
+ * and categorized command display
+ * @module CommandPalette
+ */
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useKeyboardShortcuts, KeyboardShortcut, ShortcutCategory } from '../contexts/KeyboardShortcutsContext';
 import './CommandPalette.css';
 
+/**
+ * Props for the CommandPalette component
+ * @interface CommandPaletteProps
+ */
 interface CommandPaletteProps {
+  /** Whether the command palette is currently open */
   isOpen: boolean;
+  /** Callback function to close the command palette */
   onClose: () => void;
 }
 
+/**
+ * Command Palette component providing quick access to application commands
+ * Features include:
+ * - Fuzzy search for commands
+ * - Keyboard navigation
+ * - Command categorization
+ * - Keyboard shortcut display
+ * 
+ * @component
+ * @param {CommandPaletteProps} props - Component props
+ * @returns {React.ReactElement | null} The command palette or null if not open
+ */
 const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   const { shortcuts } = useKeyboardShortcuts();
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,7 +39,10 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const selectedCommandRef = useRef<HTMLDivElement>(null);
 
-  // Memoize filtered commands
+  /**
+   * Filter commands based on search term
+   * Matches against command name, description, and category
+   */
   const filteredCommands = useMemo(() => {
     if (!searchTerm.trim()) {
       return shortcuts;
@@ -27,12 +55,18 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     );
   }, [searchTerm, shortcuts]);
 
-  // Reset selection when search term changes
+  /**
+   * Reset selection when search term changes
+   * @effect
+   */
   useEffect(() => {
     setSelectedIndex(0);
   }, [searchTerm]);
 
-  // Focus input when palette opens
+  /**
+   * Focus input and reset state when palette opens
+   * @effect
+   */
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
@@ -41,7 +75,10 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Scroll to selected item
+  /**
+   * Scroll selected command into view
+   * @effect
+   */
   useEffect(() => {
     if (selectedCommandRef.current) {
       selectedCommandRef.current.scrollIntoView({ 
@@ -51,14 +88,16 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     }
   }, [selectedIndex]);
 
+  /**
+   * Handle keyboard navigation and command execution
+   * @param {React.KeyboardEvent} e - Keyboard event
+   */
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    // Escape to close
     if (e.key === 'Escape') {
       onClose();
       return;
     }
 
-    // Arrow up/down to navigate
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setSelectedIndex(prev => 
@@ -69,7 +108,6 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
       setSelectedIndex(prev => prev > 0 ? prev - 1 : 0);
     }
 
-    // Enter to execute
     if (e.key === 'Enter' && filteredCommands.length > 0) {
       const selectedCommand = filteredCommands[selectedIndex];
       if (selectedCommand) {
@@ -79,7 +117,11 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     }
   }, [filteredCommands, selectedIndex, onClose]);
 
-  // Memoize shortcut rendering
+  /**
+   * Render keyboard shortcut display
+   * @param {KeyboardShortcut} shortcut - The shortcut to render
+   * @returns {React.ReactElement} Rendered shortcut component
+   */
   const renderShortcut = useCallback((shortcut: KeyboardShortcut) => {
     return (
       <div className="command-shortcut">
@@ -90,7 +132,9 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     );
   }, []);
 
-  // Memoize command grouping
+  /**
+   * Group commands by category
+   */
   const commandsByCategory = useMemo(() => {
     const grouped: Record<string, KeyboardShortcut[]> = {};
     

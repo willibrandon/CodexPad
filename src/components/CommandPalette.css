@@ -1,3 +1,10 @@
+/**
+ * Styles for the Command Palette component
+ * Implements a Spotlight/VS Code-like command palette interface
+ * Supports keyboard navigation, search, and command categorization
+ */
+
+/* Semi-transparent overlay covering the entire viewport */
 .command-palette-overlay {
   position: fixed;
   top: 0;
@@ -9,10 +16,11 @@
   justify-content: center;
   align-items: flex-start;
   padding-top: 10vh;
-  z-index: 1100;
+  z-index: 1100; /* Higher than other modals */
   animation: fadeIn 0.2s ease-in-out;
 }
 
+/* Main command palette container */
 .command-palette {
   width: 90%;
   max-width: 600px;
@@ -24,11 +32,13 @@
   flex-direction: column;
 }
 
+/* Search input container */
 .command-palette-input {
   padding: 16px;
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Search input field */
 .command-palette-input input {
   width: 100%;
   background-color: var(--editor-bg);
@@ -39,12 +49,13 @@
   padding: 8px 0;
 }
 
+/* Results container with scrolling */
 .command-palette-results {
   max-height: 60vh;
   overflow-y: auto;
 }
 
-/* Scrollbar styling */
+/* Custom scrollbar styling */
 .command-palette-results::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -67,6 +78,7 @@
   opacity: 1;
 }
 
+/* Category header */
 .command-palette-category {
   padding: 8px 16px;
   font-size: 0.8rem;
@@ -75,6 +87,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* Individual command item */
 .command-palette-item {
   padding: 12px 16px;
   display: flex;
@@ -84,30 +97,35 @@
   border-left: 3px solid transparent;
 }
 
+/* Command item hover and selected states */
 .command-palette-item:hover, 
 .command-palette-item.selected {
   background-color: var(--hover-color);
   border-left-color: var(--primary-color);
 }
 
+/* Command name styling */
 .command-name {
   flex: 1;
   font-size: 0.95rem;
   color: var(--text-color);
 }
 
+/* Command description styling */
 .command-description {
   color: var(--text-light);
   font-size: 0.85rem;
   margin-left: 12px;
 }
 
+/* Keyboard shortcut container */
 .command-shortcut {
   display: flex;
   align-items: center;
   margin-left: 12px;
 }
 
+/* Individual key styling */
 .key {
   background-color: var(--border-color);
   color: var(--text-color);
@@ -121,6 +139,7 @@
   font-family: var(--code-font-family);
 }
 
+/* Empty state message */
 .command-palette-empty {
   padding: 20px 16px;
   text-align: center;
@@ -128,6 +147,7 @@
   font-style: italic;
 }
 
+/* Keyboard shortcut hints */
 .command-palette-hint {
   padding: 8px 16px;
   border-top: 1px solid var(--border-color);
@@ -137,6 +157,7 @@
   justify-content: space-between;
 }
 
+/* Fade in animation */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
