@@ -1,5 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import { Snippet } from '../../App';
+import { modelInitializer } from './modelInitializer';
 
 export class TagSuggestionService {
   private model: tf.LayersModel | null = null;
@@ -11,7 +12,13 @@ export class TagSuggestionService {
   private modelInitialized = false;
 
   constructor() {
-    this.initializeModel();
+    // Initialization is now handled by the worker
+  }
+
+  public async initialize(snippets: Snippet[]) {
+    if (this.isInitialized) return;
+    await modelInitializer.initialize(snippets);
+    this.isInitialized = true;
   }
 
   private async initializeModel() {
@@ -45,35 +52,6 @@ export class TagSuggestionService {
       this.modelInitialized = true;
     } catch (error) {
       console.error('Failed to initialize tag suggestion model:', error);
-    }
-  }
-
-  // Initialize the service with existing snippets
-  public async initialize(snippets: Snippet[]) {
-    if (this.isInitialized || this.isTraining) {
-      return;
-    }
-
-    try {
-      // Wait for model to be ready
-      let attempts = 0;
-      while (!this.modelInitialized && attempts < 50) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-
-      if (!this.modelInitialized) {
-        throw new Error('Model initialization timeout');
-      }
-
-      // Train the model with existing snippets
-      await this.trainModel(snippets);
-      this.isInitialized = true;
-      console.log('Tag suggestion model initialized and trained');
-    } catch (error) {
-      console.error('Failed to initialize tag suggestion service:', error);
-      this.isInitialized = false;
-      this.isTraining = false;
     }
   }
 

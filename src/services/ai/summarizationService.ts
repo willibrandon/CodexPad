@@ -1,5 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import { Snippet } from '../../App';
+import { modelInitializer } from './modelInitializer';
 
 export class SummarizationService {
   private model: tf.LayersModel | null = null;
@@ -12,7 +13,13 @@ export class SummarizationService {
   private modelInitialized = false;
 
   constructor() {
-    this.initializeModel();
+    // Initialization is now handled by the worker
+  }
+
+  public async initialize(snippets: Snippet[]) {
+    if (this.isInitialized) return;
+    await modelInitializer.initialize(snippets);
+    this.isInitialized = true;
   }
 
   private async initializeModel() {
@@ -69,34 +76,6 @@ export class SummarizationService {
       console.log('Summarization model initialized with optimized architecture');
     } catch (error) {
       console.error('Failed to initialize summarization model:', error);
-    }
-  }
-
-  public async initialize(snippets: Snippet[]) {
-    if (this.isInitialized || this.isTraining) {
-      return;
-    }
-
-    try {
-      // Wait for model to be ready
-      let attempts = 0;
-      while (!this.modelInitialized && attempts < 50) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-
-      if (!this.modelInitialized) {
-        throw new Error('Model initialization timeout');
-      }
-
-      // Train the model with existing snippets
-      await this.trainModel(snippets);
-      this.isInitialized = true;
-      console.log('Summarization model trained');
-    } catch (error) {
-      console.error('Failed to initialize summarization service:', error);
-      this.isInitialized = false;
-      this.isTraining = false;
     }
   }
 
