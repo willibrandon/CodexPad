@@ -125,13 +125,20 @@ function pushSnippet(snippet) {
   }
 
   try {
+    const snippetId = parseInt(snippet.id, 10);
+    const version = parseInt(snippet.version, 10) || 1;
+    
+    if (isNaN(snippetId)) {
+      throw new Error(`Invalid snippet ID: ${snippet.id}`);
+    }
+
     const message = {
       type: 'push',
-      snippet_id: snippet.id,
+      snippet_id: snippetId,
       title: snippet.title,
       content: snippet.content,
       tags: snippet.tags || [],
-      version: snippet.version || 1,
+      version: version,
       updated_at: snippet.updatedAt
     };
 
@@ -161,13 +168,21 @@ function pullSnippet(snippetId) {
 }
 
 function queueChange(snippet) {
+  const snippetId = parseInt(snippet.id, 10);
+  const version = parseInt(snippet.version, 10) || 1;
+  
+  if (isNaN(snippetId)) {
+    logError('Failed to queue change', new Error(`Invalid snippet ID: ${snippet.id}`));
+    return;
+  }
+
   const change = {
     type: 'push',
-    snippet_id: snippet.id,
+    snippet_id: snippetId,
     title: snippet.title,
     content: snippet.content,
     tags: snippet.tags || [],
-    version: snippet.version || 1,
+    version: version,
     updated_at: snippet.updatedAt
   };
 
