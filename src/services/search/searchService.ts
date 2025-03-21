@@ -1,20 +1,57 @@
 import { Snippet } from '../../App';
 import * as tf from '@tensorflow/tfjs';
 
+/**
+ * Represents a search operator used to filter snippets.
+ * Operators can be used in search queries to filter by specific attributes.
+ */
 interface SearchOperator {
+  /** Type of the search operator (e.g., 'tag:', 'is:', etc.) */
   type: 'tag' | 'favorite' | 'language' | 'created' | 'updated' | 'text';
+  /** Value associated with the operator */
   value: string;
+  /** Whether to negate/exclude the condition */
   negate?: boolean;
 }
 
+/**
+ * Configuration options for search operations.
+ */
 interface SearchOptions {
+  /** Whether to perform case-sensitive search */
   caseSensitive?: boolean;
+  /** Whether to use fuzzy matching for text search */
   fuzzyMatch?: boolean;
 }
 
+/**
+ * Service class for searching and filtering snippets.
+ * Provides advanced search capabilities with operator support.
+ * 
+ * Supported operators:
+ * - tag: Filter by tag (e.g., "tag:javascript")
+ * - language: Filter by code language (e.g., "language:python")
+ * - created: Filter by creation date (e.g., "created:>2023-01-01")
+ * - updated: Filter by update date (e.g., "updated:<2024-01-01")
+ * - is: Filter by status (e.g., "is:favorite")
+ * - -term: Exclude snippets containing term
+ */
 export class SearchService {
+  /** Regular expression for matching search operators in query string */
   private readonly operatorRegex = /(-?\b\w+:|-)(\S+)/g;
   
+  /**
+   * Searches snippets based on a query string with operator support.
+   * 
+   * Example queries:
+   * - "tag:javascript language:typescript" - Find TypeScript snippets tagged with 'javascript'
+   * - "is:favorite created:>2023-01-01" - Find favorite snippets created after Jan 1, 2023
+   * - "-deprecated function" - Find snippets containing 'function' but not 'deprecated'
+   * 
+   * @param query - The search query string with optional operators
+   * @param snippets - Array of snippets to search through
+   * @returns Promise resolving to filtered array of snippets matching the query
+   */
   async searchSnippets(query: string, snippets: Snippet[]): Promise<Snippet[]> {
     if (!query.trim()) {
       return snippets;
@@ -108,6 +145,15 @@ export class SearchService {
     });
   }
 
+  /**
+   * Checks if a date matches a filter condition.
+   * Supports operators: >, <, >=, <=, = (default)
+   * 
+   * @param filter - Filter string in format "[operator]date" (e.g., ">2023-01-01")
+   * @param date - Date to check against the filter
+   * @returns True if the date matches the filter condition
+   * @private
+   */
   private checkDateFilter(filter: string, date: Date): boolean {
     const operators = {
       '>': (a: Date, b: Date) => a > b,
@@ -139,4 +185,5 @@ export class SearchService {
   }
 }
 
+/** Singleton instance of the SearchService */
 export const searchService = new SearchService(); 
