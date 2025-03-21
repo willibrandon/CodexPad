@@ -1,25 +1,57 @@
+/**
+ * @fileoverview Context provider for managing tab state and operations
+ * including opening, closing, and switching between tabs.
+ */
+
 import React, { createContext, useContext, useState } from 'react';
 import { Snippet } from '../App';
 
+/**
+ * Represents the state of a snippet editor
+ */
 interface EditorState {
+  /** Whether the editor is in preview mode */
   isPreviewMode: boolean;
+  /** Reference to the textarea element */
   textareaRef: React.RefObject<HTMLTextAreaElement>;
 }
 
+/**
+ * Context type definition for tab management
+ */
 interface TabsContextType {
+  /** Array of currently open snippets */
   openTabs: Snippet[];
+  /** ID of the currently active tab, or null if no tab is active */
   activeTabId: number | null;
+  /** Opens a new tab with the given snippet */
   openTab: (snippet: Snippet) => void;
+  /** Closes the tab with the given ID */
   closeTab: (id: number) => void;
+  /** Sets the active tab to the given ID */
   setActiveTab: (id: number) => void;
+  /** Updates the content of a tab */
   updateTabContent: (id: number, updatedSnippet: Snippet) => void;
+  /** Checks if a tab with the given ID exists */
   tabExists: (id: number) => boolean;
+  /** Gets the editor state of the active tab */
   getActiveEditor: () => EditorState | undefined;
+  /** Updates the editor state for a specific tab */
   updateEditorState: (id: number, state: EditorState) => void;
 }
 
+/**
+ * Context for managing tab state and operations
+ */
 const TabsContext = createContext<TabsContextType | undefined>(undefined);
 
+/**
+ * Provider component that manages tab state and operations
+ * Handles opening, closing, and switching between tabs, as well as
+ * maintaining editor state for each tab.
+ * 
+ * @component
+ */
 export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [openTabs, setOpenTabs] = useState<Snippet[]>([]);
   const [activeTabId, setActiveTabId] = useState<number | null>(null);

@@ -1,3 +1,10 @@
+/**
+ * Styles for the TabsBar component
+ * Implements a horizontal scrollable tab interface with theme support
+ * Features responsive design and smooth interactions
+ */
+
+/* Main container for tabs with horizontal scrolling */
 .tabs-bar {
   display: flex;
   overflow-x: auto;
@@ -8,6 +15,7 @@
   scrollbar-width: thin;
 }
 
+/* Custom scrollbar styling for horizontal scroll */
 .tabs-bar::-webkit-scrollbar {
   height: 4px;
 }
