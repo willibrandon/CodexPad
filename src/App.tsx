@@ -321,12 +321,7 @@ const AppContent: React.FC = () => {
         const filtered = await searchService.searchSnippets(currentSearchTerm, currentSnippets);
         // Only update state if not cancelled and component is still mounted
         if (!isCancelled && mountedRef.current) {
-          // Compare current filtered snippets with new ones to prevent unnecessary updates
-          const currentIds = filteredSnippets.map(s => s.id).sort().join(',');
-          const newIds = filtered.map(s => s.id).sort().join(',');
-          if (currentIds !== newIds) {
-            setFilteredSnippets(filtered);
-          }
+          setFilteredSnippets(filtered);
         }
       } catch (error) {
         console.error('Error filtering snippets:', error);
@@ -339,7 +334,7 @@ const AppContent: React.FC = () => {
     return () => {
       isCancelled = true;
     };
-  }, [searchTerm, filteredSnippets]); // Include filteredSnippets for comparison, but use ref for snippets
+  }, [searchTerm, snippets]); // Add snippets as a dependency
 
   const loadSnippets = async () => {
     try {
@@ -385,7 +380,12 @@ const AppContent: React.FC = () => {
         await window.electron.invoke('snippets:delete', id);
         
         // Update local state
-        setSnippets(prev => prev.filter(s => s.id !== id));
+        setSnippets(prev => {
+          const newSnippets = prev.filter(s => s.id !== id);
+          // Also update filtered snippets immediately
+          setFilteredSnippets(current => current.filter(s => s.id !== id));
+          return newSnippets;
+        });
         
         // Close the tab if it's open
         if (tabExists(id)) {
