@@ -3,6 +3,7 @@ import { Snippet } from '../App';
 import TagManager from './TagManager';
 import MarkdownEditor from './MarkdownEditor';
 import { useExport, ExportFormat } from '../hooks/useExport';
+import { useTabs } from './TabsContext';
 import './SnippetEditor.css';
 
 interface SnippetEditorProps {
@@ -16,6 +17,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
   onUpdateSnippet, 
   onDeleteSnippet 
 }) => {
+  const { updateTabContent, updateEditorState } = useTabs();
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [editedTags, setEditedTags] = useState<string[]>([]);
@@ -201,6 +203,14 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     }
   };
 
+  // Add handler for editor state changes
+  const handleEditorStateChange = useCallback((state: { isPreviewMode: boolean; textareaRef: React.RefObject<HTMLTextAreaElement> }) => {
+    if (snippet) {
+      // Update the editor state in the TabsContext
+      updateEditorState(snippet.id, state);
+    }
+  }, [snippet, updateEditorState]);
+
   if (!snippet) {
     return (
       <div className="snippet-editor">
@@ -284,6 +294,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
           content={editedContent}
           onChange={handleContentChange}
           placeholder="Write your notes here using Markdown. Code blocks with syntax highlighting are supported."
+          onEditorStateChange={handleEditorStateChange}
         />
       </div>
     </div>

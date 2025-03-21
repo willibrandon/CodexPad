@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Snippet } from '../App';
 
+interface EditorState {
+  isPreviewMode: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
+}
+
 interface TabsContextType {
   openTabs: Snippet[];
   activeTabId: number | null;
@@ -9,6 +14,8 @@ interface TabsContextType {
   setActiveTab: (id: number) => void;
   updateTabContent: (id: number, updatedSnippet: Snippet) => void;
   tabExists: (id: number) => boolean;
+  getActiveEditor: () => EditorState | undefined;
+  updateEditorState: (id: number, state: EditorState) => void;
 }
 
 const TabsContext = createContext<TabsContextType | undefined>(undefined);
@@ -16,6 +23,7 @@ const TabsContext = createContext<TabsContextType | undefined>(undefined);
 export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [openTabs, setOpenTabs] = useState<Snippet[]>([]);
   const [activeTabId, setActiveTabId] = useState<number | null>(null);
+  const [editorStates, setEditorStates] = useState<Map<number, EditorState>>(new Map());
 
   const openTab = (snippet: Snippet) => {
     if (!openTabs.some(tab => tab.id === snippet.id)) {
@@ -26,6 +34,11 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const closeTab = (id: number) => {
     setOpenTabs(prev => prev.filter(tab => tab.id !== id));
+    setEditorStates(prev => {
+      const newStates = new Map(prev);
+      newStates.delete(id);
+      return newStates;
+    });
     
     if (activeTabId === id) {
       const remainingTabs = openTabs.filter(tab => tab.id !== id);
@@ -53,6 +66,19 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return openTabs.some(tab => tab.id === id);
   };
 
+  const getActiveEditor = () => {
+    if (activeTabId === null) return undefined;
+    return editorStates.get(activeTabId);
+  };
+
+  const updateEditorState = (id: number, state: EditorState) => {
+    setEditorStates(prev => {
+      const newStates = new Map(prev);
+      newStates.set(id, state);
+      return newStates;
+    });
+  };
+
   return (
     <TabsContext.Provider 
       value={{ 
@@ -62,7 +88,9 @@ export const TabsProvider: React.FC<{ children: React.ReactNode }> = ({ children
         closeTab, 
         setActiveTab, 
         updateTabContent,
-        tabExists
+        tabExists,
+        getActiveEditor,
+        updateEditorState
       }}
     >
       {children}

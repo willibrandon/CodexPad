@@ -19,12 +19,14 @@ interface MarkdownEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  onEditorStateChange?: (state: { isPreviewMode: boolean; textareaRef: React.RefObject<HTMLTextAreaElement> }) => void;
 }
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
   content,
   onChange,
-  placeholder = 'Write your notes here...'
+  placeholder = 'Write your notes here...',
+  onEditorStateChange
 }) => {
   const [isPreview, setIsPreview] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -513,6 +515,16 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
       }, 10);
     }
   };
+
+  // Notify parent of editor state changes
+  useEffect(() => {
+    if (onEditorStateChange) {
+      onEditorStateChange({
+        isPreviewMode: isPreview,
+        textareaRef
+      });
+    }
+  }, [isPreview, onEditorStateChange]);
 
   return (
     <div className={`markdown-editor ${isFullscreen ? 'fullscreen' : ''}`}>
