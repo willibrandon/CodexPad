@@ -1,4 +1,10 @@
-/* Dark Mode Theme */
+/**
+ * Dark mode theme definitions and color schemes
+ * Implements various theme options and customization settings
+ * Features multiple color schemes, font sizes, and code font options
+ */
+
+/* Base dark mode theme variables */
 .dark-mode {
   --background-color: #1e1e1e;
   --text-color: #e0e0e0;
@@ -11,7 +17,8 @@
   --scrollbar-thumb-hover-color: #666666;
 }
 
-/* Default Theme Color Scheme */
+/* Color scheme variations */
+/* Default theme - Modern dark blue */
 .color-scheme-default.dark-mode {
   --background-color: #1e1e1e;
   --text-color: #e0e0e0;
@@ -20,7 +27,7 @@
   --primary-color-rgb: 32, 159, 236;
 }
 
-/* Solarized Theme Color Scheme */
+/* Solarized dark theme */
 .color-scheme-solarized.dark-mode {
   --background-color: #002b36;
   --text-color: #839496;
@@ -30,7 +37,7 @@
   --editor-bg: #073642;
 }
 
-/* Nord Theme Color Scheme */
+/* Nord theme */
 .color-scheme-nord.dark-mode {
   --background-color: #2e3440;
   --text-color: #d8dee9;
@@ -40,7 +47,7 @@
   --editor-bg: #3b4252;
 }
 
-/* GitHub Theme Color Scheme */
+/* GitHub dark theme */
 .color-scheme-github.dark-mode {
   --background-color: #0d1117;
   --text-color: #c9d1d9;
@@ -50,7 +57,7 @@
   --editor-bg: #161b22;
 }
 
-/* Dracula Theme Color Scheme */
+/* Dracula theme */
 .color-scheme-dracula.dark-mode {
   --background-color: #282a36;
   --text-color: #f8f8f2;
@@ -60,7 +67,7 @@
   --editor-bg: #2d2f3b;
 }
 
-/* Font Sizes */
+/* Font size variations */
 .font-size-small {
   --base-font-size: 14px;
   --code-font-size: 12px;
@@ -76,7 +83,7 @@
   --code-font-size: 16px;
 }
 
-/* Code Fonts */
+/* Code font family definitions */
 .code-font-fira-code .markdown-editor pre,
 .code-font-fira-code code {
   font-family: 'Fira Code', Menlo, Monaco, 'Courier New', monospace;

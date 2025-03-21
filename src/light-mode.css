@@ -1,4 +1,10 @@
-/* Light Mode Theme */
+/**
+ * Light mode theme definitions and color schemes
+ * Implements various light theme options and customization settings
+ * Features multiple color schemes optimized for light backgrounds
+ */
+
+/* Base light mode theme variables */
 .light-mode {
   --background-color: #f5f5f5;
   --text-color: #333333;
@@ -11,7 +17,8 @@
   --scrollbar-thumb-hover-color: #b0b0b0;
 }
 
-/* Default Theme Color Scheme */
+/* Color scheme variations */
+/* Default theme - Modern blue */
 .color-scheme-default.light-mode {
   --background-color: #f5f5f5;
   --text-color: #333333;
@@ -20,7 +27,7 @@
   --primary-color-rgb: 0, 120, 212;
 }
 
-/* Solarized Theme Color Scheme */
+/* Solarized light theme */
 .color-scheme-solarized.light-mode {
   --background-color: #fdf6e3;
   --text-color: #657b83;
@@ -30,7 +37,7 @@
   --editor-bg: #eee8d5;
 }
 
-/* Nord Theme Color Scheme */
+/* Nord light theme */
 .color-scheme-nord.light-mode {
   --background-color: #eceff4;
   --text-color: #2e3440;
@@ -40,7 +47,7 @@
   --editor-bg: #e5e9f0;
 }
 
-/* GitHub Theme Color Scheme */
+/* GitHub light theme */
 .color-scheme-github.light-mode {
   --background-color: #ffffff;
   --text-color: #24292e;
@@ -50,7 +57,7 @@
   --editor-bg: #f6f8fa;
 }
 
-/* Dracula Theme Color Scheme */
+/* Dracula light theme */
 .color-scheme-dracula.light-mode {
   --background-color: #f8f8f2;
   --text-color: #282a36;

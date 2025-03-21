@@ -1,4 +1,10 @@
-/* Font imports using local files */
+/**
+ * Global styles and theme definitions for the application
+ * Implements core styling, font loading, and CSS variable definitions
+ * Features custom fonts, theme variables, and global style resets
+ */
+
+/* Custom font declarations */
 @font-face {
   font-family: 'Fira Code';
   src: url('fonts/FiraCode-Regular.woff2') format('woff2');
@@ -23,6 +29,7 @@
   font-display: swap;
 }
 
+/* Root theme variables */
 :root {
   /* Default light theme variables */
   --background-color: #f5f5f5;

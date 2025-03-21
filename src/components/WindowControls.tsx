@@ -1,14 +1,35 @@
+/**
+ * @fileoverview Component that implements custom window controls for the Electron application
+ * with platform-specific behavior and theme integration.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemeSettings from './ThemeSettings';
 import './WindowControls.css';
 
+/**
+ * A component that renders window controls (minimize, maximize/restore, close)
+ * and application controls (theme toggle, settings) with platform-specific behavior.
+ * 
+ * Features:
+ * - Platform-specific controls (Windows/macOS)
+ * - Window state management (minimize, maximize, restore, close)
+ * - Theme toggle integration
+ * - Settings access
+ * - Electron IPC communication
+ * 
+ * @component
+ */
 const WindowControls: React.FC = () => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { isDarkMode, updateSettings } = useTheme();
   const isMac = window.electron && window.electron.platform === 'darwin';
 
+  /**
+   * Sets up event listeners for window state changes and theme controls
+   */
   useEffect(() => {
     if (!window.electron) return;
 
@@ -39,32 +60,50 @@ const WindowControls: React.FC = () => {
     };
   }, [isDarkMode, updateSettings]);
 
+  /**
+   * Minimizes the application window
+   */
   const handleMinimize = () => {
     if (window.electron) {
       window.electron.send('window:minimize');
     }
   };
 
+  /**
+   * Toggles between maximized and restored window states
+   */
   const handleMaximizeRestore = () => {
     if (window.electron) {
       window.electron.send('window:maximize-restore');
     }
   };
 
+  /**
+   * Closes the application window
+   */
   const handleClose = () => {
     if (window.electron) {
       window.electron.send('window:close');
     }
   };
 
+  /**
+   * Toggles between light and dark themes
+   */
   const handleToggleTheme = () => {
     updateSettings({ mode: isDarkMode ? 'light' : 'dark' });
   };
 
+  /**
+   * Opens the theme settings modal
+   */
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);
   };
 
+  /**
+   * Closes the theme settings modal
+   */
   const handleCloseSettings = () => {
     setIsSettingsOpen(false);
   };

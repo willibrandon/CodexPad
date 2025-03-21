@@ -1,3 +1,10 @@
+/**
+ * Styles for the WindowControls component
+ * Implements custom window controls for the Electron application
+ * Features platform-specific styling (Windows/macOS) and theme support
+ */
+
+/* Main container for all controls */
 .window-controls-container {
   display: flex;
   align-items: center;
@@ -7,6 +14,7 @@
   z-index: 1000;
 }
 
+/* Window control buttons container */
 .window-controls {
   display: flex;
   height: 32px;
@@ -15,6 +23,7 @@
   z-index: 1000;
 }
 
+/* Individual window control button */
 .window-control {
   width: 46px;
   height: 100%;
@@ -29,27 +38,31 @@
   -webkit-app-region: no-drag;
 }
 
+/* Hover states for window controls */
 .window-control:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Special styling for close button hover */
 .window-control.close:hover {
   background-color: #e81123;
 }
 
+/* SVG icon styling */
 .window-control svg {
   width: 16px;
   height: 16px;
   fill: currentColor;
 }
 
-/* App controls styles (theme toggle and settings) */
+/* App controls section (theme toggle and settings) */
 .app-controls {
   display: flex;
   height: 32px;
   -webkit-app-region: no-drag;
 }
 
+/* Individual app control button */
 .app-control {
   width: 36px;
   height: 100%;
@@ -64,17 +77,19 @@
   -webkit-app-region: no-drag;
 }
 
+/* Hover state for app controls */
 .app-control:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* App control icon styling */
 .app-control svg {
   width: 16px;
   height: 16px;
   fill: currentColor;
 }
 
-/* Light theme specific overrides */
+/* Light theme specific styles */
 :root.light-mode .app-control {
   color: #424242;
 }
@@ -83,7 +98,6 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Add light mode styles for window controls */
 :root.light-mode .window-control {
   color: #424242;
 }
@@ -97,7 +111,7 @@
   color: white;
 }
 
-/* macOS specific styles */
+/* macOS specific layout */
 .window-controls-spacer {
   display: flex;
   align-items: center;

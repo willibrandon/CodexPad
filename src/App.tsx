@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Main application component that manages the overall app state
+ * and provides the core layout structure.
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import SearchBar from './components/SearchBar';
@@ -18,14 +23,23 @@ import { summarizationService } from './services/ai/summarizationService';
 import { SearchService } from './services/search/searchService';
 import AppMenu from './components/AppMenu';
 
-// Define TypeScript interfaces for our data
+/**
+ * Core snippet data structure
+ */
 export interface Snippet {
+  /** Unique identifier for the snippet */
   id: number;
+  /** Title of the snippet */
   title: string;
+  /** Main content of the snippet */
   content: string;
+  /** ISO timestamp of creation */
   createdAt: string;
+  /** ISO timestamp of last update */
   updatedAt: string;
+  /** Array of associated tags */
   tags: string[];
+  /** Whether the snippet is marked as favorite */
   favorite: boolean;
 }
 
@@ -34,7 +48,17 @@ import './electron.d.ts';
 
 const searchService = new SearchService();
 
-// Inner App component that uses the tabs context
+/**
+ * Main application content component that handles:
+ * - Snippet management (CRUD operations)
+ * - Search functionality
+ * - Import/Export features
+ * - AI-powered features
+ * - Keyboard shortcuts
+ * - Theme management
+ * 
+ * @component
+ */
 const AppContent: React.FC = () => {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -359,7 +383,18 @@ const AppContent: React.FC = () => {
   );
 };
 
-// Main App component wrapped with providers
+/**
+ * Root application component that provides necessary context providers
+ * and renders the main application content.
+ * 
+ * Features:
+ * - Theme management
+ * - Tab management
+ * - Keyboard shortcuts
+ * - Context providers
+ * 
+ * @component
+ */
 function App() {
   return (
     <ThemeProvider>

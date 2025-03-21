@@ -1,3 +1,10 @@
+/**
+ * Styles for the main App component
+ * Implements the core layout and styling for the application
+ * Features responsive design, theme support, and consistent component styling
+ */
+
+/* Main app container with flex layout */
 .app {
   display: flex;
   flex-direction: column;
@@ -7,6 +14,7 @@
   transition: background-color 0.3s, color 0.3s;
 }
 
+/* Header section styling */
 .app-header {
   display: flex;
   justify-content: space-between;
