@@ -1,19 +1,44 @@
+/**
+ * @fileoverview Component that displays a log of synchronization events and activities
+ * with filtering and real-time updates.
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import './SyncLog.css';
 
+/**
+ * Represents a single synchronization log entry
+ */
 export interface SyncLogEntry {
+  /** Unique identifier for the log entry */
   id: string;
+  /** ISO timestamp of when the event occurred */
   timestamp: string;
+  /** Type of log entry for visual differentiation */
   type: 'info' | 'success' | 'error' | 'warning';
+  /** Main message describing the sync event */
   message: string;
+  /** Optional detailed information about the event */
   details?: string;
 }
 
+/**
+ * Props for the SyncLog component
+ */
 interface SyncLogProps {
+  /** Whether the log modal is visible */
   visible: boolean;
+  /** Callback function to close the log modal */
   onClose: () => void;
 }
 
+/**
+ * A modal component that displays synchronization log entries with real-time updates.
+ * Supports different types of log entries (info, success, error, warning) with
+ * timestamps and detailed information.
+ *
+ * @component
+ */
 const SyncLog: React.FC<SyncLogProps> = ({ visible, onClose }) => {
   const [logEntries, setLogEntries] = useState<SyncLogEntry[]>([]);
   const logContainerRef = useRef<HTMLDivElement>(null);

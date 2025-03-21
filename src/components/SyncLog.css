@@ -1,3 +1,10 @@
+/**
+ * Styles for the SyncLog component
+ * Implements a modal overlay with a scrollable log display
+ * Features theme support and smooth animations
+ */
+
+/* Modal overlay with semi-transparent background */
 .sync-log-overlay {
   position: fixed;
   top: 0;
@@ -12,6 +19,7 @@
   animation: fadeIn 0.2s ease-in-out;
 }
 
+/* Main container for the log display */
 .sync-log-container {
   width: 700px;
   max-width: 90%;

@@ -1,3 +1,10 @@
+/**
+ * Styles for the SyncStatus component
+ * Implements a status bar with interactive controls and visual feedback
+ * Features theme support and smooth animations for status changes
+ */
+
+/* Main container for sync status display */
 .sync-status {
   display: flex;
   align-items: center;
@@ -6,6 +13,7 @@
   border-top: 1px solid var(--border-color);
 }
 
+/* Container for connection indicator and status text */
 .sync-indicator {
   display: flex;
   align-items: center;

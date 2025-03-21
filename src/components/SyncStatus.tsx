@@ -1,8 +1,26 @@
+/**
+ * @fileoverview Component that displays and controls the synchronization status
+ * including connection state, pending changes, and backup functionality.
+ */
+
 import React, { useState } from 'react';
 import { useSyncStatus } from '../hooks/useSyncStatus';
 import SyncLog from './SyncLog';
 import './SyncStatus.css';
 
+/**
+ * A component that shows the current synchronization status and provides
+ * controls for enabling/disabling sync, viewing logs, and triggering backups.
+ * 
+ * Features:
+ * - Visual indicator for connection status
+ * - Counter for pending changes
+ * - Manual backup trigger
+ * - Access to sync logs
+ * - Enable/disable sync toggle
+ * 
+ * @component
+ */
 const SyncStatus: React.FC = () => {
   const { status, toggleSync, triggerBackup } = useSyncStatus();
   const [showSyncLog, setShowSyncLog] = useState(false);
