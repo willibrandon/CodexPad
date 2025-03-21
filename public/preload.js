@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Preload script that securely exposes Electron APIs to the renderer process
+ * Implements a secure bridge between main and renderer processes using contextBridge
+ */
+
 const { contextBridge, ipcRenderer } = require('electron');
 const { platform } = process;
 

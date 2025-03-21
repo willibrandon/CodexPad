@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Worker thread that handles synchronization with the server
+ * Manages WebSocket connections, message queuing, and reconnection logic
+ */
+
 const { parentPort } = require('worker_threads');
 const WebSocket = require('ws');
 const uuid = require('uuid');

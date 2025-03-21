@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Main Electron process that handles window management, IPC communication,
+ * and core application functionality.
+ * 
+ * Features:
+ * - Window management (create, control, state)
+ * - IPC communication with renderer
+ * - System tray integration
+ * - Global shortcuts
+ * - Export functionality (Markdown, HTML, PDF)
+ * - Documentation viewer
+ * - Font management
+ * - Memory management
+ */
+
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, protocol } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
@@ -66,6 +81,10 @@ ipcMain.handle('menu-action', async (event, action) => {
   return { success: true };
 });
 
+/**
+ * Creates and configures the main application window
+ * Sets up event listeners, IPC handlers, and platform-specific behaviors
+ */
 function createWindow() {
   isWindowDestroyed = false;
   // Create the browser window
@@ -359,6 +378,10 @@ function createWindow() {
   setupGlobalShortcut();
 }
 
+/**
+ * Creates and configures the system tray icon and menu
+ * Provides quick access to app functions and sync toggle
+ */
 function createTray() {
   // Use PNG format which works better across platforms
   const iconPath = path.join(__dirname, isDev ? 'logo192.png' : 'logo192.png');
@@ -422,6 +445,10 @@ function createTray() {
   });
 }
 
+/**
+ * Sets up global keyboard shortcuts for the application
+ * Currently registers Ctrl+Shift+Space for show/hide
+ */
 function setupGlobalShortcut() {
   // Register global shortcut (Ctrl+Shift+Space)
   const shortcutRegistered = globalShortcut.register('CommandOrControl+Shift+Space', () => {
@@ -487,7 +514,12 @@ function setupSyncStatusInterval() {
   }
 }
 
-// Function to download file from URL to destination
+/**
+ * Downloads a file from a URL to a local destination
+ * @param {string} url - Source URL to download from
+ * @param {string} dest - Local destination path
+ * @returns {Promise<void>}
+ */
 function downloadFile(url, dest) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest);
@@ -506,7 +538,10 @@ function downloadFile(url, dest) {
   });
 }
 
-// Check and download fonts when the app starts
+/**
+ * Sets up custom fonts for the application
+ * Downloads and manages font files in user data directory
+ */
 async function setupFonts() {
   const userDataPath = app.getPath('userData');
   const fontsDir = path.join(userDataPath, 'fonts');
@@ -1047,7 +1082,10 @@ ipcMain.handle('export:pdf', async (event, snippet) => {
   }
 });
 
-// Function to open documentation in a new window
+/**
+ * Opens the documentation viewer in a new window
+ * Supports markdown rendering and theme synchronization
+ */
 function openDocumentation() {
   // Create documentation window
   let docWindow = new BrowserWindow({
