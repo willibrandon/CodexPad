@@ -29,16 +29,20 @@ export const loadPrismLanguage = (language: string) => {
       'cpp': 'cpp',
       'c++': 'cpp',
       'php': 'php',
+      
+      // Fix for languages with different module names
+      'dockerfile': 'docker',
+      'nginx': 'nginx',
     };
 
-    // Define a list of supported languages to avoid unnecessary imports
+    // Define a list of supported languages that we know exist in prismjs
     const supportedLanguages = [
       'javascript', 'typescript', 'jsx', 'tsx', 'css', 'html', 
       'csharp', 'fsharp', 'python', 'java', 'bash', 'shell',
       'sql', 'yaml', 'json', 'markdown', 'powershell', 'vbnet',
       'ruby', 'go', 'rust', 'cpp', 'c', 'php', 'kotlin', 'swift',
       'dart', 'r', 'matlab', 'scala', 'haskell', 'lua', 'perl',
-      'graphql', 'toml', 'dockerfile', 'nginx', 'xml'
+      'graphql', 'toml', 'docker', 'xml'
     ];
     
     // Get the correct language name
@@ -48,9 +52,32 @@ export const loadPrismLanguage = (language: string) => {
     if (supportedLanguages.includes(normalizedLang)) {
       // Check if language is already loaded
       if (!Prism.languages[normalizedLang]) {
-        import(`prismjs/components/prism-${normalizedLang}`).catch((error) => {
-          console.warn(`Failed to load language: ${normalizedLang}`, error);
-        });
+        try {
+          // Dynamic import with error handling
+          import(`prismjs/components/prism-${normalizedLang}`)
+            .catch((error) => {
+              console.warn(`Failed to load language: ${normalizedLang}`, error);
+              
+              // For unsupported languages, fallback to text
+              if (!Prism.languages[normalizedLang]) {
+                // Use plain text highlighting as fallback
+                Prism.languages[normalizedLang] = Prism.languages.plaintext;
+              }
+            });
+        } catch (importError) {
+          console.warn(`Import error for language: ${normalizedLang}`, importError);
+          
+          // For unsupported languages, fallback to text
+          if (!Prism.languages[normalizedLang]) {
+            // Use plain text highlighting as fallback
+            Prism.languages[normalizedLang] = Prism.languages.plaintext;
+          }
+        }
+      }
+    } else {
+      // For unsupported languages, use plaintext
+      if (!Prism.languages[normalizedLang]) {
+        Prism.languages[normalizedLang] = Prism.languages.plaintext;
       }
     }
   } catch (error) {
