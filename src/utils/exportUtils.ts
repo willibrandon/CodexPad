@@ -1,19 +1,40 @@
+/**
+ * @fileoverview Utility functions for exporting snippets to various formats
+ * This module provides functionality to export snippets to Markdown and HTML formats,
+ * with proper formatting and styling.
+ * @module exportUtils
+ */
+
 import { Snippet } from '../App';
 // Use dynamic import for marked to avoid TypeScript errors
 const marked = require('marked');
 
-// Format Date for file names
+/**
+ * Formats the current date and time for use in filenames.
+ * @returns {string} Formatted date string in the format YYYY-MM-DD_HH-mm
+ * @private
+ */
 const formatDateForFilename = (): string => {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
 };
 
-// Clean filename by removing illegal characters
+/**
+ * Sanitizes a filename by removing illegal characters.
+ * @param {string} filename - The filename to sanitize
+ * @returns {string} Sanitized filename safe for file system use
+ * @private
+ */
 const sanitizeFilename = (filename: string): string => {
   return filename.replace(/[<>:"/\\|?*]/g, '_').trim();
 };
 
-// Export single snippet to Markdown
+/**
+ * Exports a snippet to Markdown format.
+ * Includes title, tags (if any), and content in proper Markdown structure.
+ * @param {Snippet} snippet - The snippet to export
+ * @returns {string} Formatted Markdown content
+ */
 export const exportToMarkdown = (snippet: Snippet): string => {
   let markdown = `# ${snippet.title}\n\n`;
   
@@ -25,7 +46,12 @@ export const exportToMarkdown = (snippet: Snippet): string => {
   return markdown;
 };
 
-// Export single snippet to HTML
+/**
+ * Exports a snippet to HTML format with styling.
+ * Converts Markdown content to HTML and adds responsive styling.
+ * @param {Snippet} snippet - The snippet to export
+ * @returns {string} Complete HTML document as a string
+ */
 export const exportToHtml = (snippet: Snippet): string => {
   const markdown = exportToMarkdown(snippet);
   const htmlContent = marked(markdown);
@@ -77,15 +103,26 @@ export const exportToHtml = (snippet: Snippet): string => {
 </html>`;
 };
 
-// Get suggested filename based on snippet title and export format
+/**
+ * Generates a suggested filename for the exported snippet.
+ * Combines sanitized title with timestamp and appropriate extension.
+ * @param {Snippet} snippet - The snippet to generate filename for
+ * @param {'md' | 'html' | 'pdf'} format - The export format
+ * @returns {string} Generated filename
+ */
 export const getSuggestedFilename = (snippet: Snippet, format: 'md' | 'html' | 'pdf'): string => {
   const sanitizedTitle = sanitizeFilename(snippet.title) || 'untitled';
   const dateStr = formatDateForFilename();
   return `${sanitizedTitle}_${dateStr}.${format}`;
 };
 
-// Interface for export options
+/**
+ * Interface defining options for exporting snippets.
+ * @interface ExportOptions
+ */
 export interface ExportOptions {
+  /** Format to export the snippet in */
   format: 'markdown' | 'html' | 'pdf';
+  /** The snippet to export */
   snippet: Snippet;
 } 

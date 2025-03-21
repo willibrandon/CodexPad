@@ -1,6 +1,18 @@
+/**
+ * @fileoverview Utility functions for importing snippets from various formats
+ * This module provides functionality to import snippets from Markdown, HTML,
+ * Evernote ENEX, and other text-based formats.
+ * @module importUtils
+ */
+
 import { Snippet } from '../App';
 
-// Parse Markdown files
+/**
+ * Parses a Markdown file into a snippet object.
+ * Extracts title from first heading and tags from metadata section.
+ * @param {string} content - The Markdown content to parse
+ * @returns {Partial<Snippet>} Parsed snippet object
+ */
 export const parseMarkdownFile = (content: string): Partial<Snippet> => {
   // Extract title from first heading
   const titleMatch = content.match(/^# (.+)$/m);
@@ -28,7 +40,12 @@ export const parseMarkdownFile = (content: string): Partial<Snippet> => {
   };
 };
 
-// Parse Evernote ENEX files
+/**
+ * Parses an Evernote ENEX export file into an array of snippets.
+ * Handles CDATA content and converts HTML to plain text.
+ * @param {string} xmlContent - The ENEX file content
+ * @returns {Partial<Snippet>[]} Array of parsed snippets
+ */
 export const parseEvernoteENEX = (xmlContent: string): Partial<Snippet>[] => {
   const snippets: Partial<Snippet>[] = [];
   const parser = new DOMParser();
@@ -71,7 +88,12 @@ export const parseEvernoteENEX = (xmlContent: string): Partial<Snippet>[] => {
   return snippets;
 };
 
-// Parse Notion export (markdown or HTML)
+/**
+ * Parses a Notion export file (HTML or Markdown) into a snippet.
+ * @param {string} content - The file content to parse
+ * @param {boolean} isHtml - Whether the content is HTML format
+ * @returns {Partial<Snippet>} Parsed snippet object
+ */
 export const parseNotionExport = (content: string, isHtml: boolean): Partial<Snippet> => {
   if (isHtml) {
     // Parse HTML
@@ -98,7 +120,12 @@ export const parseNotionExport = (content: string, isHtml: boolean): Partial<Sni
   }
 };
 
-// Process text file with auto-detection
+/**
+ * Processes a text file and attempts to detect its format.
+ * Supports Markdown, ENEX, HTML, and plain text formats.
+ * @param {File} file - The file to process
+ * @returns {Promise<Partial<Snippet> | Partial<Snippet>[]>} Parsed snippet(s)
+ */
 export const processTextFile = async (file: File): Promise<Partial<Snippet> | Partial<Snippet>[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -150,7 +177,12 @@ export const processTextFile = async (file: File): Promise<Partial<Snippet> | Pa
   });
 };
 
-// Main import function that handles multiple files
+/**
+ * Main import function that handles multiple files.
+ * Processes each file and combines the results.
+ * @param {FileList} files - List of files to import
+ * @returns {Promise<Partial<Snippet>[]>} Array of parsed snippets
+ */
 export const importFiles = async (files: FileList): Promise<Partial<Snippet>[]> => {
   const snippets: Partial<Snippet>[] = [];
   

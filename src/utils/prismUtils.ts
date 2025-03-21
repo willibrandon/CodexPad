@@ -1,6 +1,17 @@
+/**
+ * @fileoverview Utility functions for Prism.js syntax highlighting
+ * This module provides lazy loading functionality for Prism.js language definitions,
+ * improving initial load performance by only loading languages when needed.
+ * @module prismUtils
+ */
+
 import Prism from 'prismjs';
 
-// Lazy load Prism languages
+/**
+ * Lazily loads a Prism language definition.
+ * Maps common aliases to their proper language names and only loads supported languages.
+ * @param {string} language - The language identifier to load
+ */
 export const loadPrismLanguage = (language: string) => {
   try {
     // Map some common aliases to their Prism language names
