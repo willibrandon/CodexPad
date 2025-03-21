@@ -1,3 +1,4 @@
+// Package main provides integration tests for the CodexPad sync server.
 package main
 
 import (
@@ -19,13 +20,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestHealthEndpoint tests the /health endpoint
+// TestHealthEndpoint verifies that the /health endpoint returns
+// the expected status and message indicating the server is running.
 func TestHealthEndpoint(t *testing.T) {
 	// Setup
 	router := gin.Default()
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
+			"status":  "ok",
 			"message": "CodexPad sync server is running",
 		})
 	})
@@ -37,16 +39,20 @@ func TestHealthEndpoint(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, 200, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	
+
 	assert.Nil(t, err)
 	assert.Equal(t, "ok", response["status"])
 	assert.Equal(t, "CodexPad sync server is running", response["message"])
 }
 
-// TestSyncMessageValidation demonstrates table-driven tests
+// TestSyncMessageValidation verifies the validation logic for sync messages
+// using table-driven tests. It checks various scenarios including:
+// - Valid push messages
+// - Invalid message types
+// - Missing required fields
 func TestSyncMessageValidation(t *testing.T) {
 	// Table-driven test cases
 	tests := []struct {
@@ -97,22 +103,27 @@ func TestSyncMessageValidation(t *testing.T) {
 	}
 }
 
-// TestWebSocketConnection tests the WebSocket connection
+// TestWebSocketConnection verifies the WebSocket connection handling
+// and message exchange between client and server. It tests:
+// - Connection establishment
+// - Push message handling
+// - Pull message handling
+// - Response validation
 func TestWebSocketConnection(t *testing.T) {
 	// Setup DB and sync manager for test
 	db, err := NewDBManager(":memory:")
 	require.NoError(t, err)
 	defer db.Close()
-	
+
 	// Create a test logger
 	testLogger := log.New(ioutil.Discard, "", 0)
-	
+
 	// Initialize the global syncLogger variable for test
 	syncLogger = testLogger
-	
+
 	// Initialize sync manager
 	syncManager = NewSyncManager(db, testLogger)
-	
+
 	// Setup test server
 	router := gin.Default()
 	router.GET("/sync", handleSync)
@@ -171,7 +182,9 @@ func TestWebSocketConnection(t *testing.T) {
 	assert.NotEmpty(t, response.Content)
 }
 
-// TestInvalidMessages tests handling of invalid sync messages
+// TestInvalidMessages verifies that invalid sync messages are properly
+// rejected with appropriate error messages. It tests various invalid
+// scenarios using table-driven tests.
 func TestInvalidMessages(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -218,7 +231,12 @@ func TestInvalidMessages(t *testing.T) {
 	}
 }
 
-// TestManualBackupEndpoint tests the /backup endpoint
+// TestManualBackupEndpoint verifies the manual backup endpoint functionality.
+// It tests:
+// - Successful backup creation
+// - Backup file verification
+// - Error handling
+// - Response format
 func TestManualBackupEndpoint(t *testing.T) {
 	// Create temporary test directory
 	tmpDir, err := ioutil.TempDir("", "codexpad-backup-test")
@@ -258,7 +276,7 @@ func TestManualBackupEndpoint(t *testing.T) {
 			})
 			return
 		}
-		
+
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "success",
 			"message": "Backup created successfully",
@@ -272,10 +290,10 @@ func TestManualBackupEndpoint(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, 200, w.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
-	
+
 	assert.Nil(t, err)
 	assert.Equal(t, "success", response["status"])
 	assert.Equal(t, "Backup created successfully", response["message"])
@@ -288,17 +306,21 @@ func TestManualBackupEndpoint(t *testing.T) {
 	assert.Equal(t, 1, len(files), "Expected 1 backup file to be created")
 }
 
+// TestMain sets up the test environment before running tests
+// and performs cleanup afterward.
 func TestMain(m *testing.M) {
 	// Set up test environment
 	// We don't need to create an unused logger variable here
-	
+
 	// Run tests
 	code := m.Run()
-	
+
 	// Clean up
 	os.Exit(code)
 }
 
+// TestSyncManager verifies the core functionality of the sync manager,
+// including client connection handling and database integration.
 func TestSyncManager(t *testing.T) {
 	// Create a test database
 	tmpDir, err := ioutil.TempDir("", "codexpad-test")
@@ -321,4 +343,4 @@ func TestSyncManager(t *testing.T) {
 	}
 }
 
-// Add more test cases as needed 
+// Add more test cases as needed

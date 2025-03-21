@@ -1,3 +1,4 @@
+// Package main provides tests for the backup functionality.
 package main
 
 import (
@@ -9,6 +10,13 @@ import (
 	"time"
 )
 
+// TestBackupService tests the core functionality of the BackupService.
+// It verifies:
+// - Backup directory creation
+// - Initial backup creation
+// - Backup file rotation based on MaxBackups setting
+// - Backup retention based on RetentionDays setting
+// The test uses a temporary directory that is cleaned up afterward.
 func TestBackupService(t *testing.T) {
 	// Create temporary directories for test
 	tmpDir, err := ioutil.TempDir("", "codexpad-test")
@@ -91,4 +99,4 @@ func TestBackupService(t *testing.T) {
 	if len(files) < 1 {
 		t.Errorf("Expected at least 1 backup file, got %d", len(files))
 	}
-} 
+}

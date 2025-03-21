@@ -1,3 +1,4 @@
+// Package main provides the database management functionality for CodexPad.
 package main
 
 import (
@@ -9,11 +10,17 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+// DBManager handles all database operations for the CodexPad application.
+// It provides thread-safe access to the SQLite database and implements
+// versioning and change tracking for synchronization.
 type DBManager struct {
 	db *sql.DB
 }
 
-// NewDBManager creates a new database manager
+// NewDBManager creates a new database manager instance.
+// It opens the SQLite database at the specified path and initializes
+// the database schema if it doesn't exist. Returns an error if the
+// database cannot be opened or schema initialization fails.
 func NewDBManager(dbPath string) (*DBManager, error) {
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
@@ -29,12 +36,18 @@ func NewDBManager(dbPath string) (*DBManager, error) {
 	return &DBManager{db: db}, nil
 }
 
-// Close closes the database connection
+// Close closes the database connection.
+// Any pending transactions will be rolled back.
+// Returns an error if the close operation fails.
 func (m *DBManager) Close() error {
 	return m.db.Close()
 }
 
-// SaveSnippet saves or updates a snippet
+// SaveSnippet saves or updates a snippet in the database.
+// If the snippet doesn't exist, it creates a new one.
+// If it exists, it updates the existing snippet and increments its version.
+// The operation is performed in a transaction to ensure consistency.
+// It also logs the change and updates the sync state for the client.
 func (m *DBManager) SaveSnippet(snippet *Snippet, clientID string) error {
 	tx, err := m.db.Begin()
 	if err != nil {
@@ -99,7 +112,9 @@ func (m *DBManager) SaveSnippet(snippet *Snippet, clientID string) error {
 	return tx.Commit()
 }
 
-// GetSnippet retrieves a snippet by ID
+// GetSnippet retrieves a snippet by its ID.
+// Returns nil and an error if the snippet doesn't exist or is marked as deleted.
+// The returned snippet includes all fields except tags, which must be loaded separately.
 func (m *DBManager) GetSnippet(id int) (*Snippet, error) {
 	var s Snippet
 	err := m.db.QueryRow(`
@@ -113,7 +128,9 @@ func (m *DBManager) GetSnippet(id int) (*Snippet, error) {
 	return &s, nil
 }
 
-// GetPendingChanges gets all changes that need to be synced for a client
+// GetPendingChanges retrieves all changes that need to be synchronized for a client.
+// Returns a slice of Change objects ordered by version number.
+// Each change includes the operation type (create/update/delete) and the changed data.
 func (m *DBManager) GetPendingChanges(clientID string) ([]Change, error) {
 	rows, err := m.db.Query(`
 		SELECT snippet_id, version, operation, changes
@@ -146,7 +163,9 @@ func (m *DBManager) GetPendingChanges(clientID string) ([]Change, error) {
 	return changes, nil
 }
 
-// initSchema initializes the database schema
+// initSchema initializes the database schema by executing the SQL statements
+// from the schema.sql file. This includes creating tables for snippets,
+// tags, sync states, and change tracking.
 func initSchema(db *sql.DB) error {
 	// Read schema from file
 	schema, err := readFile("schema.sql")
@@ -159,21 +178,25 @@ func initSchema(db *sql.DB) error {
 	return err
 }
 
-// Snippet represents a code snippet in the database
+// Snippet represents a code snippet stored in the database.
+// It includes metadata like creation time and version number
+// for change tracking and synchronization.
 type Snippet struct {
-	ID        int       `json:"id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Version   int       `json:"version"`
-	Tags      []string  `json:"tags,omitempty"`
+	ID        int       `json:"id"`             // Unique identifier
+	Title     string    `json:"title"`          // Snippet title
+	Content   string    `json:"content"`        // Snippet content
+	CreatedAt time.Time `json:"created_at"`     // Creation timestamp
+	UpdatedAt time.Time `json:"updated_at"`     // Last update timestamp
+	Version   int       `json:"version"`        // Version number for sync
+	Tags      []string  `json:"tags,omitempty"` // Associated tags
 }
 
-// Change represents a change in the change log
+// Change represents a modification to a snippet in the change log.
+// It is used for tracking changes and implementing synchronization
+// between clients.
 type Change struct {
-	SnippetID int         `json:"snippet_id"`
-	Version   int         `json:"version"`
-	Operation string      `json:"operation"`
-	Changes   interface{} `json:"changes"`
+	SnippetID int         `json:"snippet_id"` // ID of the modified snippet
+	Version   int         `json:"version"`    // Version number after the change
+	Operation string      `json:"operation"`  // Type of change (create/update/delete)
+	Changes   interface{} `json:"changes"`    // Changed data in JSON format
 }

@@ -1,3 +1,6 @@
+// Package main implements the CodexPad sync server, which provides
+// real-time synchronization of code snippets between clients using WebSocket
+// connections. It also includes automated backup functionality and health monitoring.
 package main
 
 import (
@@ -16,6 +19,8 @@ import (
 )
 
 var (
+	// upgrader configures the WebSocket connection parameters.
+	// In development mode, it allows connections from any origin.
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -23,11 +28,20 @@ var (
 			return true // Allow all origins in development
 		},
 	}
+
+	// syncManager handles synchronization between connected clients
 	syncManager *SyncManager
-	syncLogger  *log.Logger
+
+	// syncLogger provides logging for sync-related operations
+	syncLogger *log.Logger
 )
 
-// handleSync handles WebSocket connections
+// handleSync handles incoming WebSocket connections for snippet synchronization.
+// For each new connection, it:
+// 1. Upgrades the HTTP connection to WebSocket
+// 2. Generates a unique client ID
+// 3. Registers the client with the sync manager
+// Any connection errors are logged but do not affect other clients.
 func handleSync(c *gin.Context) {
 	// Upgrade HTTP connection to WebSocket
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -44,6 +58,13 @@ func handleSync(c *gin.Context) {
 	syncManager.HandleClient(clientID, conn)
 }
 
+// main initializes and starts the CodexPad sync server.
+// It sets up:
+// - Logging to both console and file
+// - Database connection
+// - Backup service with configurable retention
+// - Sync manager for real-time updates
+// - HTTP endpoints for health checks and manual backups
 func main() {
 	// Create and configure server logger
 	logFile, err := os.OpenFile("sync_server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -51,12 +72,12 @@ func main() {
 		log.Fatalf("Failed to open log file: %v", err)
 	}
 	defer logFile.Close()
-	
+
 	// Create a multi-writer that writes to both console and file
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
 	syncLogger = log.New(multiWriter, "", log.LstdFlags)
 	syncLogger.SetPrefix("[SYNC] ")
-	
+
 	syncLogger.Println("Starting CodexPad sync server...")
 
 	// Initialize database
@@ -71,14 +92,14 @@ func main() {
 	// Initialize backup service
 	backupConfig := BackupConfig{
 		BackupDir:     filepath.Join(filepath.Dir(dbPath), "backups"),
-		Interval:      6 * time.Hour,  // Backup every 6 hours
-		MaxBackups:    30,             // Keep last 30 backups
+		Interval:      6 * time.Hour, // Backup every 6 hours
+		MaxBackups:    30,            // Keep last 30 backups
 		RetentionDays: 30,            // Keep backups for 30 days
 	}
 
 	// Create a backup-specific logger
 	backupLogger := log.New(multiWriter, "[BACKUP] ", log.LstdFlags)
-	
+
 	backupService := NewBackupService(backupConfig, dbPath, backupLogger)
 	if err := backupService.Start(); err != nil {
 		syncLogger.Printf("Warning: Failed to start backup service: %v", err)
@@ -105,7 +126,7 @@ func main() {
 	// Backup endpoint - manually trigger a backup
 	router.POST("/backup", func(c *gin.Context) {
 		syncLogger.Println("Manual backup requested")
-		
+
 		if err := backupService.CreateBackup(); err != nil {
 			syncLogger.Printf("Manual backup failed: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -114,7 +135,7 @@ func main() {
 			})
 			return
 		}
-		
+
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "success",
 			"message": "Backup created successfully",
@@ -146,7 +167,9 @@ func main() {
 	}
 }
 
-// getDBPath returns the path to the SQLite database file
+// getDBPath returns the path to the SQLite database file.
+// It creates the necessary directory structure if it doesn't exist.
+// The database is stored in the user's home directory under .codexpad/.
 func getDBPath() string {
 	// Get user's home directory
 	home, err := os.UserHomeDir()
@@ -161,4 +184,4 @@ func getDBPath() string {
 	}
 
 	return filepath.Join(dataDir, "codexpad.db")
-} 
+}
