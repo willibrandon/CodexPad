@@ -205,47 +205,59 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = memo(({
         formattedText = `\`${selectedText || 'code'}\``;
         newCursorPos = selectedText ? formattedText.length : 1;
         break;
-      case 'heading':
-        // If line already starts with #, add one more
-        const lineStart = beforeText.lastIndexOf('\n') + 1;
-        const currentLine = beforeText.substring(lineStart) + selectedText;
-        
-        if (/^#{1,5}\s/.test(currentLine)) {
-          formattedText = `#${selectedText}`;
-        } else if (/^#{6}\s/.test(currentLine)) {
-          // If already h6, remove all #
-          formattedText = selectedText.replace(/^#{6}\s/, '');
-        } else {
-          formattedText = `# ${selectedText || 'Heading'}`;
-          newCursorPos = selectedText ? formattedText.length : 2;
-        }
-        break;
       case 'link':
         formattedText = `[${selectedText || 'link text'}](url)`;
         newCursorPos = selectedText ? formattedText.length - 1 : 1;
         break;
       case 'image':
-        formattedText = `![${selectedText || 'alt text'}](image-url)`;
+        formattedText = `![${selectedText || 'image alt text'}](image-url)`;
         newCursorPos = selectedText ? formattedText.length - 1 : 2;
         break;
       case 'bulletList':
-        formattedText = `\n- ${selectedText || 'List item'}\n`;
-        newCursorPos = selectedText ? formattedText.length : 3;
+        // If text is selected, format each line
+        if (selectedText) {
+          formattedText = selectedText
+            .split('\n')
+            .map(line => `- ${line}`)
+            .join('\n');
+        } else {
+          formattedText = '- List item';
+        }
+        formattedText = `\n${formattedText}\n`;
+        newCursorPos = selectedText ? formattedText.length : formattedText.length - 1;
         break;
       case 'numberedList':
-        formattedText = `\n1. ${selectedText || 'List item'}\n`;
-        newCursorPos = selectedText ? formattedText.length : 4;
+        // If text is selected, format each line with numbers
+        if (selectedText) {
+          formattedText = selectedText
+            .split('\n')
+            .map((line, i) => `${i + 1}. ${line}`)
+            .join('\n');
+        } else {
+          formattedText = '1. List item';
+        }
+        formattedText = `\n${formattedText}\n`;
+        newCursorPos = selectedText ? formattedText.length : formattedText.length - 1;
         break;
       case 'quote':
-        formattedText = `> ${selectedText || 'Blockquote'}\n`;
-        newCursorPos = selectedText ? formattedText.length : 2;
+        // If text is selected, format each line as a quote
+        if (selectedText) {
+          formattedText = selectedText
+            .split('\n')
+            .map(line => `> ${line}`)
+            .join('\n');
+        } else {
+          formattedText = '> Quote';
+        }
+        formattedText = `\n${formattedText}\n`;
+        newCursorPos = selectedText ? formattedText.length : formattedText.length - 1;
         break;
       case 'horizontalRule':
-        formattedText = `\n\n---\n\n`;
+        formattedText = '\n\n---\n\n';
         newCursorPos = formattedText.length;
         break;
       case 'table':
-        formattedText = `\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |\n`;
+        formattedText = '\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |\n';
         newCursorPos = formattedText.length;
         break;
     }
