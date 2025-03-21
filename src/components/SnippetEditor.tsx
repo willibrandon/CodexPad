@@ -216,6 +216,13 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     <div className="snippet-editor">
       <div className="editor-header">
         <div className="editor-header-left">
+          <button
+            className={`favorite-button ${isFavorite ? 'active' : ''}`}
+            onClick={handleFavoriteToggle}
+            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFavorite ? '★' : '☆'}
+          </button>
           <input
             type="text"
             className="editor-title"
@@ -269,10 +276,8 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
       
       <TagManager
         tags={editedTags}
-        favorite={isFavorite}
         content={editedContent}
         onTagsChange={handleTagsChange}
-        onFavoriteToggle={handleFavoriteToggle}
       />
       <div className="editor-content">
         <MarkdownEditor

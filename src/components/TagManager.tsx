@@ -4,18 +4,14 @@ import { tagSuggestionService } from '../services/ai/tagSuggestionService';
 
 interface TagManagerProps {
   tags: string[];
-  favorite: boolean;
   content?: string;  // Add content prop for AI suggestions
   onTagsChange: (tags: string[]) => void;
-  onFavoriteToggle: () => void;
 }
 
 const TagManager: React.FC<TagManagerProps> = memo(({
   tags = [],
-  favorite = false,
   content = '',  // Default to empty string
   onTagsChange,
-  onFavoriteToggle,
 }) => {
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -104,15 +100,8 @@ const TagManager: React.FC<TagManagerProps> = memo(({
           </button>
         </span>
       ))}
-      <button
-        className={`favorite-button ${favorite ? 'active' : ''}`}
-        onClick={onFavoriteToggle}
-        title={favorite ? 'Remove from favorites' : 'Add to favorites'}
-      >
-        {favorite ? '★' : '☆'}
-      </button>
     </div>
-  ), [tags, handleRemoveTag, favorite, onFavoriteToggle]);
+  ), [tags, handleRemoveTag]);
 
   // Memoize suggested tags
   const renderedSuggestedTags = useMemo(() => (

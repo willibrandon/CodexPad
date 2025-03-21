@@ -4,33 +4,6 @@
   background-color: var(--editor-bg);
 }
 
-.favorite-toggle {
-  margin-bottom: 10px;
-}
-
-.favorite-button {
-  background: none;
-  border: none;
-  font-size: 1.2em;
-  cursor: pointer;
-  color: var(--text-light);
-  transition: color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  margin-left: auto;
-  border-radius: 12px;
-}
-
-.favorite-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.favorite-button.active {
-  color: #f1c40f;
-}
-
 .tags-container {
   display: flex;
   flex-wrap: wrap;
