@@ -35,6 +35,14 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  -webkit-app-region: no-drag;
+}
+
+/* Ensure all interactive elements in header are not draggable */
+.editor-header button,
+.editor-header input,
+.editor-header .export-dropdown {
+  -webkit-app-region: no-drag;
 }
 
 /* Title input field styling */
@@ -47,6 +55,7 @@
   width: 100%;
   padding: 5px 0;
   margin-right: 10px;
+  -webkit-app-region: no-drag;
 }
 
 /* Remove outline on title focus */
