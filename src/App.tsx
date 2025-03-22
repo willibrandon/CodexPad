@@ -154,27 +154,40 @@ const AppContent: React.FC = () => {
         const newContent = '';
         const newTags: string[] = [];
         
-        const id = await window.electron.invoke('snippets:create', newTitle, newContent, newTags);
-        const newSnippet = {
-          id,
-          title: newTitle,
-          content: newContent,
-          tags: newTags,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          favorite: false
+        const newSnippet = await window.electron.invoke('snippets:create', newTitle, newContent, newTags);
+        
+        // Ensure tags is initialized
+        const snippetWithTags = {
+          ...newSnippet,
+          tags: newSnippet.tags || []
         };
         
-        // Update local state
-        setSnippets(prev => [newSnippet, ...prev]);
+        // Update snippets state
+        setSnippets(prev => {
+          const updated = [snippetWithTags, ...prev];
+          
+          // Immediately update filteredSnippets based on current search term
+          if (searchTerm) {
+            const filtered = updated.filter(s => 
+              s.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+              s.content.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredSnippets(filtered);
+          } else {
+            // If no search term, filtered list should match full list
+            setFilteredSnippets(updated);
+          }
+          
+          return updated;
+        });
         
         // Open the new snippet in a tab
-        openTab(newSnippet);
+        openTab(snippetWithTags);
       }
     } catch (error) {
       console.error('Failed to create new snippet:', error);
     }
-  }, [openTab]);
+  }, [openTab, searchTerm]);
 
   // Handler for opening the import dialog
   const handleOpenImportDialog = useCallback(() => {
@@ -359,14 +372,29 @@ const AppContent: React.FC = () => {
   const handleUpdateSnippet = async (updatedSnippet: Snippet) => {
     try {
       if (window.electron) {
+        // Send update to main process
         await window.electron.invoke('snippets:update', updatedSnippet);
         
-        // Update local state
-        setSnippets(prev => 
-          prev.map(s => s.id === updatedSnippet.id ? updatedSnippet : s)
-        );
-        
-        // Update the tab state if it's open
+        // Update snippets state
+        setSnippets(prev => {
+          const updated = prev.map(s => s.id === updatedSnippet.id ? updatedSnippet : s);
+          
+          // Immediately update filteredSnippets based on current search term
+          if (searchTerm) {
+            const filtered = updated.filter(s => 
+              s.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+              s.content.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredSnippets(filtered);
+          } else {
+            // If no search term, filtered list should match full list
+            setFilteredSnippets(updated);
+          }
+          
+          return updated;
+        });
+
+        // Update the tab content
         updateTabContent(updatedSnippet.id, updatedSnippet);
       }
     } catch (error) {
