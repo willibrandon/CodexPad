@@ -61,8 +61,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
   /** Favorite status of the snippet */
   const [isFavorite, setIsFavorite] = useState(false);
   
-  /** Timeout ID for debounced saving */
-  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  /** Timeout IDs for debounced saving */
+  const [titleSaveTimeout, setTitleSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [contentSaveTimeout, setContentSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   
   /** Current save status indicator */
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | null>(null);
@@ -133,10 +134,10 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     }
   }, [saveStatus]);
 
-  // Debounced save function to prevent too many updates
-  const debouncedSave = (updatedSnippet: Snippet) => {
-    if (saveTimeout) {
-      clearTimeout(saveTimeout);
+  // Debounced save functions with different timings for different types of changes
+  const debouncedSaveTitle = (updatedSnippet: Snippet) => {
+    if (titleSaveTimeout) {
+      clearTimeout(titleSaveTimeout);
     }
     
     setSaveStatus('saving');
@@ -144,9 +145,24 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     const timeoutId = setTimeout(() => {
       onUpdateSnippet(updatedSnippet);
       setSaveStatus('saved');
-    }, 1500); // 1.5 second debounce
+    }, 300); // 300ms debounce for title changes
     
-    setSaveTimeout(timeoutId);
+    setTitleSaveTimeout(timeoutId);
+  };
+
+  const debouncedSaveContent = (updatedSnippet: Snippet) => {
+    if (contentSaveTimeout) {
+      clearTimeout(contentSaveTimeout);
+    }
+    
+    setSaveStatus('saving');
+    
+    const timeoutId = setTimeout(() => {
+      onUpdateSnippet(updatedSnippet);
+      setSaveStatus('saved');
+    }, 1500); // 1.5 second debounce for content changes
+    
+    setContentSaveTimeout(timeoutId);
   };
 
   // Memoize callbacks
@@ -160,9 +176,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
         title: newTitle,
         updatedAt: new Date().toISOString()
       };
-      debouncedSave(updatedSnippet);
+      debouncedSaveTitle(updatedSnippet);
     }
-  }, [snippet, debouncedSave]);
+  }, [snippet, debouncedSaveTitle]);
 
   const handleContentChange = useCallback((newContent: string) => {
     setEditedContent(newContent);
@@ -173,9 +189,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
         content: newContent,
         updatedAt: new Date().toISOString()
       };
-      debouncedSave(updatedSnippet);
+      debouncedSaveContent(updatedSnippet);
     }
-  }, [snippet, debouncedSave]);
+  }, [snippet, debouncedSaveContent]);
 
   const handleTagsChange = useCallback((newTags: string[]) => {
     setEditedTags(newTags);
@@ -186,9 +202,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
         tags: newTags,
         updatedAt: new Date().toISOString()
       };
-      debouncedSave(updatedSnippet);
+      debouncedSaveTitle(updatedSnippet); // Use shorter debounce for tags
     }
-  }, [snippet, debouncedSave]);
+  }, [snippet, debouncedSaveTitle]);
 
   const handleFavoriteToggle = useCallback(() => {
     const newFavorite = !isFavorite;
@@ -200,9 +216,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
         favorite: newFavorite,
         updatedAt: new Date().toISOString()
       };
-      debouncedSave(updatedSnippet);
+      debouncedSaveTitle(updatedSnippet); // Use shorter debounce for favorite toggle
     }
-  }, [snippet, isFavorite, debouncedSave]);
+  }, [snippet, isFavorite, debouncedSaveTitle]);
 
   const handleDelete = () => {
     if (snippet && window.confirm('Are you sure you want to delete this snippet?')) {
@@ -258,6 +274,14 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
       updateEditorState(snippetId, state);
     }
   }, [snippet?.id, updateEditorState]); // Only depend on the ID, not the entire snippet object
+
+  // Clean up timeouts when component unmounts or snippet changes
+  useEffect(() => {
+    return () => {
+      if (titleSaveTimeout) clearTimeout(titleSaveTimeout);
+      if (contentSaveTimeout) clearTimeout(contentSaveTimeout);
+    };
+  }, [titleSaveTimeout, contentSaveTimeout]);
 
   if (!snippet) {
     return (
