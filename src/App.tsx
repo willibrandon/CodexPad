@@ -42,6 +42,8 @@ export interface Snippet {
   tags: string[];
   /** Whether the snippet is marked as favorite */
   favorite: boolean;
+  /** AI-generated summary of the content */
+  summary?: string;
 }
 
 // Import our custom electron TypeScript definitions
@@ -156,7 +158,7 @@ const AppContent: React.FC = () => {
         
         const newSnippet = await window.electron.invoke('snippets:create', newTitle, newContent, newTags);
         
-        // Ensure tags is initialized
+        // Ensure tags is initialized but don't set a summary
         const snippetWithTags = {
           ...newSnippet,
           tags: newSnippet.tags || []
@@ -375,9 +377,13 @@ const AppContent: React.FC = () => {
         // Send update to main process
         await window.electron.invoke('snippets:update', updatedSnippet);
         
+        // Generate new summary for the updated content
+        const newSummary = await summarizationService.summarize(updatedSnippet.content);
+        const snippetWithSummary = { ...updatedSnippet, summary: newSummary };
+        
         // Update snippets state
         setSnippets(prev => {
-          const updated = prev.map(s => s.id === updatedSnippet.id ? updatedSnippet : s);
+          const updated = prev.map(s => s.id === snippetWithSummary.id ? snippetWithSummary : s);
           
           // Immediately update filteredSnippets based on current search term
           if (searchTerm) {
@@ -394,8 +400,8 @@ const AppContent: React.FC = () => {
           return updated;
         });
 
-        // Update the tab content
-        updateTabContent(updatedSnippet.id, updatedSnippet);
+        // Update the tab content with the summarized version
+        updateTabContent(snippetWithSummary.id, snippetWithSummary);
       }
     } catch (error) {
       console.error('Failed to update snippet:', error);

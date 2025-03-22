@@ -49,55 +49,51 @@ const SnippetList: React.FC<SnippetListProps> = ({
   const [summaries, setSummaries] = useState<{ [key: number]: string }>({});
 
   /**
-   * Generates summaries for all snippets using AI service
-   * Falls back to content preview if summarization fails
+   * Generates summaries for snippets that need them
    */
   useEffect(() => {
     let isMounted = true;
-    const summaryMap = new Map();
     
-    // Create a stable key for comparison to prevent unnecessary re-runs
-    const snippetsKey = snippets.map(s => `${s.id}-${s.updatedAt}`).join('|');
-    
-    const generateSummaries = async () => {
-      // Skip processing if summaries are already generated for all snippets
-      if (snippets.every(snippet => summaries[snippet.id])) {
-        return;
-      }
-      
+    const generateMissingSummaries = async () => {
       const newSummaries: { [key: number]: string } = { ...summaries };
       let hasChanges = false;
       
       for (const snippet of snippets) {
-        // Skip if we already have a summary for this snippet and it hasn't changed
-        if (summaries[snippet.id] && summaryMap.has(snippet.id) && 
-            summaryMap.get(snippet.id) === `${snippet.id}-${snippet.updatedAt}`) {
+        // Skip if snippet has a valid summary (not undefined and not 'No content')
+        if (snippet.summary && snippet.summary !== 'No content') {
           continue;
         }
         
         try {
           // Handle empty snippets
           if (!snippet.content || snippet.content.trim() === '') {
-            newSummaries[snippet.id] = 'No content';
-            hasChanges = true;
+            if (!summaries[snippet.id] || summaries[snippet.id] !== 'No content') {
+              newSummaries[snippet.id] = 'No content';
+              hasChanges = true;
+            }
             continue;
           }
           
+          // Generate summary for non-empty snippets without a valid summary
           const summary = await summarizationService.summarize(snippet.content);
           
           // Only update if component is still mounted
           if (!isMounted) return;
           
-          newSummaries[snippet.id] = summary;
-          summaryMap.set(snippet.id, `${snippet.id}-${snippet.updatedAt}`);
-          hasChanges = true;
+          // Only update if the summary is different from what we have
+          if (summary !== summaries[snippet.id]) {
+            newSummaries[snippet.id] = summary;
+            hasChanges = true;
+          }
         } catch (error) {
           console.error(`Failed to generate summary for snippet ${snippet.id}:`, error);
-          // Fall back to first few characters if summarization fails
+          // Fall back to content preview only if we don't already have a summary
           if (!isMounted) return;
-          newSummaries[snippet.id] = snippet.content ? snippet.content.slice(0, 100) + '...' : 'No content';
-          summaryMap.set(snippet.id, `${snippet.id}-${snippet.updatedAt}`);
-          hasChanges = true;
+          const fallbackSummary = snippet.content ? snippet.content.slice(0, 100) + '...' : 'No content';
+          if (fallbackSummary !== summaries[snippet.id]) {
+            newSummaries[snippet.id] = fallbackSummary;
+            hasChanges = true;
+          }
         }
       }
       
@@ -107,7 +103,7 @@ const SnippetList: React.FC<SnippetListProps> = ({
       }
     };
 
-    generateSummaries();
+    generateMissingSummaries();
     
     return () => {
       isMounted = false;
@@ -160,7 +156,7 @@ const SnippetList: React.FC<SnippetListProps> = ({
             </div>
           )}
           <div className="snippet-preview">
-            {summaries[snippet.id] || (snippet.content ? 'Loading preview...' : 'No content')}
+            {snippet.summary || summaries[snippet.id] || (snippet.content ? snippet.content.slice(0, 100) + '...' : 'No content')}
           </div>
         </div>
       ))}
