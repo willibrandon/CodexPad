@@ -48,17 +48,20 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
   onUpdateSnippet, 
   onDeleteSnippet 
 }) => {
+  console.log('SnippetEditor rendering with snippet ID:', snippet?.id);
+
   const { updateTabContent, updateEditorState } = useTabs();
+  
   /** Title of the snippet being edited */
   const [editedTitle, setEditedTitle] = useState('');
   
   /** Reference to the title input element */
   const titleInputRef = useRef<HTMLInputElement>(null);
   
-  /** Track if this is a new snippet */
-  const [isNewSnippet, setIsNewSnippet] = useState(false);
+  /** Track if initial focus/select has been done */
+  const hasInitialFocusRef = useRef(false);
   
-  /** Track previous snippet ID to detect real changes */
+  /** Track previous snippet ID for true change detection */
   const prevSnippetIdRef = useRef<number | null>(null);
   
   /** Content of the snippet being edited */
@@ -116,13 +119,22 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     }
   }, [exportStatus]);
   
-  // Update local state ONLY when snippet ID changes
+  // Update local state ONLY on genuine ID changes
   useEffect(() => {
     const currentId = snippet?.id ?? null;
     const prevId = prevSnippetIdRef.current;
 
-    // Only update state if the snippet ID has actually changed
+    console.log('Snippet change detected:', { 
+      currentId, 
+      prevId, 
+      title: snippet?.title,
+      editedTitle 
+    });
+
+    // Only update if ID actually changed
     if (currentId !== prevId) {
+      console.log('Genuine snippet ID change, updating local state');
+      
       if (snippet) {
         setEditedTitle(snippet.title);
         setEditedContent(snippet.content);
@@ -130,9 +142,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
         setIsFavorite(snippet.favorite || false);
         setSaveStatus('saved');
         
-        // Only set isNewSnippet when we first load a new snippet
-        if (snippet.title === 'New Snippet' && currentId !== prevId) {
-          setIsNewSnippet(true);
+        // Reset focus flag for new snippets
+        if (snippet.title === 'New Snippet') {
+          hasInitialFocusRef.current = false;
         }
       } else {
         setEditedTitle('');
@@ -140,20 +152,29 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
         setEditedTags([]);
         setIsFavorite(false);
         setSaveStatus(null);
-        setIsNewSnippet(false);
       }
       
       prevSnippetIdRef.current = currentId;
     }
-  }, [snippet?.id]); // Only depend on snippet ID changes
+  }, [snippet?.id]); // Only depend on ID changes
 
-  // Handle focus and selection for new snippets
+  // Handle one-time focus and selection for new snippets
   useEffect(() => {
-    if (isNewSnippet && titleInputRef.current) {
-      titleInputRef.current.focus();
-      titleInputRef.current.select();
+    if (snippet?.title === 'New Snippet' && !hasInitialFocusRef.current && titleInputRef.current) {
+      console.log('Applying initial focus and selection');
+      
+      // Mark that we've handled initial focus
+      hasInitialFocusRef.current = true;
+      
+      // Small timeout to ensure DOM and React updates are complete
+      setTimeout(() => {
+        if (titleInputRef.current) {
+          titleInputRef.current.focus();
+          titleInputRef.current.select();
+        }
+      }, 100);
     }
-  }, [isNewSnippet]);
+  }, [snippet?.title]);
 
   // Clear save status after showing "Saved"
   useEffect(() => {
@@ -196,9 +217,15 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     setContentSaveTimeout(timeoutId);
   }, [contentSaveTimeout, onUpdateSnippet]);
 
-  // Memoize callbacks
+  // Memoize callbacks with proper dependencies
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
+    console.log('handleTitleChange fired:', { 
+      newTitle, 
+      currentTitle: editedTitle,
+      snippetId: snippet?.id 
+    });
+    
     setEditedTitle(newTitle);
     
     if (snippet) {
@@ -343,6 +370,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
             value={editedTitle}
             onChange={handleTitleChange}
             placeholder="Untitled"
+            onKeyDown={(e) => console.log('Key down on title input:', e.key)}
           />
           {saveStatus && (
             <span className={`save-status ${saveStatus}`}>
