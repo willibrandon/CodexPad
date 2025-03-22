@@ -52,6 +52,15 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
   /** Title of the snippet being edited */
   const [editedTitle, setEditedTitle] = useState('');
   
+  /** Reference to the title input element */
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  
+  /** Track if this is a new snippet */
+  const [isNewSnippet, setIsNewSnippet] = useState(false);
+  
+  /** Track previous snippet ID to detect real changes */
+  const prevSnippetIdRef = useRef<number | null>(null);
+  
   /** Content of the snippet being edited */
   const [editedContent, setEditedContent] = useState('');
   
@@ -107,22 +116,44 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     }
   }, [exportStatus]);
   
-  // Update local state when snippet changes
+  // Update local state ONLY when snippet ID changes
   useEffect(() => {
-    if (snippet) {
-      setEditedTitle(snippet.title);
-      setEditedContent(snippet.content);
-      setEditedTags(snippet.tags || []);
-      setIsFavorite(snippet.favorite || false);
-      setSaveStatus('saved');
-    } else {
-      setEditedTitle('');
-      setEditedContent('');
-      setEditedTags([]);
-      setIsFavorite(false);
-      setSaveStatus(null);
+    const currentId = snippet?.id ?? null;
+    const prevId = prevSnippetIdRef.current;
+
+    // Only update state if the snippet ID has actually changed
+    if (currentId !== prevId) {
+      if (snippet) {
+        setEditedTitle(snippet.title);
+        setEditedContent(snippet.content);
+        setEditedTags(snippet.tags || []);
+        setIsFavorite(snippet.favorite || false);
+        setSaveStatus('saved');
+        
+        // Only set isNewSnippet when we first load a new snippet
+        if (snippet.title === 'New Snippet' && currentId !== prevId) {
+          setIsNewSnippet(true);
+        }
+      } else {
+        setEditedTitle('');
+        setEditedContent('');
+        setEditedTags([]);
+        setIsFavorite(false);
+        setSaveStatus(null);
+        setIsNewSnippet(false);
+      }
+      
+      prevSnippetIdRef.current = currentId;
     }
-  }, [snippet]);
+  }, [snippet?.id]); // Only depend on snippet ID changes
+
+  // Handle focus and selection for new snippets
+  useEffect(() => {
+    if (isNewSnippet && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isNewSnippet]);
 
   // Clear save status after showing "Saved"
   useEffect(() => {
@@ -135,7 +166,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
   }, [saveStatus]);
 
   // Debounced save functions with different timings for different types of changes
-  const debouncedSaveTitle = (updatedSnippet: Snippet) => {
+  const debouncedSaveTitle = useCallback((updatedSnippet: Snippet) => {
     if (titleSaveTimeout) {
       clearTimeout(titleSaveTimeout);
     }
@@ -148,9 +179,9 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     }, 300); // 300ms debounce for title changes
     
     setTitleSaveTimeout(timeoutId);
-  };
+  }, [titleSaveTimeout, onUpdateSnippet]);
 
-  const debouncedSaveContent = (updatedSnippet: Snippet) => {
+  const debouncedSaveContent = useCallback((updatedSnippet: Snippet) => {
     if (contentSaveTimeout) {
       clearTimeout(contentSaveTimeout);
     }
@@ -163,7 +194,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     }, 1500); // 1.5 second debounce for content changes
     
     setContentSaveTimeout(timeoutId);
-  };
+  }, [contentSaveTimeout, onUpdateSnippet]);
 
   // Memoize callbacks
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,17 +251,17 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
     }
   }, [snippet, isFavorite, debouncedSaveTitle]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (snippet && window.confirm('Are you sure you want to delete this snippet?')) {
       onDeleteSnippet(snippet.id);
     }
-  };
+  }, [snippet, onDeleteSnippet]);
   
-  const handleExportDropdownToggle = () => {
+  const handleExportDropdownToggle = useCallback(() => {
     setExportDropdownVisible(prev => !prev);
-  };
+  }, []);
   
-  const handleExport = async (format: ExportFormat) => {
+  const handleExport = useCallback(async (format: ExportFormat) => {
     if (!snippet) return;
     
     setExportStatus({
@@ -252,7 +283,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
       } else {
         setExportStatus({
           status: 'error',
-          message: result.error || `Failed to export as ${format}`,
+          message: result.error || `Export as ${format} failed`,
           format
         });
       }
@@ -263,7 +294,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
         format
       });
     }
-  };
+  }, [snippet, exportSnippet]);
 
   // Add handler for editor state changes
   const handleEditorStateChange = useCallback((state: { isPreviewMode: boolean; textareaRef: React.RefObject<HTMLTextAreaElement> }) => {
@@ -306,6 +337,7 @@ const SnippetEditor: React.FC<SnippetEditorProps> = memo(({
             {isFavorite ? '★' : '☆'}
           </button>
           <input
+            ref={titleInputRef}
             type="text"
             className="editor-title"
             value={editedTitle}
