@@ -45,6 +45,12 @@ function initialize(config) {
       reconnectAttempts = 0;
       reconnectDelay = 2000;
       
+      // Send initial handshake
+      ws.send(JSON.stringify({
+        type: 'handshake',
+        client_id: uuid.v4()
+      }));
+      
       parentPort.postMessage({
         type: 'status',
         status: { connected: true, pendingChanges: pendingChanges.length }

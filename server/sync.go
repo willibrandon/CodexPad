@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 
@@ -85,11 +86,15 @@ func (sm *SyncManager) HandleClient(clientID string, conn *websocket.Conn) {
 
 // handleMessage processes incoming sync messages based on their type.
 // It supports:
+// - "handshake": Acknowledge the handshake
 // - "push": Saves snippet changes to the database and notifies other clients
 // - "pull": Retrieves the latest version of a snippet from the database
 // Returns an error if message handling fails.
 func (sm *SyncManager) handleMessage(clientID string, msg SyncMessage) error {
 	switch msg.Type {
+	case "handshake":
+		// Just acknowledge the handshake
+		return nil
 	case "push":
 		snippet := &Snippet{
 			ID:        int(msg.SnippetID),
@@ -153,6 +158,8 @@ func (sm *SyncManager) handleMessage(clientID string, msg SyncMessage) error {
 			clientID, snippet.ID)
 
 		return conn.WriteJSON(response)
+	default:
+		return fmt.Errorf("unknown message type: %s", msg.Type)
 	}
 	return nil
 }
